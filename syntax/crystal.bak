@@ -1,0 +1,314 @@
+" Vim syntax file
+" Language: Crystal <crystal-lang.org>
+" Author: Jeffrey Crochet <jlcrochet@pm.me>
+" URL: https://github.com/jlcrochet/vim-crystal
+
+" TODO
+" * Finish type expression syntax
+" * Introduce "crystalMethodRegion"
+" * Make sure that named tuple keys only occur inside tuples and method
+" regions
+
+if exists('b:current_syntax')
+  finish
+endif
+
+syn cluster crystalTop contains=TOP
+
+syn region crystalComment start=/\%#=1#/ end=/\%#=1\_$/ display oneline contains=crystalTodo,crystalSharpBang
+
+syn match crystalVariableOrMethod   /\%#=1[[:lower:]_]\w*[?!]\=/ display nextgroup=crystalBinaryOperator,crystalIndexOperator,crystalParentheses,crystalBrace,crystalCapturedBlock,crystalSymbol,crystalString,crystalRegexp,crystalHeredoc skipwhite
+syn match crystalConstant           /\%#=1\u\w*/ display nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn match crystalGlobalVariable     /\%#=1\$\h\w*/ display nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn match crystalInstanceVariable   /\%#=1@\h\w*/ display nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn match crystalClassVariable      /\%#=1@@\h\w*/ display nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn match crystalPredefinedVariable /\%#=1\$[~?[:digit:]]/ display nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn match crystalFreshVariable      /\%#=1%[[:lower:]_]\w*/ display contained nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn match crystalUnaryOperator /\%#=1!/ display
+syn match crystalUnaryOperator /\%#=1\~/ display
+syn match crystalUnaryOperator /\%#=1+/ display
+syn match crystalUnaryOperator /\%#=1-/ display
+syn match crystalUnaryOperator /\%#=1&+/ display
+syn match crystalUnaryOperator /\%#=1&-/ display
+syn match crystalUnaryOperator /\%#=1\*\*\=/ display
+
+syn match crystalTernaryOperator /\%#=1[?:]/ display contained
+
+syn match crystalBinaryOperator /\%#=1||\==\=/ display contained
+syn match crystalBinaryOperator /\%#=1=\%(==\=\|\~\)\=/ display contained
+syn match crystalBinaryOperator /\%#=1\/\/\==\=/ display contained
+syn match crystalBinaryOperator /\%#=1+=\=/ display contained
+syn match crystalBinaryOperator /\%#=1-=\=/ display contained
+syn match crystalBinaryOperator /\%#=1::\=/ display contained
+syn match crystalBinaryOperator /\%#=1?/ display contained
+syn match crystalBinaryOperator /\%#=1&\%(=\|&=\=\|+=\=\|-=\=\|\*\*\==\=\)\=/ display contained
+syn match crystalBinaryOperator /\%#=1![=~]/ display contained
+syn match crystalBinaryOperator /\%#=1\^=\=/ display contained
+syn match crystalBinaryOperator /\%#=1\*\*\==\=/ display contained
+syn match crystalBinaryOperator /\%#=1<\%(<=\=\|=>\=\)\=/ display contained
+syn match crystalBinaryOperator /\%#=1>>\==\=/ display contained
+syn match crystalBinaryOperator /\%#=1%=\=/ display contained
+syn match crystalBinaryOperator /\%#=1\.\.\.\=/ display contained
+
+syn match crystalMemberAccessOperator /\%#=1\./ display nextgroup=crystalVariableOrMethod
+
+syn region crystalIndexOperator matchgroup=crystalBinaryOperator start=/\%#=1\[/ end=/\%#=1]?\=/ display contained contains=TOP nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn cluster crystalContainedOperators contains=crystalTernaryOperator,crystalBinaryOperator,crystalMemberAccessOperator,crystalIndexOperator
+
+syn match crystalTypeRestrictionOperator /\%#=1\s*\zs:\ze\s*/ display contained nextgroup=crystalTypeRestriction
+syn region crystalTypeRestriction start=// end=/\%#=1[[:space:],]\|\_$/me=e-1 display contained contains=crystalType,crystalTypeParentheses
+syn match crystalType /\%#=1\u\w*[*?]\=/ display contained
+
+syn match crystalCapturedBlock /\%#=1&[[:lower:]_]\w*/ display nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn match crystalCapturedBlock /\%#=1&\./ display contains=crystalMemberAccessOperator nextgroup=crystalVariableOrMethod,crystalBinaryOperator skipwhite
+
+syn region crystalParentheses matchgroup=crystalParenthesis start=/\%#=1(/ end=/\%#=1)/ display contains=TOP nextgroup=crystalBinaryOperator,crystalIndexOperator,crystalBrace skipwhite
+
+syn region crystalArray matchgroup=crystalBracket start=/\%#=1\[/ end=/\%#=1]/ display contains=TOP nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+function s:or(...)
+  return '\%('.join(a:000, '\|').'\)'
+endfunction
+
+function s:optional(re)
+  return '\%('.a:re.'\)\='
+endfunction
+
+let s:zero = '0_*[[:digit:]_]*'
+let s:decimal = '[1-9][[:digit:]_]*'
+let s:fraction = '\.\d[[:digit:]_]*'
+let s:binary = '0b[01_]*'
+let s:octal = '0o[0-7_]*'
+let s:hexadecimal = '0x[[:xdigit:]_]*'
+
+let s:integer_suffix = '[ui]\%(8\|16\|32\|64\|128\)'
+let s:float_suffix = 'f\%(8\|16\|32\|64\|128\)'
+let s:exponent_suffix = '[eE]_*[+-]\=\d[[:digit:]_]*'
+
+let s:syn_match_template = 'syn match crystalNumber /\%%#=1%s/ display nextgroup=crystalBinaryOperator,crystalMemberAccessOperator,crystalIndexOperator skipwhite'
+
+let s:optional_re = s:or(
+      \ s:integer_suffix,
+      \ s:float_suffix,
+      \ s:exponent_suffix . s:optional(s:float_suffix),
+      \ s:fraction . s:optional(s:exponent_suffix) . s:optional(s:float_suffix)
+      \ ) . '\='
+
+let s:zero_re = s:zero . s:optional_re
+let s:decimal_re = s:decimal . s:optional_re
+let s:binary_re = s:binary . s:optional(s:integer_suffix)
+let s:octal_re = s:octal . s:optional(s:integer_suffix)
+let s:hexadecimal_re = s:hexadecimal . s:optional(s:integer_suffix)
+
+execute printf(s:syn_match_template, s:zero_re)
+execute printf(s:syn_match_template, s:decimal_re)
+execute printf(s:syn_match_template, s:binary_re)
+execute printf(s:syn_match_template, s:octal_re)
+execute printf(s:syn_match_template, s:hexadecimal_re)
+
+delfunction s:or
+delfunction s:optional
+
+unlet
+      \ s:zero s:decimal s:fraction s:binary s:octal s:hexadecimal
+      \ s:integer_suffix s:float_suffix s:exponent_suffix s:optional_re
+      \ s:zero_re s:decimal_re s:binary_re s:octal_re s:hexadecimal_re
+
+syn keyword crystalBoolean true false nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn keyword crystalPseudoVariable self nil __DIR__ __FILE__ __LINE__ __END_LINE__ nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn match crystalCharLiteral /'\%(\\\%(\o\{1,3}\|x\x\{1,2}\|u\x\{4}\|u{\x\{1,6}}\|.\)\|.\)'/ display contains=crystalEscapeSequence nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn region crystalString start=/\%#=1"/ end=/\%#=1"/ display contains=crystalEscapeSequence,crystalStringInterpolation nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn region crystalString matchgroup=crystalString start=/\%#=1%q(/  end=/\%#=1)/  display contains=crystalStringNestedRawParentheses    nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%q{/  end=/\%#=1}/  display contains=crystalStringNestedRawBraces         nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%q</  end=/\%#=1>/  display contains=crystalStringNestedRawAngleBrackets  nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%q\[/ end=/\%#=1\]/ display contains=crystalStringNestedRawSquareBrackets nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%q|/  end=/\%#=1|/  display                                               nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn region crystalString matchgroup=crystalString start=/\%#=1%[wi](/  end=/\%#=1)/  display contains=crystalStringNestedParentheses    nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%[wi]{/  end=/\%#=1}/  display contains=crystalStringNestedBraces         nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%[wi]</  end=/\%#=1>/  display contains=crystalStringNestedAngleBrackets  nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%[wi]\[/ end=/\%#=1\]/ display contains=crystalStringNestedSquareBrackets nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%[wi]|/  end=/\%#=1|/  display                                            nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn region crystalString matchgroup=crystalString start=/\%#=1%[Qx]\=(/  end=/\%#=1)/  display contains=crystalEscapeSequence,crystalStringInterpolation,crystalStringNestedParentheses    nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%[Qx]\={/  end=/\%#=1}/  display contains=crystalEscapeSequence,crystalStringInterpolation,crystalStringNestedBraces         nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%[Qx]\=</  end=/\%#=1>/  display contains=crystalEscapeSequence,crystalStringInterpolation,crystalStringNestedAngleBrackets  nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%[Qx]\=\[/ end=/\%#=1\]/ display contains=crystalEscapeSequence,crystalStringInterpolation,crystalStringNestedSquareBrackets nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalString matchgroup=crystalString start=/\%#=1%[Qx]\=|/  end=/\%#=1|/  display contains=crystalEscapeSequence,crystalStringInterpolation                                   nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn match crystalSymbol /\%#=1:\h\w*[?!]\=/ display nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn match crystalSymbol /\%#=1:\%(+\|-\|\*\*\=\|\/\/\=\|=\%(==\=\|\~\)\|![=~]\=\|<\%(<\|=>\=\)\=\|>[>=]\=\|&\%(+\|-\|\*\*\=\)\=\||\|\^\|\~\|%\|\[][=?]\=\)/ display nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn region crystalSymbol start=/\%#=1:"/ end=/\%#=1"/ display contains=crystalEscapeSequence,crystalStringInterpolation nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn match crystalNamedTupleKey /\%#=1\h\w*::\@!/he=e-1 display
+
+syn region crystalRegexp start=/\%#=1\/\/\@!=\@!/ end=/\%#=1\/[imx]*/ display oneline contains=@crystalInsideRegexp nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn region crystalRegexp matchgroup=crystalRegexp start=/\%#=1%r(/  end=/\%#=1)[imx]*/  display contains=@crystalInsideRegexp nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalRegexp matchgroup=crystalRegexp start=/\%#=1%r\[/ end=/\%#=1\][imx]*/ display contains=@crystalInsideRegexp nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalRegexp matchgroup=crystalRegexp start=/\%#=1%r{/  end=/\%#=1}[imx]*/  display contains=@crystalInsideRegexp,crystalRegexpNestedBraces nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalRegexp matchgroup=crystalRegexp start=/\%#=1%r</  end=/\%#=1>[imx]*/  display contains=@crystalInsideRegexp,crystalRegexpNestedAngleBrackets nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalRegexp matchgroup=crystalRegexp start=/\%#=1%r|/  end=/\%#=1|[imx]*/  display contains=@crystalInsideRegexp nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn region crystalTuple matchgroup=crystalBrace start=/\%#=1{/ end=/\%#=1}/ display contains=TOP nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn region crystalMacroTag matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ display contains=@crystalTop,crystalFreshVariable,crystalMacroKeyword containedin=ALL
+syn region crystalMacroTag matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ display contains=@crystalTop,crystalFreshVariable containedin=ALL nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+
+syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-\z(\w\+\)/   matchgroup=crystalHeredocEnd end=/\%#=1\z1/ display transparent keepend contains=@crystalTop,crystalHeredocLine    nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-'\z(\w\+\)'/ matchgroup=crystalHeredocEnd end=/\%#=1\z1/ display transparent keepend contains=@crystalTop,crystalHeredocLineRaw nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn region crystalHeredocLine    start=/\%#=1\_^/ end=/\%#=1\_$/ display oneline contained contains=crystalEscapeSequence,crystalStringInterpolation
+syn region crystalHeredocLineRaw start=/\%#=1\_^/ end=/\%#=1\_$/ display oneline contained
+
+syn keyword crystalDefine alias
+
+syn keyword crystalAccess private protected abstract
+
+syn keyword crystalInclude include extend require
+
+syn keyword crystalControl return yield raise
+
+syn keyword crystalSpecialMethod typeof pointerof sizeof instance_sizeof
+
+syn keyword crystalOf of
+
+syn keyword crystalForall forall
+
+syn region crystalLinkAttribute matchgroup=crystalLinkAttributeDelimiter start=/\%#=1@\[/ end=/\%#=1]/ display oneline contains=TOP
+
+syn keyword crystalConditional if unless case else elsif when then in
+
+syn keyword crystalRepeat while until
+
+syn keyword crystalControl begin rescue ensure end
+
+syn match crystalBrace /\%#=1{/ display contained nextgroup=crystalBlockParameterList skipwhite
+syn match crystalBrace /\%#=1}/ display nextgroup=crystalBinaryOperator,crystalIndexOperator skipwhite
+syn keyword crystalDo do nextgroup=crystalBlockParameterList skipwhite
+syn region crystalBlockParameterList start=/\%#=1|/ end=/\%#=1|/ display contained oneline contains=crystalBlockParameter
+syn match crystalBlockParameter /\%#=1[[:lower:]_]\w*/ display contained
+
+syn keyword crystalDefine def fun macro nextgroup=crystalMethodDefinition skipwhite
+syn match crystalMethodDefinition /\%#=1\%(\<\%(self\|\u\w*\)\.\)\=[[:lower:]_]\w*[?!=]\=/ display contained contains=crystalPseudoVariable nextgroup=crystalParentheses skipwhite
+syn match crystalMethodDefinition /\%#=1+\|-\|\*\*\=\|\/\/\=\|=\%(==\=\|\~\)\|![=~]\=\|<\%(<\|=>\=\)\=\|>[>=]\=\|&\%(+\|-\|\*\*\=\)\=\||\|\^\|\~\|%\|\[][=?]\=/ display contained nextgroup=crystalParentheses skipwhite
+
+syn keyword crystalDefine class struct module lib union enum annotation nextgroup=crystalConstantDefinition skipwhite
+syn match crystalConstantDefinition /\%#=1\%(::\)\=\u\w*\%(::\u\w*\)*/ display contained nextgroup=crystalParentheses skipwhite
+
+syn keyword crystalAttribute getter setter property class_getter class_setter class_property nextgroup=crystalAttributeModifier
+syn match crystalAttributeModifier /\%#=1[!?]/ display contained
+
+syn keyword crystalTodo TODO NOTE FIXME OPTIMIZE XXX TBD HACK contained
+syn region crystalSharpBang start=/\%#=1\%^#!/ end=/\%#=1\_$/ display oneline contained
+
+syn keyword crystalMacroKeyword if else elsif for in begin end contained
+
+syn match crystalEscapeSequence /\%#=1\\\%(\o\{1,3}\|x\x\{1,2}\|u\x\{4}\|u{\x\{1,6}}\|.\)/ display contained
+
+syn region crystalStringInterpolation matchgroup=crystalStringInterpolationDelimiter start=/\%#=1#{/ end=/\%#=1}/ display oneline contained contains=TOP
+
+syn region crystalStringNestedParentheses    start=/\%#=1(/  end=/\%#=1)/  display transparent contained
+syn region crystalStringNestedSquareBrackets start=/\%#=1\[/ end=/\%#=1\]/ display transparent contained
+syn region crystalStringNestedBraces         start=/\%#=1{/  end=/\%#=1}/  display transparent contained
+syn region crystalStringNestedAngleBrackets  start=/\%#=1</  end=/\%#=1>/  display transparent contained
+
+syn region crystalStringNestedRawParentheses    start=/\%#=1(/  end=/\%#=1)/  display transparent contained
+syn region crystalStringNestedRawSquareBrackets start=/\%#=1\[/ end=/\%#=1\]/ display transparent contained
+syn region crystalStringNestedRawBraces         start=/\%#=1{/  end=/\%#=1}/  display transparent contained
+syn region crystalStringNestedRawAngleBrackets  start=/\%#=1</  end=/\%#=1>/  display transparent contained
+
+" Cluster for special groups inside of regular expressions {{{1
+" TODO: Some of these patterns are really slow
+syn region crystalRegexpComment    matchgroup=crystalRegexpSpecial   start=/\%#=1(?#/ end=/\%#=1)/ display contained oneline
+syn region crystalRegexpParens     matchgroup=crystalRegexpSpecial   start=/\%#=1(\%(?:\|?<\=[=!]\|?>\|?<[a-z_]\w*>\|?[imx]*-[imx]*:\=\|\%(?#\)\@!\)/ end=/\%#=1)/ display contained transparent contains=@crystalInsideRegexp
+syn region crystalRegexpBrackets   matchgroup=crystalRegexpCharClass start=/\%#=1\[\^\=/ end=/\%#=1\]/ display contained transparent contains=crystalEscapeSequence,crystalRegexpEscape,crystalRegexpCharClass oneline
+syn match  crystalRegexpCharClass  /\%#=1\\[DdHhSsWw]/ contained display
+syn match  crystalRegexpCharClass  /\%#=1\[:\^\=\%(alnum\|alpha\|ascii\|blank\|cntrl\|digit\|graph\|lower\|print\|punct\|space\|upper\|xdigit\):\]/ display contained
+syn match  crystalRegexpEscape     /\%#=1\\[].*?+^$|\\\/(){}[]/ display contained
+syn match  crystalRegexpQuantifier /\%#=1[*?+][?+]\=/ contained display
+syn match  crystalRegexpQuantifier /\%#=1{\d\+\%(,\d*\)\=}?\=/ contained display
+syn match  crystalRegexpAnchor     /\%#=1[$^]\|\\[ABbGZz]/ contained display
+syn match  crystalRegexpDot        /\%#=1\./ contained display
+syn match  crystalRegexpSpecial    /\%#=1|/  contained display
+syn match  crystalRegexpSpecial    /\%#=1\\[1-9]\d\=\d\@!/ contained display
+syn match  crystalRegexpSpecial    /\%#=1\\w<\%([a-z_]\w*\|-\=\d\+\)\%([+-]\d\+\)\=>/ contained display
+syn match  crystalRegexpSpecial    /\%#=1\\w'\%([a-z_]\w*\|-\=\d\+\)\%([+-]\d\+\)\='/ contained display
+syn match  crystalRegexpSpecial    /\%#=1\\g<\%([a-z_]\w*\|-\=\d\+\)>/ contained display
+syn match  crystalRegexpSpecial    /\%#=1\\g'\%([a-z_]\w*\|-\=\d\+\)'/ contained display
+
+" NOTE: These are *not* included in the cluster because they only appear
+" in certain kinds of regex regions.
+syn region crystalRegexpNestedBraces        start=/\%#=1{/ end=/\%#=1}/ display transparent contained
+syn region crystalRegexpNestedAngleBrackets start=/\%#=1</ end=/\%#=1>/ display transparent contained
+
+syn cluster crystalInsideRegexp contains=
+      \ crystalRegexpSpecial,crystalRegexpDot,crystalRegexpAnchor,crystalRegexpQuantifier,
+      \ crystalRegexpEscape,crystalRegexpCharClass,crystalRegexpBrackets,crystalRegexpParens,
+      \ crystalRegexpComment,crystalEscapeSequence
+
+" Default highlighting {{{1
+hi def link crystalComment                      Comment
+hi def link crystalTodo                         Todo
+hi def link crystalConstant                     Constant
+hi def link crystalGlobalVariable               Identifier
+hi def link crystalPredefinedVariable           Identifier
+hi def link crystalPredefinedConstant           Constant
+hi def link crystalNumber                       Number
+hi def link crystalBoolean                      Boolean
+hi def link crystalPseudoVariable               Constant
+hi def link crystalCharLiteral                  Character
+hi def link crystalString                       String
+hi def link crystalSymbol                       String
+hi def link crystalRegexp                       String
+hi def link crystalHeredocLine                  crystalString
+hi def link crystalHeredocLineRaw               crystalHeredocLine
+hi def link crystalHeredocStart                 crystalHeredocLine
+hi def link crystalHeredocEnd                   crystalHeredocStart
+hi def link crystalOperator                     Operator
+hi def link crystalMemberAccessOperator         crystalOperator
+hi def link crystalConditional                  Conditional
+hi def link crystalRepeat                       Repeat
+hi def link crystalMacroKeyword                 Keyword
+hi def link crystalOf                           Keyword
+hi def link crystalForall                       Keyword
+hi def link crystalControl                      Statement
+hi def link crystalDo                           Keyword
+hi def link crystalDefine                       Statement
+hi def link crystalMethodDefinition             Typedef
+hi def link crystalConstantDefinition           Typedef
+hi def link crystalRegexpSpecial                SpecialChar
+hi def link crystalRegexpDot                    crystalRegexpSpecial
+hi def link crystalRegexpAnchor                 crystalRegexpSpecial
+hi def link crystalRegexpQuantifier             crystalRegexpSpecial
+hi def link crystalRegexpEscape                 crystalRegexpSpecial
+hi def link crystalRegexpCharClass              crystalRegexpSpecial
+hi def link crystalRegexpBrackets               crystalRegexpSpecial
+hi def link crystalRegexpParens                 crystalRegexpSpecial
+hi def link crystalRegexpComment                crystalComment
+hi def link crystalEscapeSequence               SpecialChar
+hi def link crystalStringInterpolationDelimiter PreProc
+hi def link crystalMacroDelimiter               PreProc
+hi def link crystalFreshVariable                Identifier
+hi def link crystalAttribute                    Statement
+hi def link crystalAttributeModifier            Statement
+hi def link crystalAccess                       Keyword
+hi def link crystalSpecialMethod                Function
+hi def link crystalInclude                      Statement
+hi def link crystalSharpBang                    PreProc
+hi def link crystalInstanceVariable             Identifier
+hi def link crystalClassVariable                Identifier
+hi def link crystalLinkAttributeDelimiter       PreProc
+hi def link crystalNamedTupleKey                crystalSymbol
+
+" }}}
+
+let b:current_syntax = 'crystal'
+
+" vim:fdm=marker

@@ -11,6 +11,7 @@ local tbl_contains = vim.tbl_contains
 
 local api = vim.api
 local nvim_win_get_cursor = api.nvim_win_get_cursor
+local nvim_buf_line_count = api.nvim_buf_line_count
 -- TEMP
 local nvim_command = api.nvim_command
 
@@ -20,7 +21,6 @@ local prevnonblank = fn.prevnonblank
 local searchpos = fn.searchpos
 local indent = fn.indent
 local fn_match = fn.match
-local line = fn.line
 local col = fn.col
 local cursor = fn.cursor
 local synID = fn.synID
@@ -172,7 +172,7 @@ local function search(re, move_cursor, stop_line, skip_func)
     move_cursor = true
   end
 
-  stop_line = stop_line or line("$")
+  stop_line = stop_line or nvim_buf_line_count(0)
 
   local found_lnum, found_col
 
@@ -256,7 +256,7 @@ local function searchpair(start_re, end_re, move_cursor, stop_line, skip_start, 
     move_cursor = true
   end
 
-  stop_line = stop_line or line("$")
+  stop_line = stop_line or nvim_buf_line_count(0)
 
   local end_lnum, end_idx = search(end_re, false, stop_line, skip_end)
 
