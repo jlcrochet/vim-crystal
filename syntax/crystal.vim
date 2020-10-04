@@ -10,7 +10,7 @@ endif
 let b:current_syntax = "crystal"
 
 " Syntax {{{1
-" let s:overloadable_operators = '\v%([+\-|%~^]|\*\*=|\/\/=|\=%(\=\==|\~)|![=~]=|\<%(\<|\=\>=)=|\>[>=]=|\&%([+-]|\*\*=)=|\[][=?]=)'
+let s:overloadable_operators = '[+\-*/%~^&|!\[\]=?<>]'
 
 syn cluster crystalTop contains=TOP
 
@@ -21,22 +21,9 @@ syn keyword crystalTodo TODO NOTE XXX FIXME HACK TBD contained
 syn region crystalShebang start=/\%#=1\%^#!/ end=/\%#=1\_$/ display oneline
 
 " Delimiters {{{2
-syn match crystalDelimiter /\%#=1\[/ display
-syn match crystalDelimiter /\%#=1\]?\=/ display
-
-syn match crystalDelimiter /\%#=1(/ display nextgroup=crystalNamedTupleKey skipwhite skipnl
-syn match crystalDelimiter /\%#=1)/ display
-
-syn match crystalDelimiter /\%#=1{/ display nextgroup=crystalBlockParameters,crystalNamedTupleKey skipwhite skipnl
-syn match crystalDelimiter /\%#=1}/ display
-
-syn match crystalDelimiter /\%#=1,/ display nextgroup=crystalNamedTupleKey skipwhite skipnl
-
-syn match crystalMethodOperator /\%#=1\./ display nextgroup=crystalMethod
-syn match crystalMethod /\%#=1[[:lower:]_]\w*[=?!]\=/ display contained nextgroup=crystalNamedTupleKey skipwhite
-syn match crystalMethod /\%#=1[[:punct:]]\+/ display contained nextgroup=crystalNamedTupleKey skipwhite
-
-syn match crystalRangeOperator /\%#=1\.\.\.\=/ display
+syn region crystalParentheses    matchgroup=crystalDelimiter start=/\%#=1(/  end=/\%#=1)/ display transparent
+syn region crystalSquareBrackets matchgroup=crystalDelimiter start=/\%#=1\[/ end=/\%#=1]/ display transparent
+syn region crystalCurlyBraces    matchgroup=crystalDelimiter start=/\%#=1{/  end=/\%#=1}/ display transparent
 
 " Macros {{{2
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1{{/ end=/\%#=1}}/ display containedin=ALL contains=@crystalTop,crystalFreshVariable
@@ -45,40 +32,13 @@ syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1{%/ end=/\%
 syn match crystalFreshVariable /\%#=1%\h\w*/ display contained
 syn keyword crystalKeyword for contained containedin=crystalMacro
 
-" Type Grammar {{{2
-syn match crystalTypeDeclarationOperator /\%#=1:\ze\s/ display contained nextgroup=@crystalTypeObjects skipwhite
-
-syn cluster crystalTypeObjects contains=crystalType,crystalTypeGroup,crystalTypeTuple,crystalTypeSelf
-syn cluster crystalTypeOperators contains=crystalTypeUnion,crystalTypeLambda,crystalTypeHash
-
-syn match crystalType /\%#=1\u\w*[?*]*/ display contained nextgroup=crystalTypeGroup,@crystalTypeOperators skipwhite
-syn region crystalTypeGroup matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ display contained contains=@crystalTypeObjects nextgroup=@crystalTypeOperators skipwhite
-syn region crystalTypeTuple matchgroup=crystalDelimiter start=/\%#=1{/ end=/\%#=1}/ display contained contains=@crystalTypeObjects nextgroup=@crystalTypeOperators skipwhite
-syn keyword crystalTypeSelf self contained nextgroup=@crystalTypeOperators skipwhite
-
-syn match crystalTypeUnion /\%#=1|/ display contained nextgroup=@crystalTypeObjects skipwhite skipnl
-syn match crystalTypeLambda /\%#=1->/ display contained nextgroup=@crystalTypeObjects skipwhite skipnl
-syn match crystalTypeHash /\%#=1=>/ display contained nextgroup=@crystalTypeObjects skipwhite skipnl
-
-syn keyword crystalKeyword forall nextgroup=@crystalTypeObjects skipwhite
-
-syn keyword crystalKeyword of nextgroup=@crystalTypeObjects skipwhite
-
-syn keyword crystalKeyword alias nextgroup=crystalTypeAlias skipwhite
-syn match crystalTypeAlias /\%#=1\u\w*/ display contained nextgroup=crystalTypeAliasOperator skipwhite
-syn match crystalTypeAliasOperator /\%#=1=/ display contained nextgroup=@crystalTypeObjects skipwhite skipnl
-
-syn keyword crystalMethod as contained nextgroup=@crystalTypeObjects skipwhite
-
 " Identifiers {{{2
-syn match crystalVariableOrMethod /\%#=1[[:lower:]_]\w*[=?!]\=/ display nextgroup=crystalTypeDeclarationOperator,crystalNamedTupleKey skipwhite
-syn match crystalInstanceVariable /\%#=1@\h\w*/ display nextgroup=crystalTypeDeclarationOperator skipwhite
-syn match crystalClassVariable /\%#=1@@\h\w*/ display nextgroup=crystalTypeDeclarationOperator skipwhite
+syn match crystalInstanceVariable /\%#=1@\h\w*/ display
+syn match crystalClassVariable /\%#=1@@\h\w*/ display
 syn match crystalGlobalVariable /\%#=1\$\%([~?]\|\d\+?\=\|\h\w*\)/ display
 
 syn keyword crystalConstant __FILE__ __LINE__
-syn match crystalConstant /\%#=1\u\w*/ display nextgroup=crystalGeneric skipwhite
-syn region crystalGeneric start=/\%#=1(/ end=/\%#=1)/ display contained contains=crystalType,crystalTypeGroup
+syn match crystalConstant /\%#=1\<\u\w*/ display
 
 " Literals {{{2
 syn keyword crystalNil nil
@@ -98,24 +58,24 @@ let s:integer_suffix = '[ui]%(8|16|32|64|128)'
 let s:float_suffix = 'f%(32|64)'
 let s:exponent_suffix = '[eE][+-]=[[:digit:]_]*'
 
-let s:fraction = '\.\d[[:digit:]_]*' . s:optional(s:exponent_suffix) . s:optional(s:float_suffix.'>')
+let s:fraction = '\.\d[[:digit:]_]*' . s:optional(s:exponent_suffix) . s:optional(s:float_suffix)
 
 let s:nonzero_re = '[1-9][[:digit:]_]*' . s:or(
-      \ s:integer_suffix . '>',
-      \ s:float_suffix . '>',
+      \ s:integer_suffix,
+      \ s:float_suffix,
       \ s:exponent_suffix . s:optional(s:float_suffix),
       \ s:fraction
       \ ) . '='
 
 let s:zero_re = '0' . s:or(
-      \ 'b[01_]*' . s:optional(s:integer_suffix) . '>',
-      \ 'o[0-7_]*' . s:optional(s:integer_suffix) . '>',
-      \ 'x[[:xdigit:]_]*' . s:optional(s:integer_suffix) . '>',
-      \ '_*' . s:or(s:integer_suffix.'>', s:float_suffix.'>', s:fraction),
+      \ 'b[01_]*' . s:optional(s:integer_suffix).'>',
+      \ 'o[0-7_]*' . s:optional(s:integer_suffix).'>',
+      \ 'x[[:xdigit:]_]*' . s:optional(s:integer_suffix).'>',
+      \ '_*' . s:or(s:integer_suffix, s:float_suffix, s:fraction),
       \ '_+' . s:optional(s:or(s:exponent_suffix, s:nonzero_re))
       \ ) . '='
 
-let s:syn_match_template = 'syn match crystalNumber /\%%#=1\v%s/ display'
+let s:syn_match_template = 'syn match crystalNumber /\%%#=1\v<%s/ display'
 
 execute printf(s:syn_match_template, s:nonzero_re)
 execute printf(s:syn_match_template, s:zero_re)
@@ -149,8 +109,7 @@ syn region crystalStringAngleBrackets matchgroup=crystalString start=/\%#=1</ en
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%Q\=|/ end=/\%#=1|/ display contains=crystalStringInterpolation,crystalStringEscape
 
-syn region crystalStringInterpolation matchgroup=crystalStringInterpolationDelimiter start=/\%#=1#{/ end=/\%#=1}/ display contained contains=@crystalTop,crystalNestedBraces
-syn region crystalNestedBraces start=/\%#=1{/ matchgroup=crystalDelimiter end=/\%#=1}/ display transparent contained
+syn region crystalStringInterpolation matchgroup=crystalStringInterpolationDelimiter start=/\%#=1#{/ end=/\%#=1}/ display contained contains=TOP
 syn match crystalStringEscape /\%#=1\\\%(\d\{1,3}\|x\x\x\|u\%(\x\{4}\|{\x\{1,6}\%(\s\x\{1,6}\)*}\)\|\_.\)/ display contained
 
 " Raw Strings {{{3
@@ -189,7 +148,7 @@ syn region crystalHeredocLineRaw start=/\%#=1\_^/ end=/\%#=1\_$/ display oneline
 
 " Symbols {{{3
 syn match crystalSymbol /\%#=1:\h\w*[=?!]\=/ display
-syn match crystalSymbol /\%#=1:[[:punct:]]\+/ display
+execute 'syn match crystalSymbol /\%#=1:'.s:overloadable_operators.'\+/ display'
 
 syn region crystalSymbol matchgroup=crystalSymbolDelimiter start=/\%#=1:"/ end=/\%#=1"/ display contains=crystalStringInterpolation,crystalStringEscape
 
@@ -199,8 +158,8 @@ syn region crystalSymbol matchgroup=crystalSymbolDelimiter start=/\%#=1%i{/  end
 syn region crystalSymbol matchgroup=crystalSymbolDelimiter start=/\%#=1%i</  end=/\%#=1>/ display contains=crystalStringArrayAngleBrackets,crystalStringAngleBracketEscape
 syn region crystalSymbol matchgroup=crystalSymbolDelimiter start=/\%#=1%i|/  end=/\%#=1|/ display contains=crystalStringPipeEscape
 
-syn match crystalNamedTupleKey /\%#=1[[:lower:]_]\w*[?!]\=:/he=e-1 display contained
-syn match crystalNamedTupleKey /\%#=1\u\w*::\@!/he=e-1 display contained
+syn match crystalNamedTupleKey /\%#=1\<[[:lower:]_]\w*[?!]\=:/he=e-1 display
+syn match crystalNamedTupleKey /\%#=1\<\u\w*::\@!/he=e-1 display
 
 syn match crystalNamespaceOperator /\%#=1::/ display nextgroup=crystalConstant
 
@@ -241,22 +200,14 @@ syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%x{/  e
 syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%x</  end=/\%#=1>/ display contains=crystalStringAngleBrackets,crystalStringInterpolation,crystalStringEscape
 syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%r|/  end=/\%#=1|/ display contains=crystalStringInterpolation,crystalStringEscape
 
-" Blocks and Procs {{{3
-syn keyword crystalKeyword do nextgroup=crystalBlockParameters skipwhite
-syn region crystalBlockParameters matchgroup=crystalDelimiter start=/\%#=1|/ end=/\%#=1|/ display oneline transparent contained
-
-syn match crystalProcOperator /\%#=1->/ display nextgroup=crystalMethod,crystalParameters skipwhite
-syn region crystalParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ display contained transparent nextgroup=crystalTypeDeclarationOperator skipwhite
-" }}}3
-
 " Definitions {{{2
-syn keyword crystalKeyword def macro nextgroup=crystalMethodSelf,crystalMethodDefinition skipwhite
+syn keyword crystalKeyword def macro fun nextgroup=crystalMethodSelf,crystalMethodDefinition skipwhite
 syn match crystalMethodSelf /\%#=1self\./he=e-1 display contained nextgroup=crystalMethodDefinition
-syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ display contained nextgroup=crystalParameters skipwhite
-syn match crystalMethodDefinition /\%#=1[[:punct:]]\+/ display contained nextgroup=crystalParameters skipwhite
+syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ display contained
+execute 'syn match crystalMethodDefinition /\%#=1'.s:overloadable_operators.'\+/ display contained'
 
 syn keyword crystalKeyword class struct nextgroup=crystalTypeDefinition skipwhite
-syn match crystalTypeDefinition /\%#=1\u\w*/ display contained nextgroup=crystalTypeDefinitionNamespace,crystalGeneric
+syn match crystalTypeDefinition /\%#=1\u\w*/ display contained nextgroup=crystalTypeDefinitionNamespace
 syn match crystalTypeDefinitionNamespace /\%#=1::/ display contained nextgroup=crystalTypeDefinition
 
 syn keyword crystalKeyword lib annotation enum module nextgroup=crystalNamespaceDefinition skipwhite
@@ -266,19 +217,28 @@ syn match crystalNamespaceDefinitionNamespace /\%#=1::/ display contained nextgr
 " Miscellaneous {{{2
 syn keyword crystalKeyword
       \ if unless elsif else end return next break raise case when in
-      \ then while until private protected
+      \ then while until private protected do forall of alias begin
+      \ rescue ensure yield uninitialized out
 
 syn keyword crystalKeyword nextgroup=crystalNilableModifier
       \ getter setter property class_getter class_setter class_property
 
 syn match crystalNilableModifier /\%#=1?/ display contained
 
+syn match crystalMethodOperator /\%#=1\./ display nextgroup=crystalMethod
+syn match crystalMethod /\%#=1[[:lower:]_]\w*[=?!]\=/ display contained
+execute 'syn match crystalMethod /\%#=1'.s:overloadable_operators.'\+/ display contained'
+
+syn match crystalRangeOperator /\%#=1\.\.\.\=/ display
+
+syn match crystalProcOperator /\%#=1->/ display nextgroup=crystalMethod skipwhite
+
 syn keyword crystalKeyword require nextgroup=crystalString skipwhite
 
-syn region crystalTernaryOperator start=/\%#=1?/ end=/\%#=1:/ display keepend transparent
+syn region crystalAnnotation matchgroup=crystalAnnotationDelimiter start=/\%#=1@\[/ end=/\%#=1]/ display oneline transparent
 " }}}2
 
-" unlet s:overloadable_operators
+unlet s:overloadable_operators
 
 " Highlighting {{{1
 hi def link crystalComment Comment
@@ -290,8 +250,6 @@ hi def link crystalClassVariable Identifier
 hi def link crystalGlobalVariable Identifier
 hi def link crystalConstant Constant
 hi def link crystalDelimiter Delimiter
-hi def link crystalType Type
-hi def link crystalTypeSelf crystalSelf
 hi def link crystalNil Constant
 hi def link crystalBoolean Boolean
 hi def link crystalSelf Constant
@@ -322,7 +280,7 @@ hi def link crystalRegexCapturedGroup crystalRegexMetacharacter
 hi def link crystalRegexQuantifier crystalRegexMetacharacter
 hi def link crystalCommand String
 hi def link crystalCommandDelimiter crystalCommand
-" hi def link crystalKeyword Keyword
+hi def link crystalKeyword Keyword
 hi def link crystalNilableModifier crystalKeyword
 hi def link crystalMethodDefinition Typedef
 hi def link crystalMethodSelf crystalSelf
@@ -330,9 +288,7 @@ hi def link crystalTypeDefinition Typedef
 hi def link crystalNamespaceDefinition Typedef
 hi def link crystalMacroDelimiter PreProc
 hi def link crystalFreshVariable Identifier
-
-" TEMP
-hi def link crystalKeyword Special
+hi def link crystalAnnotationDelimiter Delimiter
 " }}}1
 
 " vim:fdm=marker
