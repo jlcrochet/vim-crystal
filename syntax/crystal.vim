@@ -171,16 +171,15 @@ syn match crystalRegexQuantifier /\%#=1[*+?]/ display contained
 syn match crystalRegexQuantifier /\%#=1{\d*,\=\d*}/ display contained
 syn region crystalRegexClass matchgroup=crystalRegexMetacharacter start=/\%#=1\[\^\=/ end=/\%#=1]/ display oneline transparent contained contains=crystalRegexEscape,crystalRegexPOSIXClass
 syn match crystalRegexPOSIXClass /\%#=1\[\^\=:\%(alnum\|alpha\|ascii\|blank\|cntrl\|digit\|graph\|lower\|print\|punct\|space\|upper\|word\|xdigit\):]/ display contained
-syn region crystalRegexGroup matchgroup=crystalRegexMetacharacter start=/\%#=1(\%(?\%([:>|=!]\|<\%([=!]\|\h\w*>\)\)\)\=/ end=/\%#=1)/ display transparent oneline contained
+syn region crystalRegexGroup matchgroup=crystalRegexMetacharacter start=/\%#=1(\%(?\%([:>|=!]\|<\%([=!]\|\h\w*>\)\|[imx]\+\)\)\=/ end=/\%#=1)/ display transparent oneline contained
 syn region crystalRegexComment start=/\%#=1(#/ end=/\%#=1)/ display oneline contained
 syn match crystalRegexEscape /\%#=1\\[dDsSwWAZbBG]/ display contained
-syn region crystalRegexEscape matchgroup=crystalRegexEscape start=/\%#=1\\Q/ end=/\%#=1\\E/ display oneline contained
+syn region crystalRegexEscape matchgroup=crystalRegexMetacharacter start=/\%#=1\\Q/ end=/\%#=1\\E/ display transparent contained contains=NONE
 syn match crystalRegexCapturedGroup /\%#=1\\\%(\d\+\|g\%({\w\+}\|<\w\+>\)\)/ display contained
-syn match crystalRegexFlags /\%#=1(?[imx]*)/ display contained
 
 syn cluster crystalPCRE contains=
       \ crystalRegexMetacharacter,crystalRegexClass,crystalRegexGroup,crystalRegexComment,
-      \ crystalRegexEscape,crystalRegexCapturedGroup,crystalRegexQuantifier,crystalRegexFlags
+      \ crystalRegexEscape,crystalRegexCapturedGroup,crystalRegexQuantifier
 
 " Commands {{{3
 syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1`/ end=/\%#=1`/ display contains=crystalStringInterpolation,crystalStringEscape
@@ -193,8 +192,8 @@ syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%r|/  e
 
 " Definitions {{{2
 syn keyword crystalKeyword def macro fun nextgroup=crystalMethodSelf,crystalMethodDefinition skipwhite
-syn match crystalMethodSelf /\%#=1self\./he=e-1 display contained nextgroup=crystalMethodDefinition
 syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ display contained
+syn match crystalMethodSelf /\%#=1self\./he=e-1 display contained nextgroup=crystalMethodDefinition
 execute 'syn match crystalMethodDefinition /\%#=1'.s:overloadable_operators.'\+/ display contained'
 
 syn keyword crystalKeyword class struct nextgroup=crystalTypeDefinition skipwhite
