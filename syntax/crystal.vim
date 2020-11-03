@@ -3,7 +3,7 @@
 " Author: Jeffrey Crochet <jlcrochet@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-if get(b:, "current_syntax")
+if has_key(b:, "current_syntax")
   finish
 endif
 
@@ -20,24 +20,12 @@ syn keyword crystalTodo TODO NOTE XXX FIXME HACK TBD contained
 
 syn region crystalShebang start=/\%#=1\%^#!/ end=/\%#=1\_$/ display oneline
 
-" Delimiters {{{2
-syn region crystalParentheses    matchgroup=crystalDelimiter start=/\%#=1(/  end=/\%#=1)/ display transparent
-syn region crystalSquareBrackets matchgroup=crystalDelimiter start=/\%#=1\[/ end=/\%#=1]/ display transparent
-syn region crystalCurlyBraces    matchgroup=crystalDelimiter start=/\%#=1{/  end=/\%#=1}/ display transparent
-
-" Macros {{{2
-syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1{{/ end=/\%#=1}}/ display containedin=ALL contains=@crystalTop,crystalFreshVariable
-syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1{%/ end=/\%#=1%}/ display containedin=ALL contains=@crystalTop,crystalFreshVariable
-
-syn match crystalFreshVariable /\%#=1%\h\w*/ display contained
-syn keyword crystalKeyword for contained containedin=crystalMacro
-
 " Identifiers {{{2
 syn match crystalInstanceVariable /\%#=1@\h\w*/ display
 syn match crystalClassVariable /\%#=1@@\h\w*/ display
 syn match crystalGlobalVariable /\%#=1\$\%([~?]\|\d\+?\=\|\h\w*\)/ display
+syn match crystalFreshVariable /\%#=1%\h\w*/ display contained
 
-syn keyword crystalConstant __FILE__ __LINE__
 syn match crystalConstant /\%#=1\<\u\w*/ display
 
 " Literals {{{2
@@ -109,7 +97,8 @@ syn region crystalStringAngleBrackets matchgroup=crystalString start=/\%#=1</ en
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%Q\=|/ end=/\%#=1|/ display contains=crystalStringInterpolation,crystalStringEscape
 
-syn region crystalStringInterpolation matchgroup=crystalStringInterpolationDelimiter start=/\%#=1#{/ end=/\%#=1}/ display contained contains=TOP
+syn region crystalStringInterpolation matchgroup=crystalStringInterpolationDelimiter start=/\%#=1#{/ end=/\%#=1}/ display contained contains=@crystalTop,crystalNestedBlock
+
 syn match crystalStringEscape /\%#=1\\\%(\d\{1,3}\|x\x\x\|u\%(\x\{4}\|{\x\{1,6}\%(\s\x\{1,6}\)*}\)\|\_.\)/ display contained
 
 " Raw Strings {{{3
@@ -147,8 +136,10 @@ syn region crystalHeredoc matchgroup=crystalHeredocDelimiter start=/\%#=1<<-'\z(
 syn region crystalHeredocLineRaw start=/\%#=1\_^/ end=/\%#=1\_$/ display oneline contained nextgroup=crystalHeredocLineRaw skipempty
 
 " Symbols {{{3
-syn match crystalSymbol /\%#=1:\h\w*[=?!]\=/ display
-execute 'syn match crystalSymbol /\%#=1:'.s:overloadable_operators.'\+/ display'
+syn match crystalSymbol /\%#=1:\h\w*[=?!]\=/ display contains=crystalSymbolDelimiter
+execute 'syn match crystalSymbol /\%#=1:'.s:overloadable_operators.'\+/ display contains=crystalSymbolDelimiter'
+
+syn match crystalSymbolDelimiter /\%#=1:/ display contained
 
 syn region crystalSymbol matchgroup=crystalSymbolDelimiter start=/\%#=1:"/ end=/\%#=1"/ display contains=crystalStringInterpolation,crystalStringEscape
 
@@ -207,18 +198,24 @@ syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ display containe
 execute 'syn match crystalMethodDefinition /\%#=1'.s:overloadable_operators.'\+/ display contained'
 
 syn keyword crystalKeyword class struct nextgroup=crystalTypeDefinition skipwhite
-syn match crystalTypeDefinition /\%#=1\u\w*/ display contained nextgroup=crystalTypeDefinitionNamespace
-syn match crystalTypeDefinitionNamespace /\%#=1::/ display contained nextgroup=crystalTypeDefinition
+syn match crystalTypeDefinition /\%#=1\u\w*\%(::\u\w*\)*/ display contained
 
 syn keyword crystalKeyword lib annotation enum module nextgroup=crystalNamespaceDefinition skipwhite
-syn match crystalNamespaceDefinition /\%#=1\u\w*/ display contained nextgroup=crystalNamespaceDefinitionNamespace
-syn match crystalNamespaceDefinitionNamespace /\%#=1::/ display contained nextgroup=crystalNamespaceDefinition
+syn match crystalNamespaceDefinition /\%#=1\u\w*\%(::\u\w*\)*/ display contained
 
 " Miscellaneous {{{2
 syn keyword crystalKeyword
       \ if unless elsif else end return next break raise case when in
-      \ then while until private protected do forall of alias begin
+      \ then while until private protected forall of alias begin
       \ rescue ensure yield uninitialized out
+
+syn keyword crystalKeyword do nextgroup=crystalBlockParameters skipwhite
+syn match crystalBlockDelimiter /\%#=1{/ display nextgroup=crystalBlockParameters skipwhite
+syn match crystalBlockDelimiter /\%#=1}/ display
+
+syn region crystalNestedBlock start=/\%#=1{/ matchgroup=crystalBlockDelimiter end=/\%#=1}/ display contained contains=@crystalTop,crystalNestedBlock
+
+syn region crystalBlockParameters matchgroup=crystalBlockParameterDelimiter start=/\%#=1|/ end=/\%#=1|/ display transparent oneline contained
 
 syn keyword crystalKeyword nextgroup=crystalNilableModifier
       \ getter setter property class_getter class_setter class_property
@@ -236,6 +233,12 @@ syn match crystalProcOperator /\%#=1->/ display nextgroup=crystalMethod skipwhit
 syn keyword crystalKeyword require nextgroup=crystalString skipwhite
 
 syn region crystalAnnotation matchgroup=crystalAnnotationDelimiter start=/\%#=1@\[/ end=/\%#=1]/ display oneline transparent
+
+" Macros {{{2
+syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ display containedin=ALLBUT,crystalComment contains=@crystalTop,crystalFreshVariable,crystalNestedBlock
+syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ display containedin=ALLBUT,crystalComment contains=@crystalTop,crystalFreshVariable
+
+syn keyword crystalKeyword for contained containedin=crystalMacro
 " }}}2
 
 unlet s:overloadable_operators
@@ -288,7 +291,7 @@ hi def link crystalTypeDefinition Typedef
 hi def link crystalNamespaceDefinition Typedef
 hi def link crystalMacroDelimiter PreProc
 hi def link crystalFreshVariable Identifier
-hi def link crystalAnnotationDelimiter Delimiter
+hi def link crystalAnnotationDelimiter Special
 " }}}1
 
 " vim:fdm=marker

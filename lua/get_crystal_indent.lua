@@ -1,970 +1,540 @@
-local ipairs = ipairs
 local unpack = unpack
-
 local find = string.find
-local sub = string.sub
 local match = string.match
-
-local concat = table.concat
-
-local tbl_contains = vim.tbl_contains
-
-local api = vim.api
-local nvim_win_get_cursor = api.nvim_win_get_cursor
-local nvim_buf_line_count = api.nvim_buf_line_count
--- TEMP
-local nvim_command = api.nvim_command
+local sub = string.sub
 
 local fn = vim.fn
-local getline = fn.getline
 local prevnonblank = fn.prevnonblank
-local searchpos = fn.searchpos
+local shiftwidth = fn.shiftwidth
+local getline = fn.getline
 local indent = fn.indent
-local fn_match = fn.match
-local col = fn.col
-local cursor = fn.cursor
+local expand = fn.expand
+local search = fn.search
+local searchpos = fn.searchpos
 local synID = fn.synID
 local synIDattr = fn.synIDattr
-local escape = fn.escape
-local shiftwidth = fn.shiftwidth
+local cursor = fn.cursor
 
--- These top-level variables are written in CAPS to set them apart from
--- local variables elsewhere in the script.
-local CLNUM, CLINE
-local PLNUM, PLINE
-local FIRST_COL, LAST_COL
-local FIRST_CHAR, LAST_CHAR
-local CONTENT
+local api = vim.api
+local nvim_get_current_line = api.nvim_get_current_line
+local nvim_win_get_cursor = api.nvim_win_get_cursor
 
--- Constants {{{1
--- =========
-
--- Like the top-level variables, these constants are written in CAPS to
--- set them apart from local variables.
-
--- Lookup table for keyword syntax groups
-KEYWORD_SYNGROUPS = {
-  ["class"] = "crystalDefine",
-  ["struct"] = "crystalDefine",
-  ["def"] = "crystalDefine",
-  ["macro"] = "crystalDefine",
-  ["module"] = "crystalDefine",
-  ["lib"] = "crystalDefine",
-  ["enum"] = "crystalDefine",
-  ["annotation"] = "crystalDefine",
-  ["if"] = "crystalConditional",
-  ["unless"] = "crystalConditional",
-  ["begin"] = "crystalControl",
-  ["case"] = "crystalConditional",
-  ["while"] = "crystalRepeat",
-  ["until"] = "crystalRepeat",
-  ["do"] = "crystalDo",
-  ["else"] = "crystalConditional",
-  ["elsif"] = "crystalConditional",
-  ["when"] = "crystalConditional",
-  ["in"] = "crystalConditional",
-  ["rescue"] = "crystalControl",
-  ["ensure"] = "crystalControl",
-  ["end"] = "crystalControl"
+local multiline_regions = {
+  crystalString = true,
+  crystalSymbol = true,
+  crystalRegex = true,
+  crystalCommand = true,
+  crystalComment = true,
+  crystalHeredocLine = true,
+  crystalHeredocLineRaw = true,
+  crystalHeredocDelimiter = true
 }
 
--- Syntax groups for regions that are not indented
-MULTILINE_SYNGROUPS = {
-  "crystalHeredocLine", "crystalHeredocLineRaw", "crystalHeredocEnd"
+local delimiters = {
+  crystalStringDelimiter = true,
+  crystalSymbolDelimiter = true,
+  crystalRegexDelimiter = true,
+  crystalCommandDelimiter = true
 }
 
--- Keywords that can cause a hanging indent
-HANGING_KEYWORDS = {
-  "if", "unless", "begin", "case"
-}
+local start_re = "\\<\\%(if\\|unless\\|begin\\|case\\|while\\|until\\|for\\|do\\|def\\|macro\\|class\\|struct\\|module\\|lib\\|annotation\\|enum\\)\\>"
+local middle_re = "\\<\\%(else\\|elsif\\|when\\|in\\|rescue\\|ensure\\)\\>"
 
--- Operator symbols that can cause a hanging indent
-OPERATORS = {
-  "+", "-", "*", "/", "%", "|", "&", "=", "<", ">", "."
-}
+local hanging_re = "\\<\\%(if\\|unless\\|begin\\|case\\)\\>"
 
-OPERATORS_RE = "["..escape(concat(OPERATORS), "-").."]"
+local macro_start_re = "{%\\s*\\zs\\<\\%(if\\|unless\\|begin\\|for\\)\\>\\|\\<do\\s*%}"
+local macro_middle_re = "{%\\s*\\zs\\<\\%(else\\|elsif\\)\\>"
+local macro_end_re = "{%\\s*\\zs\\<end\\>"
 
-local function join_words(words)
-  return "\\<\\%("..concat(words, "\\|").."\\)\\>"
+local slash_macro_start_re = "\\\\{%\\s*\\zs\\<\\%(if\\|unless\\|begin\\|for\\)\\>\\|.*\\zs\\<do\\s*%}"
+local slash_macro_middle_re = "\\\\{%\\s*\\zs\\<\\%(else\\|elsif\\)\\>"
+local slash_macro_end_re = "\\\\{%\\s*\\zs\\<end\\>"
+
+local function syngroup_at(lnum, idx)
+  return synIDattr(synID(lnum, idx + 1, false), "name")
 end
 
--- Pattern for keywords that start a keyword pair
-START_RE = join_words {
-  "class", "struct", "def", "macro", "module", "lib", "enum",
-  "annotation", "if", "unless", "begin", "case", "while", "until", "do"
-}
-
--- Pattern for keywords that can be in the middle of a keyword pair
-MIDDLE_RE = join_words {
-  "else", "elsif", "when", "in", "rescue", "ensure"
-}
-
--- Pattern for keywords that end a keyword pair
-END_RE = "\\<end\\>"
-
--- Pattern for keywords that start an indent
-INDENT_RE = "\\%("..START_RE.."\\|"..MIDDLE_RE.."\\)"
-
--- Pattern for keywords that end an indent
-DEDENT_RE = "\\%("..MIDDLE_RE.."\\|"..END_RE.."\\)"
-
--- Pattern for matching the last character before the end of the line,
--- excluding optional inline comments
-EOL_RE = "\\ze\\s*\\%(#{\\@!.*\\)\\=\\_$"
-
--- Pattern for macro tags that start a pair
-MACRO_START_RE = "{%\\s*\\zs"..join_words {
-  "if", "unless", "begin", "for"
-}
-
--- Pattern for macro tags that can be in the middle of a pair
-MACRO_MIDDLE_RE = "{%\\s*\\zs"..join_words {
-  "else", "elsif"
-}
-
--- Pattern for macro tags that end a pair
-MACRO_END_RE = "{%\\s*\\zsend\\>"
-
--- Pattern for macro tags that start an indent
-MACRO_INDENT_RE = "{%\\s*\\zs"..join_words {
-  "if", "unless", "begin", "for", "else", "elsif"
-}
-
--- Pattern for macro tags that end an indent
-MACRO_DEDENT_RE = "{%\\s*\\zs"..join_words {
-  "else", "elsif", "end"
-}
-
--- Pattern for
-
--- Helper functions {{{1
--- ================
-
--- TEMP
-function echo(str)
-  nvim_command("echo '"..str.."'")
+local function skip_char(lnum, idx)
+  return multiline_regions[syngroup_at(lnum, idx)]
 end
 
--- TEMP
-function echom(str)
-  nvim_command("echom '"..str.."'")
+local function skip_word(lnum, idx)
+  return syngroup_at(lnum, idx) ~= "crystalKeyword"
 end
 
-function get_pos()
-  return unpack(nvim_win_get_cursor(0))
+local function is_operator(char, lnum, idx)
+  if char == "\\" or char == "." then
+    return true
+  elseif find(char, "[+%-*^%%&=<]") then
+    local syngroup = syngroup_at(lnum, idx)
+    return syngroup ~= "crystalSymbol"
+  elseif char == "/" then
+    local syngroup = syngroup_at(lnum, idx)
+    return syngroup ~= "crystalSymbol" and syngroup ~= "crystalRegexDelimiter"
+  elseif char == "~" then
+    local syngroup = syngroup_at(lnum, idx)
+    return syngroup ~= "crystalSymbol" and syngroup ~= "crystalGlobalVariable"
+  elseif char == "|" then
+    local syngroup = syngroup_at(lnum, idx)
+    return syngroup ~= "crystalSymbol" and syngroup ~= "crystalBlockParameterDelimiter" and not delimiters[syngroup]
+  elseif char == ">" then
+    local syngroup = syngroup_at(lnum, idx)
+    return syngroup ~= "crystalSymbol" and syngroup ~= "crystalProcOperator" and not delimiters[syngroup]
+  end
 end
 
-function set_pos(lnum, idx)
-  cursor(lnum, idx + 1)
-end
-
-function syngroup_at(lnum, idx)
-  return synIDattr(synID(lnum, idx + 1, true), "name")
-end
-
-function syngroup_at_cursor()
-  return syngroup_at(get_pos())
-end
-
-local function search(re, move_cursor, stop_line, skip_func)
-  if move_cursor == nil then
-    move_cursor = true
+local function skip_word_with_postfix(lnum, idx)
+  if syngroup_at(lnum, idx) ~= "crystalKeyword" then
+    return true
   end
 
-  stop_line = stop_line or nvim_buf_line_count(0)
+  local word = expand("<cword>")
 
-  local found_lnum, found_col
+  if word == "if" or word == "unless" then
+    local _, col = unpack(searchpos("\\S", "b", lnum))
 
-  if skip_func then
-    local lnum, idx = get_pos()
-
-    repeat
-      found_lnum, found_col = unpack(searchpos(re, "z", stop_line))
-
-      if found_lnum == 0 then
-        return set_pos(lnum, idx)
-      end
-    until not skip_func(found_lnum, found_col - 1)
-
-    if not move_cursor then
-      set_pos(lnum, idx)
-    end
-  else
-    local flags
-
-    if move_cursor then
-      flags = "z"
-    else
-      flags = "nz"
+    if col == 0 then
+      return false
     end
 
-    found_lnum, found_col = unpack(searchpos(re, flags, stop_line))
+    local line = nvim_get_current_line()
+    local char = sub(line, col, col)
 
-    if found_lnum == 0 then
-      return
+    if not is_operator(char, lnum, col) then
+      return true
     end
   end
 
-  return found_lnum, found_col - 1
+  return false
 end
 
-local function search_back(re, move_cursor, stop_line, skip_func)
-  if move_cursor == nil then
-    move_cursor = true
-  end
-
-  stop_line = stop_line or 1
-
-  local found_lnum, found_col
-
-  if skip_func then
-    local lnum, idx = get_pos()
-
-    repeat
-      found_lnum, found_col = unpack(searchpos(re, "b", stop_line))
-
-      if found_lnum == 0 then
-        return set_pos(lnum, idx)
-      end
-    until not skip_func(found_lnum, found_col - 1)
-
-    if not move_cursor then
-      set_pos(lnum, idx)
-    end
-  else
-    local flags
-
-    if move_cursor then
-      flags = "b"
-    else
-      flags = "bn"
-    end
-
-    found_lnum, found_col = unpack(searchpos(re, flags, stop_line))
-
-    if found_lnum == 0 then
-      return
-    end
-  end
-
-  return found_lnum, found_col - 1
-end
-
-local function searchpair(start_re, end_re, move_cursor, stop_line, skip_start, skip_end)
-  if move_cursor == nil then
-    move_cursor = true
-  end
-
-  stop_line = stop_line or nvim_buf_line_count(0)
-
-  local end_lnum, end_idx = search(end_re, false, stop_line, skip_end)
-
-  if not end_lnum then
-    return
-  end
-
-  local lnum, idx = get_pos()
-
-  local i = 0
-
-  while true do
-    local start_lnum, start_idx = search(start_re, true, end_lnum, skip_start)
-
-    if start_lnum then
-      if start_lnum == end_lnum and start_idx > end_idx then
-        break
-      else
-        i = i + 1
-      end
-    else
-      break
-    end
-  end
-
-  if i == 0 then
-    if move_cursor then
-      set_pos(end_lnum, end_idx)
-    else
-      set_pos(lnum, idx)
-    end
-
-    return end_lnum, end_idx
-  end
-
-  set_pos(end_lnum, end_idx)
-
-  local j = 0
-
-  while j < i do
-    end_lnum, end_idx = search(end_re, false, stop_line, skip_end)
-
-    if not end_lnum then
-      return set_pos(lnum, idx)
-    end
-
-    while true do
-      local start_lnum, start_idx = search(start_re, true, end_lnum, skip_start)
-
-      if start_lnum then
-        if start_lnum == end_lnum and start_idx > end_idx then
-          break
-        else
-          i = i + 1
-        end
-      else
-        break
-      end
-    end
-
-    set_pos(end_lnum, end_idx)
-
-    j = j + 1
-  end
-
-  if not move_cursor then
-    set_pos(lnum, idx)
-  end
-
-  return end_lnum, end_idx
-end
-
-local function searchpair_back(start_re, end_re, move_cursor, stop_line, skip_start, skip_end)
-  if move_cursor == nil then
-    move_cursor = true
-  end
-
-  stop_line = stop_line or 1
-
-  local start_lnum, start_idx = search_back(start_re, false, stop_line, skip_start)
-
-  if not start_lnum then
-    return
-  end
-
-  local lnum, idx = get_pos()
-
-  local i = 0
-
-  while true do
-    local end_lnum, end_idx = search_back(end_re, true, start_lnum, skip_end)
-
-    if end_lnum then
-      if end_lnum == start_lnum and end_idx < start_idx then
-        break
-      else
-        i = i + 1
-      end
-    else
-      break
-    end
-  end
-
-  if i == 0 then
-    if move_cursor then
-      set_pos(start_lnum, start_idx)
-    else
-      set_pos(lnum, idx)
-    end
-
-    return start_lnum, start_idx
-  end
-
-  set_pos(start_lnum, start_idx)
-
-  local j = 0
-
-  while j < i do
-    start_lnum, start_idx = search_back(start_re, false, stop_line, skip_start)
-
-    if not start_lnum then
-      return set_pos(lnum, idx)
-    end
-
-    while true do
-      local end_lnum, end_idx = search_back(end_re, true, start_lnum, skip_end)
-
-      if end_lnum then
-        if end_lnum == start_lnum and end_idx < start_idx then
-          break
-        else
-          i = i + 1
-        end
-      else
-        break
-      end
-    end
-
-    set_pos(start_lnum, start_idx)
-
-    j = j + 1
-  end
-
-  if not move_cursor then
-    set_pos(lnum, idx)
-  end
-
-  return start_lnum, start_idx
-end
-
-function word_at(lnum, idx)
-  return match(getline(lnum), "^%a+", idx + 1)
-end
-
-function skip_word(lnum, idx)
-  return syngroup_at(lnum, idx) ~= KEYWORD_SYNGROUPS[word_at(lnum, idx)]
-end
-
-function skip_end(lnum, idx)
-  return syngroup_at(lnum, idx) ~= "crystalControl"
-end
-
-function skip_macro_word(lnum, idx)
-  return syngroup_at(lnum, idx) ~= "crystalMacroKeyword"
-end
-
-function skip_macro_delimiter(lnum, idx)
+local function skip_macro_delimiter(lnum, idx)
   return syngroup_at(lnum, idx) ~= "crystalMacroDelimiter"
 end
 
-function skip_heredoc_start(lnum, idx)
-  return syngroup_at(lnum, idx) ~= "crystalHeredocStart"
-end
-
-function skip_parenthesis(lnum, idx)
-  return syngroup_at(lnum, idx) ~= "crystalParenthesis"
-end
-
-function skip_bracket(lnum, idx)
-  return syngroup_at(lnum, idx) ~= "crystalBracket"
-end
-
-function skip_brace(lnum, idx)
-  return syngroup_at(lnum, idx) ~= "crystalBrace"
-end
-
-function skip_delimiter(lnum, idx)
-  local syngroup = syngroup_at(lnum, idx)
-  return syngroup ~= "crystalParenthesis" and syngroup ~= "crystalBracket" and syngroup ~= "crystalBrace"
-end
-
-function starts_with(text, re)
-  return fn_match(text, "\\_^"..re) > -1
-end
-
--- function get_msl(lnum)
---   local plnum = prevnonblank(lnum - 1)
-
---   -- This line is not the MSL if...
-
---   -- There is no previous line
---   if plnum == 0 then
---     return lnum
---   end
-
---   local line = getline(lnum)
---   local first_char = match(line, "%S")
-
---   -- The current line has a leading dot
---   if first_char == "." then
---     return get_msl(plnum)
---   end
-
---   local pline = getline(plnum)
---   local last_col = fn_match(pline, EOL_RE)
---   local last_char = sub(pline, last_col, last_col)
-
---   -- The previous line ended with a comma
---   if last_char == "," then
---     return get_msl(plnum)
---   end
-
---   -- The previous line ended with a line continuation character
---   if last_char == "\\" then
---     return get_msl(plnum)
---   end
-
---   -- If none of the above conditions apply, then this line is the MSL.
---   return lnum
--- end
-
--- -- Find the first line before the given line that doesn't end in with
--- -- the given character.
--- function get_msl(lnum, char)
---   local plnum = prevnonblank(lnum - 1)
-
---   -- If there is no previous line, this is the MSL
---   if plnum == 0 then
---     return lnum
---   end
-
---   local pline = getline(plnum)
---   local last_col = fn_match(pline, EOL_RE)
---   local last_char = sub(pline, last_col, last_col) typeof(z)
--- end
-
--- Current line indent callbacks {{{1
--- =============================
-
-local function multiline_region()
-  if tbl_contains(MULTILINE_SYNGROUPS, syngroup_at(CLNUM, 0)) then
-    echo "multiline_region"
-    return indent(".")
+local function prev_non_multiline(lnum)
+  while multiline_regions[syngroup_at(lnum, 0)] do
+    lnum = prevnonblank(lnum - 1)
   end
+
+  return lnum
 end
 
-local function closing_bracket()
-  local opener
+local function get_last_char()
+  local lnum, col = unpack(searchpos("\\S", "bW"))
 
-  if FIRST_CHAR == ")" then
-    opener = "("
-  elseif FIRST_CHAR == "]" then
-    opener = "["
-  elseif FIRST_CHAR == "}" then
-    opener = "{"
-  else
+  if lnum == 0 then
     return
   end
 
-  echo "closing_bracket"
+  while syngroup_at(lnum, col - 1) == "crystalComment" do
+    lnum, col = unpack(searchpos("\\S\\_s*#", "bW"))
 
-  PLINE = getline(PLNUM)
-  LAST_COL = fn_match(PLINE, EOL_RE)
-  LAST_CHAR = sub(PLINE, LAST_COL, LAST_COL)
-
-  if LAST_CHAR == opener then
-    return indent(PLNUM)
-  else
-    return indent(PLNUM) - shiftwidth()
-  end
-end
-
-local function deindenting_keyword()
-  if starts_with(CONTENT, DEDENT_RE) then
-    echo "deindenting_keyword"
-
-    local lnum, idx = searchpair_back(INDENT_RE, END_RE, true, 1, skip_word, skip_end)
-
-    if tbl_contains(HANGING_KEYWORDS, word_at(lnum, idx)) then
-      return idx
-    else
-      return indent(lnum)
+    if lnum == 0 then
+      return
     end
   end
+
+  local line = nvim_get_current_line()
+  local char = sub(line, col, col)
+
+  return char, col - 1, lnum, line
 end
 
-local function deindenting_macro_tag()
-  local prefix
+local function get_pos()
+  return unpack(nvim_win_get_cursor(0))
+end
 
-  if FIRST_CHAR == "\\" then
-    prefix = "\\"
+local function set_pos(lnum, idx)
+  cursor(lnum, idx + 1)
+end
+
+local function search_back(re, skip_func, move_cursor, stop_line, include_current)
+  stop_line = stop_line or 1
+
+  local found_lnum, found_col
+
+  if include_current then
+    found_lnum, found_col = unpack(searchpos(re, "cbn", stop_line))
   else
-    prefix = ""
+    found_lnum, found_col = unpack(searchpos(re, "bn", stop_line))
   end
 
-  if starts_with(CONTENT, prefix..MACRO_DEDENT_RE) then
-    echo "deindenting_macro_tag"
+  if found_lnum == 0 then
+    return
+  end
 
-    local lnum, idx = searchpair_back(prefix..MACRO_INDENT_RE, prefix..MACRO_END_RE, true, 1, skip_macro_word, skip_macro_word)
+  local lnum, idx = get_pos()
 
-    if tbl_contains(HANGING_KEYWORDS, word_at(lnum, idx)) then
-      search_back(prefix.."{%", skip_macro_delimiter, lnum)
-      return idx
-    else
-      return indent(lnum)
+  set_pos(found_lnum, found_col - 1)
+
+  while skip_func(found_lnum, found_col - 1) do
+    found_lnum, found_col = unpack(searchpos(re, "b", stop_line))
+
+    if found_col == 0 then
+      return set_pos(lnum, idx)
     end
   end
-end
 
-local function leading_dot()
-  if FIRST_CHAR == "." then
-    echo "leading_dot"
-
-    PLINE = getline(PLNUM)
-
-    if match(PLINE, "%S") == "." then
-      return indent(PLNUM)
-    else
-      return indent(PLNUM) + shiftwidth()
-    end
+  if move_cursor == false then
+    set_pos(lnum, idx)
   end
+
+  return found_lnum, found_col - 1
 end
 
-local curr_line_callbacks = {
-  multiline_region,
-  leading_dot,
-  closing_bracket,
-  deindenting_macro_tag,
-  deindenting_keyword
-}
+local function searchpair_back(start_re, middle_re, end_re, skip_func, move_cursor, stop_line)
+  stop_line = stop_line or 1
 
--- Previous line indent callbacks {{{1
--- ==============================
+  -- First, we need to make two patterns: one for top-level pairs,
+  -- another for nested pairs. The first will consist of the start and
+  -- end patterns; the second will consist of the start, end, and middle
+  -- patterns, assuming a middle pattern has been provided.
+  local top_re = "\\("..start_re.."\\)\\|\\("..end_re.."\\)"
+  local nested_re
 
-local function after_comment()
-  if FIRST_CHAR == "#" then
-    echo "after_comment"
-    return indent(PLNUM)
-  end
-end
-
-local function after_link_attribute()
-  if sub(CONTENT, 1, 2) == "@[" then
-    echo "after_link_attribute"
-    return indent(PLNUM)
-  end
-end
-
-local function after_opening_bracket()
-  if LAST_CHAR == "(" or LAST_CHAR == "[" or LAST_CHAR == "{" then
-    echo "after_opening_bracket"
-    return indent(PLNUM) + shiftwidth()
-  elseif LAST_CHAR == "|" and find(CONTENT, "{%s*%b||$") then
-    echo "after_opening_bracket"
-    return indent(PLNUM) + shiftwidth()
-  end
-end
-
-local function after_beginning_closing_bracket()
-  if FIRST_CHAR == ")" or FIRST_CHAR == "]" or FIRST_CHAR == "}" then
-    echo "after_beginning_closing_bracket"
-    return indent(PLNUM)
-  end
-end
-
-local function after_closing_bracket()
-  local opener, skip_func
-
-  if LAST_CHAR == ")" then
-    opener = "("
-    skip_func = skip_parenthesis
-  elseif LAST_CHAR == "]" then
-    opener = "\\["
-    skip_func = skip_bracket
-  elseif LAST_CHAR == "}" then
-    opener = "{"
-    skip_func = skip_brace
+  if middle_re then
+    nested_re = "\\("..start_re.."\\)\\|\\("..end_re.."\\)\\|\\("..middle_re.."\\)"
   else
-    return
+    nested_re = top_re
   end
 
-  echo "after_closing_bracket"
+  local lnum, idx = get_pos()
+  local pattern = nested_re
+  local nest = 1
 
-  set_pos(PLNUM, LAST_COL - 1)
-
-  local open_lnum = searchpair_back(opener, LAST_CHAR, true, 1, skip_func, skip_func)
-
-  if open_lnum == PLNUM then
-    return
-  end
-
-  return indent(open_lnum)
-end
-
-local function after_end_keyword()
-  if sub(CONTENT, 1, 3) ~= "end" then
-    return
-  end
-
-  echo "after_end_keyword"
-
-  set_pos(PLNUM, 0)
-
-  local lnum = searchpair_back(START_RE, END_RE, true, 1, skip_word, skip_end)
-
-  return indent(lnum)
-end
-
-local function after_end_macro_tag()
-  local prefix
-
-  if FIRST_CHAR == "\\" then
-    prefix = "\\"
-  else
-    prefix = ""
-  end
-
-  if starts_with(CONTENT, prefix..MACRO_END_RE) then
-    echo "after_end_macro_tag"
-
-    set_pos(PLNUM, 0)
-
-    local lnum = searchpair_back(prefix..MACRO_START_RE, prefix..MACRO_END_RE, true, 1, skip_macro_word, skip_macro_word)
-
-    return indent(lnum)
-  end
-end
-
-local function after_indent_keyword()
-  set_pos(PLNUM, LAST_COL - 1)
-
-  -- local lnum, idx
-  -- local x, y
-
-  -- repeat
-  --   x, y = searchpair_back(INDENT_RE, END_RE, skip_word, PLNUM)
-
-  --   if x then
-  --     lnum, idx = x, y
-  --   end
-  -- until not x
-
-  local lnum, idx = searchpair_back(INDENT_RE, END_RE, true, PLNUM, skip_word, skip_end)
-
-  if not lnum then
-    return
-  end
-
-  echo "after_indent_keyword"
-
-  if tbl_contains(HANGING_KEYWORDS, word_at(lnum, idx)) then
-    return idx + shiftwidth()
-  else
-    return indent(PLNUM) + shiftwidth()
-  end
-end
-
-local function after_indent_macro_tag()
-  set_pos(PLNUM, LAST_COL - 1)
-
-  local lnum, idx = searchpair_back(MACRO_START_RE, MACRO_END_RE, true, PLNUM, skip_macro_word, skip_macro_word)
-
-  if not lnum then
-    return
-  end
-
-  echo "after_indent_macro_tag"
-
-  if tbl_contains(HANGING_KEYWORDS, word_at(lnum, idx)) then
-    lnum, idx = search_back("{%", skip_macro_delimiter, lnum)
-
-    if sub(PLINE, idx + 1, idx + 1) == "\\" then
-      idx = idx - 1
-    end
-
-    return idx + shiftwidth()
-  else
-    return indent(PLNUM) + shiftwidth()
-  end
-end
-
-local function after_backslash()
-  if LAST_CHAR ~= "\\" then
-    return
-  end
-
-  echo "after_backslash"
-
-  local pplnum = prevnonblank(PLNUM - 1)
-
-  if pplnum == 0 then
-    return indent(PLNUM) + shiftwidth()
-  end
-
-  local ppline = getline(pplnum)
-  local last_col = fn_match(ppline, EOL_RE)
-  local last_char = sub(ppline, last_col, last_col)
-
-  if last_char == "\\" then
-    return indent(PLNUM)
-  else
-    return indent(PLNUM) + shiftwidth()
-  end
-end
-
-local function after_comma()
-  if LAST_CHAR ~= "," then
-    return
-  end
-
-  echo "after_comma"
-
-  set_pos(PLNUM, LAST_COL - 1)
+  local found_lnum, found_col, found_sub
 
   while true do
-    local _, idx = search_back("[(%[{]", skip_delimiter, PLNUM)
+    repeat
+      found_lnum, found_col, found_sub = unpack(searchpos(pattern, "bp", stop_line))
 
-    if not idx then
-      break
-    end
+      if found_lnum == 0 then
+        return set_pos(lnum, idx)
+      end
+    until not skip_func(found_lnum, found_col - 1, found_sub)
 
-    local char = sub(PLNUM, idx + 1, idx + 1)
-
-    local closer, skip_func
-
-    if char == "(" then
-      closer = ")"
-      skip_func = skip_parenthesis
-    elseif char == "[" then
-      char = "\\["
-      closer = "]"
-      skip_func = skip_bracket
-    elseif char == "{" then
-      closer = "}"
-      skip_func = skip_brace
-    end
-
-    if not searchpair(char, closer, false, PLNUM, skip_func) then
-      return idx + 1
-    end
-  end
-
-  -- Special case for multiline record definitions
-  if starts_with(CONTENT, "record\\>") then
-    return indent(PLNUM) + shiftwidth()
-  end
-
-  return indent(PLNUM)
-end
-
-local function after_operator()
-  if tbl_contains(OPERATORS, LAST_CHAR) and syngroup_at(PLNUM, LAST_COL - 1) == "crystalOperator" then
-    echo "after_operator"
-
-    local pplnum = prevnonblank(PLNUM - 1)
-
-    if pplnum == 0 then
-      return indent(PLNUM) + shiftwidth()
-    end
-
-    local ppline = getline(pplnum)
-    local last_col = fn_match(ppline, EOL_RE)
-    local last_char = sub(ppline, last_col, last_col)
-
-    if tbl_contains(OPERATORS, last_char) and syngroup_at(pplnum, last_col - 1) == "crystalOperator" then
-      return indent(PLNUM)
+    if found_sub == 3 then  -- End pattern was found
+      nest = nest + 1
+      pattern = top_re
     else
-      return indent(PLNUM) + shiftwidth()
-    end
-  end
-end
+      nest = nest - 1
 
-local function after_line_continuation()
-  -- The previous line is a line continuation if...
+      if nest == 1 then
+        pattern = nested_re
+      elseif nest == 0 then
+        if move_cursor == false then
+          set_pos(lnum, idx)
+        end
 
-  -- It has a leading dot
-  if FIRST_CHAR == "." then
-    echo "after_line_continuation"
-    return indent(PLNUM) - shiftwidth()
-  end
-
-  local pplnum = prevnonblank(PLNUM - 1)
-
-  if pplnum == 0 then
-    return
-  end
-
-  local ppline = getline(pplnum)
-  local last_col = fn_match(ppline, EOL_RE)
-  local last_char = sub(ppline, last_col, last_col)
-
-  -- The line before it ended with a comma, backslash, or operator
-  if last_char == "," or last_char == "\\" then
-    echo "after_line_continuation"
-    return indent(PLNUM) - shiftwidth()
-  elseif tbl_contains(OPERATORS, last_char) and syngroup_at(pplnum, last_col - 1) == "crystalOperator" then
-    echo "after_line_continuation"
-    return indent(PLNUM) - shiftwidth()
-  end
-end
-
-local function after_heredoc_end()
-  if sub(syngroup_at(PLNUM, 0), 1, 14) ~= "crystalHeredoc" then
-    return
-  end
-
-  echo "after_heredoc_end"
-
-  -- Align with the starting line
-
-  local lnum = search_back("<<-", skip_heredoc_start)
-
-  if lnum then
-    return indent(lnum)
-  end
-end
-
-local prev_line_callbacks = {
-  after_comment,
-  after_link_attribute,
-  after_backslash,
-  after_comma,
-  after_operator,
-  after_opening_bracket,
-  after_beginning_closing_bracket,
-  after_heredoc_end,
-  after_end_macro_tag,
-  after_indent_macro_tag,
-  after_end_keyword,
-  after_indent_keyword,
-  after_closing_bracket,
-  after_line_continuation
-}
-
--- get_crystal_indent {{{1
--- ==================
-
-return function(lnum)
-  -- Setup {{{2
-  -- -----
-
-  CLNUM = lnum
-  PLNUM = prevnonblank(CLNUM - 1)
-
-  -- If there is no previous line, return zero.
-  if PLNUM == 0 then
-    echo "First line"
-    return 0
-  end
-
-  local ind
-
-  set_pos(lnum, 0)
-
-  -- Work on the current line {{{2
-  -- ------------------------
-
-  CLINE = getline(CLNUM)
-  FIRST_COL, _, FIRST_CHAR = find(CLINE, "(%S)")
-
-  -- The current line is not guaranteed to be non-blank
-  if FIRST_COL then
-    CONTENT = sub(CLINE, FIRST_COL)
-
-    for _, callback in ipairs(curr_line_callbacks) do
-      ind = callback()
-
-      if ind then
-        return ind
+        return found_lnum, found_col - 1
       end
     end
   end
+end
 
-  -- Work on the previous line {{{2
-  -- -------------------------
+local function get_msl(lnum)
+  lnum = prev_non_multiline(lnum)
 
-  PLINE = getline(PLNUM)
+  local line = getline(lnum)
+  local first_col, _, first_char = find(line, "(%S)")
 
-  FIRST_COL, _, FIRST_CHAR = find(PLINE, "(%S)")
-  LAST_COL = fn_match(PLINE, EOL_RE)
+  if first_char == "." then
+    return get_msl(prevnonblank(lnum - 1))
+  elseif first_char == ")" then
+    set_pos(lnum, 0)
+    local found = searchpair_back("(", nil, ")", skip_char)
+    return get_msl(found)
+  elseif first_char == "]" then
+    set_pos(lnum, 0)
+    local found = searchpair_back("\\[", nil, "]", skip_char)
+    return get_msl(found)
+  elseif first_char == "}" then
+    set_pos(lnum, 0)
+    local found = searchpair_back("{", nil, "}", skip_char)
+    return get_msl(found)
+  elseif first_char == "e" and find(line, "^nd", first_col + 1) and syngroup_at(lnum, first_col - 1) == "crystalKeyword" then
+    if first_col == 1 then
+      return lnum
+    end
 
-  CONTENT = sub(PLINE, FIRST_COL, LAST_COL)
-  LAST_CHAR = sub(CONTENT, -1)
+    set_pos(lnum, 0)
 
-  for _, callback in ipairs(prev_line_callbacks) do
-    ind = callback()
+    local found = searchpair_back(start_re, nil, "\\<end\\>", skip_word_with_postfix)
+    local word = expand("<cword>")
 
-    if ind then
-      return ind
+    if word == "do" or word == "if" or word == "unless" or word == "begin" or word == "case" then
+      return get_msl(found)
+    else
+      return found
+    end
+  else
+    set_pos(lnum, 0)
+
+    local last_char, last_idx, prev_lnum = get_last_char()
+
+    if last_char == "," or is_operator(last_char, prev_lnum, last_idx) then
+      return get_msl(prev_lnum)
     end
   end
 
-  -- }}}2
-
-  echo "default"
-  return indent(PLNUM)
+  return lnum
 end
 
--- }}}
+return function()
+  local lnum = get_pos()
+  local prev_lnum = prevnonblank(lnum - 1)
+
+  if prev_lnum == 0 then
+    return 0
+  end
+
+  -- Current line {{{1
+  -- If the current line is inside of an ignorable multiline region, do
+  -- nothing.
+  if multiline_regions[syngroup_at(lnum, 0)] then
+    return -1
+  end
+
+  -- If the first character of the current line is a leading dot, add an
+  -- indent unless the previous logical line also started with a leading
+  -- dot.
+  local line = nvim_get_current_line()
+  local first_col, _, first_char = find(line, "(%S)")
+
+  if first_char == "." then
+    local prev_lnum = prev_non_multiline(prev_lnum)
+    local prev_line = getline(prev_lnum)
+    local first_col, _, first_char = find(prev_line, "(%S)")
+
+    if first_char == "." then
+      return first_col - 1
+    else
+      return first_col - 1 + shiftwidth()
+    end
+  end
+
+  -- If the first character is a closing bracket, align with the line
+  -- that contains the opening bracket.
+  if first_char == ")" then
+    local found = searchpair_back("(", nil, ")", skip_char)
+    return indent(found)
+  elseif first_char == "]" then
+    local found = searchpair_back("\\[", nil, "]", skip_char)
+    return indent(found)
+  elseif first_char == "}" then
+    local found = searchpair_back("{", nil, "}", skip_char)
+    return indent(found)
+  end
+
+  -- If the first character is a macro delimiter and the first word
+  -- after the delimiter is a deindenting keyword, align with the
+  -- nearest indenting keyword that is also after a macro delimiter.
+  if first_char == "{" and sub(line, first_col + 1, first_col + 1) == "%" then
+    local word = match(line, "^%s*(%l%w*)", first_col + 2)
+
+    if word == "end" or word == "else" or word == "elsif" then
+      set_pos(lnum, 0)
+      searchpair_back(macro_start_re, macro_middle_re, macro_end_re, skip_word)
+      local _, idx = searchpair_back("{%", nil, "%}", skip_macro_delimiter)
+
+      return idx
+    end
+  elseif first_char == "\\" and find(line, "^{%%", first_col + 1) then
+    local word = match(line, "^%s*(%l%w*)", first_col + 3)
+
+    if word == "end" or word == "else" or word == "elsif" then
+      set_pos(lnum, 0)
+      searchpair_back(slash_macro_start_re, slash_macro_middle_re, slash_macro_end_re, skip_word)
+      local _, idx = searchpair_back("\\\\{%", nil, "%}", skip_macro_delimiter)
+
+      return idx
+    end
+  end
+
+  -- If the first word is a deindenting keyword, align with the nearest
+  -- indenting keyword.
+  local first_word = match(line, "^%l%w*", first_col)
+
+  set_pos(lnum, 0)
+
+  if first_word == "end" then
+    local lnum, idx = searchpair_back(start_re, middle_re, "\\<end\\>", skip_word_with_postfix)
+    local word = expand("<cword>")
+
+    if word == "if" or word == "unless" or word == "begin" or word == "case" then
+      return idx
+    else
+      return indent(lnum)
+    end
+  elseif first_word == "else" then
+    local _, idx = searchpair_back(hanging_re, middle_re, "\\<end\\>", skip_word_with_postfix)
+    return idx
+  elseif first_word == "elsif" then
+    local _, idx = searchpair_back("\\<\\%(if\\|unless\\)\\>", "\\<elsif\\>", "\\<end\\>", skip_word_with_postfix)
+    return idx
+  elseif first_word == "when" then
+    local _, idx = searchpair_back("\\<case\\>", "\\<when\\>", "\\<end\\>", skip_word)
+    return idx
+  elseif first_word == "in" then
+    local _, idx = searchpair_back("\\<case\\>", "\\<in\\>", "\\<end\\>", skip_word)
+    return idx
+  elseif first_word == "rescue" then
+    local lnum, idx = searchpair_back("\\<\\%(begin\\|do\\|def\\)\\>", "\\<rescue\\>", "\\<end\\>", skip_word)
+
+    if expand("<cword>") == "begin" then
+      return idx
+    else
+      return indent(lnum)
+    end
+  elseif first_word == "ensure" then
+    local lnum, idx = searchpair_back("\\<\\%(begin\\|do\\|def\\)\\>", "\\<ensure\\>", "\\<end\\>", skip_word)
+
+    if expand("<cword>") == "begin" then
+      return idx
+    else
+      return indent(lnum)
+    end
+  end
+
+  -- Previous line {{{1
+  -- Begin by finding the previous non-comment character in the file.
+  local last_char, last_idx, prev_lnum, prev_line = get_last_char()
+
+  -- If the last character was a comma, check the following:
+  --
+  -- 1. If the comma is preceded by an unpaired opening bracket
+  -- somehwere in the same line, align with the bracket.
+  -- 2. If the next previous line also ended with a comma or it ended
+  -- with an opening bracket, align with the beginning of the previous
+  -- line.
+  -- 3. If the next previous line is not its own MSL, align with the
+  -- MSL.
+  -- 4. Else, add an indent.
+  if last_char == "," then
+    local _, idx = searchpair_back("[([{]", nil, "[)\\]}]", skip_char, true, prev_lnum)
+
+    if idx then
+      return idx + 1
+    end
+
+    set_pos(prev_lnum, 0)
+    last_char = get_last_char()
+
+    if find(last_char, "[,([{]") then
+      return indent(prev_lnum)
+    end
+
+    local msl = get_msl(prev_lnum)
+
+    if msl ~= prev_lnum then
+      return indent(msl)
+    end
+
+    return indent(prev_lnum) + shiftwidth()
+  end
+
+  -- If the last character was an opening bracket, add an indent.
+  if find(last_char, "[([{]") then
+    return indent(prev_lnum) + shiftwidth()
+  end
+
+  -- If the last character was a block parameter delimiter, add an
+  -- indent.
+  if last_char == "|" and syngroup_at(prev_lnum, last_idx) == "crystalBlockParameterDelimiter" then
+    return indent(prev_lnum) + shiftwidth()
+  end
+
+  -- If the last character was a hanging operator, add an indent unless
+  -- the line before it also ended with a hanging operator.
+  if is_operator(last_char, prev_lnum, last_idx) then
+    set_pos(prev_non_multiline(prev_lnum), 0)
+
+    local last_char, last_idx, prev_prev_lnum = get_last_char()
+
+    if is_operator(last_char, prev_prev_lnum, last_idx) then
+      return indent(prev_lnum)
+    else
+      return indent(prev_lnum) + shiftwidth()
+    end
+  end
+
+  -- MSL {{{1
+  local msl = get_msl(prev_lnum)
+
+  -- Find the last keyword in the previous logical line.
+  set_pos(prev_lnum, last_idx)
+
+  local lnum, idx = search_back("\\<\\l", skip_word, true, msl)
+
+  while lnum do
+    local word = expand("<cword>")
+
+    if word == "end" then
+      local found = unpack(searchpos("{%\\s*\\%#", "b"))
+
+      if found ~= 0 then
+        found = unpack(searchpos("\\\\\\%#", "b"))
+
+        if found ~= 0 then
+          lnum = searchpair_back(slash_macro_start_re, nil, slash_macro_end_re, skip_word)
+        else
+          lnum = searchpair_back(macro_start_re, nil, macro_end_re, skip_word)
+        end
+      else
+        lnum = msl
+      end
+
+      return indent(lnum)
+    elseif word == "if" or word == "unless" then
+      local _, prev_col = unpack(searchpos("\\S", "b", lnum))
+
+      if prev_col == 0 then
+        return idx + shiftwidth()
+      end
+
+      if syngroup_at(lnum, prev_col - 1) == "crystalMacroDelimiter" then
+        _, prev_col = unpack(searchpos("\\\\\\={\\%#", "b"))
+        return prev_col - 1 + shiftwidth()
+      end
+
+      local char = sub(nvim_get_current_line(), prev_col, prev_col)
+
+      if is_operator(char, lnum, prev_col - 1) then
+        return idx + shiftwidth()
+      else
+        return indent(msl)
+      end
+    elseif word == "begin" or word == "else" or word == "elsif" then
+      local _, prev_col = unpack(searchpos("\\\\\\={%\\s*\\%#", "b"))
+
+      if prev_col ~= 0 then
+        idx = prev_col - 1
+      end
+
+      return idx + shiftwidth()
+    elseif word == "case" then
+      return idx + shiftwidth()
+    elseif word == "then" then
+      local found = search("\\<")
+
+      if found == lnum then
+        return indent(msl)
+      else
+        return indent(msl) + shiftwidth()
+      end
+    elseif word == "do" then
+      return indent(lnum) + shiftwidth()
+    elseif word == "when" or word == "in" or word == "forall" or word == "while" or word == "until" or word == "rescue" or word == "ensure" or word == "def" or word == "macro" or word == "class" or word == "struct" or word == "lib" or word == "annotation" or word == "enum" or word == "module" then
+      return indent(msl) + shiftwidth()
+    else
+      return indent(msl)
+    end
+  end
+  -- }}}1
+
+  -- Default
+  return indent(msl)
+end
 
 -- vim:fdm=marker
