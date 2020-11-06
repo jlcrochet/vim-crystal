@@ -10,7 +10,20 @@ endif
 let b:current_syntax = "crystal"
 
 " Syntax {{{1
-let s:overloadable_operators = '[+\-*/%~^&|!\[\]=?<>]'
+" This pattern matches all operators that can be used as methods; these
+" are also the only operators that can be referenced as symbols.
+let s:overloadable_operators = [
+      \ '[+\-|^~%]',
+      \ '\*\*\=',
+      \ '\/\/\=',
+      \ '=\%(==\=\|\~\)',
+      \ '![=~]\=',
+      \ '<\%(=>\=\|<\)\=',
+      \ '>[>=]\=',
+      \ '&\%([+-]\|\*\*\=\)\=',
+      \ '\[][=?]\='
+      \ ]
+let s:overloadable_operators = '\%('.join(s:overloadable_operators, '\|').'\)'
 
 syn cluster crystalTop contains=TOP
 
@@ -41,7 +54,7 @@ syn match crystalOperator /\%#=1||\==\=/ display contained
 syn match crystalOperator /\%#=1\^=\=/ display contained
 
 syn match crystalOperator /\%#=1\./ display nextgroup=crystalVariableOrMethod,crystalOperatorMethod skipwhite
-execute 'syn match crystalOperatorMethod /\%#=1'.s:overloadable_operators.'\+/ display contained nextgroup=crystalOperator,crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalNamedTupleKey,crystalCapturedBlock skipwhite'
+execute 'syn match crystalOperatorMethod /\%#=1'.s:overloadable_operators.'/ display contained nextgroup=crystalOperator,crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalNamedTupleKey,crystalCapturedBlock skipwhite'
 
 syn match crystalOperator /\%#=1\.\.\.\=/ display contained
 
@@ -184,7 +197,7 @@ syn region crystalHeredocLineRaw start=/\%#=1\_^/ end=/\%#=1\_$/ display oneline
 
 " Symbols {{{3
 syn match crystalSymbol /\%#=1:\h\w*[=?!]\=/ display contains=crystalSymbolDelimiter nextgroup=crystalOperator skipwhite
-execute 'syn match crystalSymbol /\%#=1:'.s:overloadable_operators.'\+/ display contains=crystalSymbolDelimiter nextgroup=crystalOperator skipwhite'
+execute 'syn match crystalSymbol /\%#=1:'.s:overloadable_operators.'/ display contains=crystalSymbolDelimiter nextgroup=crystalOperator skipwhite'
 
 syn match crystalSymbolDelimiter /\%#=1:/ display contained
 
@@ -234,7 +247,7 @@ syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%r|/  e
 syn keyword crystalKeyword def macro fun nextgroup=crystalMethodSelf,crystalMethodDefinition skipwhite
 syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ display contained
 syn match crystalMethodSelf /\%#=1self\./he=e-1 display contained nextgroup=crystalMethodDefinition
-execute 'syn match crystalMethodDefinition /\%#=1'.s:overloadable_operators.'\+/ display contained'
+execute 'syn match crystalMethodDefinition /\%#=1'.s:overloadable_operators.'/ display contained'
 
 syn keyword crystalKeyword class struct lib annotation enum module nextgroup=crystalTypeDefinition skipwhite
 syn match crystalTypeDefinition /\%#=1\u\w*\%(::\u\w*\)*/ display contained
