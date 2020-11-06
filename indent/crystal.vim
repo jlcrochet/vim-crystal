@@ -308,8 +308,10 @@ function! GetCrystalIndent(lnum) abort
   " 2. If the next previous line also ended with a comma or it ended
   " with an opening bracket, align with the beginning of the previous
   " line.
-  " 3. If the next previous line is not its own MSL, align with the MSL.
-  " 4. Else, add an indent.
+  " 3. If the next previous lined ended with a hanging operator, add an
+  " indent.
+  " 4. If the previous line is not its own MSL, align with the MSL.
+  " 5. Else, add an indent.
   if last_char == ","
     let [_, col] = searchpairpos('[([{]', "", '[)\]}]', "b", s:skip_char, prev_lnum)
 
@@ -318,10 +320,14 @@ function! GetCrystalIndent(lnum) abort
     endif
 
     call cursor(prev_lnum, 1)
-    let [last_char, _, _, _] = s:get_last_char()
+    let [last_char, last_col, prev_prev_lnum, _] = s:get_last_char()
 
     if last_char =~ '[,([{]'
       return indent(prev_lnum)
+    endif
+
+    if synID(prev_prev_lnum, last_col, 0) == g:crystal#operator
+      return indent(prev_lnum) + shiftwidth()
     endif
 
     let msl = s:get_msl(prev_lnum)

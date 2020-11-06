@@ -393,9 +393,10 @@ return function()
   -- 2. If the next previous line also ended with a comma or it ended
   -- with an opening bracket, align with the beginning of the previous
   -- line.
-  -- 3. If the next previous line is not its own MSL, align with the
-  -- MSL.
-  -- 4. Else, add an indent.
+  -- 3. If the next previous line ended with a hanging operator, add an
+  -- indent.
+  -- 4. If the previous line is not its own MSL, align with the MSL.
+  -- 5. Else, add an indent.
   if last_char == "," then
     local _, idx = searchpair_back("[([{]", nil, "[)\\]}]", skip_char, true, prev_lnum)
 
@@ -404,10 +405,14 @@ return function()
     end
 
     set_pos(prev_lnum, 0)
-    last_char = get_last_char()
+    local last_char, last_idx, prev_prev_lnum = get_last_char()
 
     if find(last_char, "[,([{]") then
       return indent(prev_lnum)
+    end
+
+    if syngroup_at(prev_prev_lnum, last_idx) == "crystalOperator" then
+      return indent(prev_lnum) + shiftwidth()
     end
 
     local msl = get_msl(prev_lnum)
