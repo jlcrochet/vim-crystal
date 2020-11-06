@@ -55,7 +55,7 @@ local function skip_word(lnum, idx)
   return syngroup_at(lnum, idx) ~= "crystalKeyword"
 end
 
-local function skip_word_with_postfix(lnum, idx)
+local function skip_word_postfix(lnum, idx)
   if syngroup_at(lnum, idx) ~= "crystalKeyword" then
     return true
   end
@@ -231,7 +231,7 @@ local function get_msl(lnum)
 
     set_pos(lnum, 0)
 
-    local found = searchpair_back(start_re, nil, "\\<end\\>", skip_word_with_postfix)
+    local found = searchpair_back(start_re, nil, "\\<end\\>", skip_word_postfix)
     local word = expand("<cword>")
 
     if word == "do" or word == "if" or word == "unless" or word == "begin" or word == "case" then
@@ -330,7 +330,7 @@ return function()
   set_pos(lnum, 0)
 
   if first_word == "end" then
-    local lnum, idx = searchpair_back(start_re, middle_re, "\\<end\\>", skip_word_with_postfix)
+    local lnum, idx = searchpair_back(start_re, middle_re, "\\<end\\>", skip_word_postfix)
     local word = expand("<cword>")
 
     if word == "if" or word == "unless" or word == "begin" or word == "case" then
@@ -339,10 +339,10 @@ return function()
       return indent(lnum)
     end
   elseif first_word == "else" then
-    local _, idx = searchpair_back(hanging_re, middle_re, "\\<end\\>", skip_word_with_postfix)
+    local _, idx = searchpair_back(hanging_re, middle_re, "\\<end\\>", skip_word_postfix)
     return idx
   elseif first_word == "elsif" then
-    local _, idx = searchpair_back("\\<\\%(if\\|unless\\)\\>", "\\<elsif\\>", "\\<end\\>", skip_word_with_postfix)
+    local _, idx = searchpair_back("\\<\\%(if\\|unless\\)\\>", "\\<elsif\\>", "\\<end\\>", skip_word_postfix)
     return idx
   elseif first_word == "when" then
     local _, idx = searchpair_back("\\<case\\>", "\\<when\\>", "\\<end\\>", skip_word)
