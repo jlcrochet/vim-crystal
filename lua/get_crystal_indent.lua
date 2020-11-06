@@ -30,13 +30,6 @@ local multiline_regions = {
   crystalHeredocDelimiter = true
 }
 
-local delimiters = {
-  crystalStringDelimiter = true,
-  crystalSymbolDelimiter = true,
-  crystalRegexDelimiter = true,
-  crystalCommandDelimiter = true
-}
-
 local start_re = "\\<\\%(if\\|unless\\|begin\\|case\\|while\\|until\\|for\\|do\\|def\\|macro\\|class\\|struct\\|module\\|lib\\|annotation\\|enum\\)\\>"
 local middle_re = "\\<\\%(else\\|elsif\\|when\\|in\\|rescue\\|ensure\\)\\>"
 
@@ -62,27 +55,6 @@ local function skip_word(lnum, idx)
   return syngroup_at(lnum, idx) ~= "crystalKeyword"
 end
 
-local function is_operator(char, lnum, idx)
-  if char == "\\" or char == "." then
-    return true
-  elseif find(char, "[+%-*^%%&=<]") then
-    local syngroup = syngroup_at(lnum, idx)
-    return syngroup ~= "crystalSymbol"
-  elseif char == "/" then
-    local syngroup = syngroup_at(lnum, idx)
-    return syngroup ~= "crystalSymbol" and syngroup ~= "crystalRegexDelimiter"
-  elseif char == "~" then
-    local syngroup = syngroup_at(lnum, idx)
-    return syngroup ~= "crystalSymbol" and syngroup ~= "crystalGlobalVariable"
-  elseif char == "|" then
-    local syngroup = syngroup_at(lnum, idx)
-    return syngroup ~= "crystalSymbol" and syngroup ~= "crystalBlockParameterDelimiter" and not delimiters[syngroup]
-  elseif char == ">" then
-    local syngroup = syngroup_at(lnum, idx)
-    return syngroup ~= "crystalSymbol" and syngroup ~= "crystalProcOperator" and not delimiters[syngroup]
-  end
-end
-
 local function skip_word_with_postfix(lnum, idx)
   if syngroup_at(lnum, idx) ~= "crystalKeyword" then
     return true
@@ -97,10 +69,9 @@ local function skip_word_with_postfix(lnum, idx)
       return false
     end
 
-    local line = nvim_get_current_line()
-    local char = sub(line, col, col)
+    local syngroup = syngroup_at(lnum, col - 1)
 
-    if not is_operator(char, lnum, col) then
+    if syngroup ~= "crystalOperator" and syngroup ~= "crystalMacroDelimiter" then
       return true
     end
   end
@@ -273,7 +244,7 @@ local function get_msl(lnum)
 
     local last_char, last_idx, prev_lnum = get_last_char()
 
-    if last_char == "," or is_operator(last_char, prev_lnum, last_idx) then
+    if last_char == "," or last_char == "\\" or syngroup_at(prev_lnum, last_idx) == "crystalOperator" then
       return get_msl(prev_lnum)
     end
   end
@@ -401,6 +372,20 @@ return function()
   -- Begin by finding the previous non-comment character in the file.
   local last_char, last_idx, prev_lnum, prev_line = get_last_char()
 
+  -- If the last character was a backslash, add an indent unless the
+  -- next previous line also ended with a backslash.
+  if last_char == "\\" then
+    set_pos(prev_non_multiline(prev_lnum), 0)
+
+    local last_char = get_last_char()
+
+    if last_char == "\\" then
+      return indent(prev_lnum)
+    else
+      return indent(prev_lnum) + shiftwidth()
+    end
+  end
+
   -- If the last character was a comma, check the following:
   --
   -- 1. If the comma is preceded by an unpaired opening bracket
@@ -439,20 +424,22 @@ return function()
     return indent(prev_lnum) + shiftwidth()
   end
 
+  local syngroup = syngroup_at(prev_lnum, last_idx)
+
   -- If the last character was a block parameter delimiter, add an
   -- indent.
-  if last_char == "|" and syngroup_at(prev_lnum, last_idx) == "crystalBlockParameterDelimiter" then
+  if syngroup == "crystalBlockParameterDelimiter" then
     return indent(prev_lnum) + shiftwidth()
   end
 
   -- If the last character was a hanging operator, add an indent unless
   -- the line before it also ended with a hanging operator.
-  if is_operator(last_char, prev_lnum, last_idx) then
+  if syngroup == "crystalOperator" then
     set_pos(prev_non_multiline(prev_lnum), 0)
 
-    local last_char, last_idx, prev_prev_lnum = get_last_char()
+    local _, last_idx, prev_prev_lnum = get_last_char()
 
-    if is_operator(last_char, prev_prev_lnum, last_idx) then
+    if syngroup_at(prev_prev_lnum, last_idx) == "crystalOperator" then
       return indent(prev_lnum)
     else
       return indent(prev_lnum) + shiftwidth()
@@ -493,14 +480,14 @@ return function()
         return idx + shiftwidth()
       end
 
-      if syngroup_at(lnum, prev_col - 1) == "crystalMacroDelimiter" then
+      local syngroup = syngroup_at(lnum, prev_col - 1)
+
+      if syngroup == "crystalMacroDelimiter" then
         _, prev_col = unpack(searchpos("\\\\\\={\\%#", "b"))
         return prev_col - 1 + shiftwidth()
       end
 
-      local char = sub(nvim_get_current_line(), prev_col, prev_col)
-
-      if is_operator(char, lnum, prev_col - 1) then
+      if syngroup == "crystalOperator" then
         return idx + shiftwidth()
       else
         return indent(msl)

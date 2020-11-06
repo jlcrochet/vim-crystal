@@ -62,9 +62,9 @@ function! s:skip_word_temp() abort
       return 0
     endif
 
-    let char = getline(lnum)[col - 1]
+    let synid = synID(lnum, col, 0)
 
-    if !s:is_operator(char, lnum, col)
+    if synid != g:crystal#operator && synid != g:crystal#macro_delimiter
       return 1
     endif
   endif
@@ -72,7 +72,7 @@ function! s:skip_word_temp() abort
   return 0
 endfunction
 
-const s:skip_word_with_postfix = function("s:skip_word_temp")
+const s:skip_word_postfix = function("s:skip_word_temp")
 
 " Find the nearest line up to and including the given line that does not
 " begin with a multiline region.
@@ -84,27 +84,6 @@ function! s:prev_non_multiline(lnum) abort
   endwhile
 
   return lnum
-endfunction
-
-function! s:is_operator(char, lnum, col) abort
-  if a:char == '\' || a:char == "."
-    return 1
-  elseif a:char =~ '[+\-*^%&=<]'
-    let synid = synID(a:lnum, a:col, 0)
-    return synid != g:crystal#symbol
-  elseif a:char == "/"
-    let synid = synID(a:lnum, a:col, 0)
-    return synid != g:crystal#symbol && synid != g:crystal#regex_delimiter
-  elseif a:char == "~"
-    let synid = synID(a:lnum, a:col, 0)
-    return synid != g:crystal#symbol && synid != g:crystal#global_variable
-  elseif a:char == "|"
-    let synid = synID(a:lnum, a:col, 0)
-    return synid != g:crystal#symbol && synid != g:crystal#block_parameter_delimiter && !get(g:crystal#delimiters, synid)
-  elseif a:char == ">"
-    let synid = synID(a:lnum, a:col, 0)
-    return synid != g:crystal#symbol && synid != g:crystal#proc_operator && !get(g:crystal#delimiters, synid)
-  endif
 endfunction
 
 function! s:get_last_char() abort
@@ -170,7 +149,7 @@ function! s:get_msl(lnum) abort
 
     call cursor(lnum, 1)
 
-    let found = searchpair(s:start_re, "", '\<end\>', "bW", s:skip_word_with_postfix)
+    let found = searchpair(s:start_re, "", '\<end\>', "bW", s:skip_word_postfix)
     let word = expand("<cword>")
 
     if word ==# "do" || word =~# s:hanging_re
@@ -183,7 +162,7 @@ function! s:get_msl(lnum) abort
 
     let [last_char, last_col, prev_lnum, _] = s:get_last_char()
 
-    if last_char == "," || s:is_operator(last_char, prev_lnum, last_col)
+    if last_char == "," || last_char == '\' || synID(prev_lnum, last_col, 0) == g:crystal#operator
       return s:get_msl(prev_lnum)
     endif
   endif
@@ -266,7 +245,7 @@ function! GetCrystalIndent(lnum) abort
   call cursor(a:lnum, 1)
 
   if first_word ==# "end"
-    let [lnum, col] = searchpairpos(s:start_re, s:middle_re, '\<end\>', "bW", s:skip_word_with_postfix)
+    let [lnum, col] = searchpairpos(s:start_re, s:middle_re, '\<end\>', "bW", s:skip_word_postfix)
     let word = expand("<cword>")
 
     if word =~# s:hanging_re
@@ -275,10 +254,10 @@ function! GetCrystalIndent(lnum) abort
       return indent(lnum)
     endif
   elseif first_word ==# "else"
-    let [_, col] = searchpairpos(s:hanging_re, s:middle_re, '\<end\>', "bW", s:skip_word_with_postfix)
+    let [_, col] = searchpairpos(s:hanging_re, s:middle_re, '\<end\>', "bW", s:skip_word_postfix)
     return col - 1
   elseif first_word ==# "elsif"
-    let [_, col] = searchpairpos('\v<%(if|unless)', '\<elsif\>', '\<end\>', "bW", s:skip_word_with_postfix)
+    let [_, col] = searchpairpos('\v<%(if|unless)', '\<elsif\>', '\<end\>', "bW", s:skip_word_postfix)
     return col - 1
   elseif first_word ==# "when"
     let [_, col] = searchpairpos('\<case\>', '\<when\>', '\<end\>', "bW", s:skip_word)
@@ -307,6 +286,20 @@ function! GetCrystalIndent(lnum) abort
   " Previous line {{{1
   " Begin by finding the previous non-comment character in the file.
   let [last_char, last_col, prev_lnum, prev_line] = s:get_last_char()
+
+  " If the last character was a backslash, add an indent unless the line
+  " before it also ended with a backslash.
+  if last_char == '\'
+    call cursor(s:prev_non_multiline(prev_lnum), 1)
+
+    let [last_char, _, _, _] = s:get_last_char()
+
+    if last_char == '\'
+      return indent(prev_lnum)
+    else
+      return indent(prev_lnum) + shiftwidth()
+    endif
+  endif
 
   " If the last character was a comma, check the following:
   "
@@ -345,20 +338,22 @@ function! GetCrystalIndent(lnum) abort
     return indent(prev_lnum) + shiftwidth()
   endif
 
+  let synid = synID(prev_lnum, last_col, 0)
+
   " If the last character was a block parameter delimiter, add an
   " indent.
-  if last_char == "|" && synID(prev_lnum, last_col, 0) == g:crystal#block_parameter_delimiter
+  if synid == g:crystal#block_parameter_delimiter
     return indent(prev_lnum) + shiftwidth()
   endif
 
   " If the last character was a hanging operator, add an indent unless
   " the line before it also ended with a hanging operator.
-  if s:is_operator(last_char, prev_lnum, last_col)
+  if synid == g:crystal#operator
     call cursor(s:prev_non_multiline(prev_lnum), 1)
 
-    let [last_char, last_col, prev_prev_lnum, _] = s:get_last_char()
+    let [_, last_col, prev_prev_lnum, _] = s:get_last_char()
 
-    if s:is_operator(last_char, prev_prev_lnum, last_col)
+    if synID(prev_prev_lnum, last_col, 0) == g:crystal#operator
       return indent(prev_lnum)
     else
       return indent(prev_lnum) + shiftwidth()
@@ -400,14 +395,12 @@ function! GetCrystalIndent(lnum) abort
         return col - 1 + shiftwidth()
       endif
 
-      if synID(lnum, prev_col, 0) == g:crystal#macro_delimiter
+      let synid = synID(lnum, prev_col, 0)
+
+      if synid == g:crystal#macro_delimiter
         let [_, prev_col] = searchpos('\\\={\%#', "b")
         return prev_col - 1 + shiftwidth()
-      endif
-
-      let char = getline(lnum)[prev_col - 1]
-
-      if s:is_operator(char, lnum, prev_col)
+      elseif synid == g:crystal#operator
         return col - 1 + shiftwidth()
       else
         return indent(msl)

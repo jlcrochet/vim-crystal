@@ -20,19 +20,6 @@ for id in [g:crystal#string, g:crystal#symbol, g:crystal#regex, g:crystal#comman
 endfor
 
 const g:crystal#keyword = hlID("crystalKeyword")
-const g:crystal#global_variable = hlID("crystalGlobalVariable")
-
-const g:crystal#string_delimiter = hlID("crystalStringDelimiter")
-const g:crystal#symbol_delimiter = hlID("crystalSymbolDelimiter")
-const g:crystal#regex_delimiter = hlID("crystalRegexDelimiter")
-const g:crystal#command_delimiter = hlID("crystalCommandDelimiter")
-
-const g:crystal#delimiters = {}
-
-for id in [g:crystal#string_delimiter, g:crystal#symbol_delimiter, g:crystal#regex_delimiter, g:crystal#command_delimiter]
-  let g:crystal#delimiters[id] = 1
-endfor
-
+const g:crystal#operator = hlID("crystalOperator")
 const g:crystal#block_parameter_delimiter = hlID("crystalBlockParameterDelimiter")
 const g:crystal#macro_delimiter = hlID("crystalMacroDelimiter")
-const g:crystal#proc_operator = hlID("crystalProcOperator")
