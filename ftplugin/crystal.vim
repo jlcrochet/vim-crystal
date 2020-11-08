@@ -3,7 +3,7 @@
 " Author: Jeffrey Crochet <jlcrochet@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-if exists('b:did_ftplugin')
+if get(b:, "did_ftplugin")
   finish
 endif
 

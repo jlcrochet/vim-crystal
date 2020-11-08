@@ -3,7 +3,7 @@
 " Author: Jeffrey Crochet <jlcrochet@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-if has_key(b:, "did_indent")
+if get(b:, "did_indent")
   finish
 endif
 
