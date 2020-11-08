@@ -159,7 +159,7 @@ syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%Q\=|/ en
 
 syn region crystalStringInterpolation matchgroup=crystalStringInterpolationDelimiter start=/\%#=1#{/ end=/\%#=1}/ display contained contains=@crystalTop,crystalNestedBraces
 
-syn match crystalStringEscape /\%#=1\\\%(\d\{1,3}\|x\x\x\|u\%(\x\{4}\|{\x\{1,6}\%(\s\x\{1,6}\)*}\)\|\_.\)/ display contained
+syn match crystalStringEscape /\%#=1\\\%(\o\{1,3}\|x\x\x\|u\%(\x\{4}\|{\x\{1,6}\%(\s\x\{1,6}\)*}\)\|\_.\)/ display contained
 
 " Raw Strings {{{3
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%q(/  end=/\%#=1)/ skip=/\%#=1(.\{-})/  display nextgroup=crystalOperator skipwhite
