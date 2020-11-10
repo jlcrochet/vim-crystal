@@ -175,7 +175,7 @@ syn match crystalStringParenthesisEscape /\%#=1\\[()[:space:]]/ display containe
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w\[/ end=/\%#=1]/ display contains=crystalStringArraySquareBrackets,crystalStringSquareBracketEscape nextgroup=crystalOperator skipwhite
 syn region crystalStringArraySquareBrackets matchgroup=crystalString start=/\%#=1\[/ end=/\%#=1]/ display transparent contained contains=crystalStringArraySquareBrackets,crystalStringSquareBracketEscape
-syn match crystalStringSquareBracketEscape /\%#=1\\[\[\][:space:]]/ display contained
+syn match crystalStringSquareBracketEscape /\%#=1\\[[][:space:]]/ display contained
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w{/ end=/\%#=1}/ display contains=crystalStringArrayCurlyBraces,crystalStringCurlyBraceEscape nextgroup=crystalOperator skipwhite
 syn region crystalStringArrayCurlyBraces matchgroup=crystalString start=/\%#=1{/ end=/\%#=1}/ display transparent contained contains=crystalStringArrayCurlyBraces,crystalStringCurlyBraceEscape
