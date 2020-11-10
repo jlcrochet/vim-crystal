@@ -171,22 +171,22 @@ syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%q|/  end
 " String Arrays {{{3
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w(/ end=/\%#=1)/ display contains=crystalStringArrayParentheses,crystalStringParenthesisEscape nextgroup=crystalOperator skipwhite
 syn region crystalStringArrayParentheses matchgroup=crystalString start=/\%#=1(/ end=/\%#=1)/ display transparent contained contains=crystalStringArrayParentheses,crystalStringParenthesisEscape
-syn match crystalStringParenthesisEscape /\%#=1\\[()[:space:]]/ display contained
+syn match crystalStringParenthesisEscape /\%#=1\\[\\()[:space:]]/ display contained
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w\[/ end=/\%#=1]/ display contains=crystalStringArraySquareBrackets,crystalStringSquareBracketEscape nextgroup=crystalOperator skipwhite
 syn region crystalStringArraySquareBrackets matchgroup=crystalString start=/\%#=1\[/ end=/\%#=1]/ display transparent contained contains=crystalStringArraySquareBrackets,crystalStringSquareBracketEscape
-syn match crystalStringSquareBracketEscape /\%#=1\\[[][:space:]]/ display contained
+syn match crystalStringSquareBracketEscape /\%#=1\\[\\[][:space:]]/ display contained
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w{/ end=/\%#=1}/ display contains=crystalStringArrayCurlyBraces,crystalStringCurlyBraceEscape nextgroup=crystalOperator skipwhite
 syn region crystalStringArrayCurlyBraces matchgroup=crystalString start=/\%#=1{/ end=/\%#=1}/ display transparent contained contains=crystalStringArrayCurlyBraces,crystalStringCurlyBraceEscape
-syn match crystalStringCurlyBraceEscape /\%#=1\\[{}[:space:]]/ display contained
+syn match crystalStringCurlyBraceEscape /\%#=1\\[\\{}[:space:]]/ display contained
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w</ end=/\%#=1>/ display contains=crystalStringArrayAngleBrackets,crystalStringAngleBracketEscape nextgroup=crystalOperator skipwhite
 syn region crystalStringArrayAngleBrackets matchgroup=crystalString start=/\%#=1</ end=/\%#=1>/ display transparent contained contains=crystalStringArrayAngleBrackets,crystalStringAngleBracketEscape
-syn match crystalStringAngleBracketEscape /\%#=1\\[<>[:space:]]/ display contained
+syn match crystalStringAngleBracketEscape /\%#=1\\[\\<>[:space:]]/ display contained
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w|/ end=/\%#=1|/ display contains=crystalStringPipeEscape nextgroup=crystalOperator skipwhite
-syn match crystalStringPipeEscape /\%#=1\\[|[:space:]]/ display contained
+syn match crystalStringPipeEscape /\%#=1\\[\\|[:space:]]/ display contained
 
 " Here Documents {{{3
 syn region crystalHeredoc matchgroup=crystalHeredocDelimiter start=/\%#=1<<-\z(\w\+\)/ end=/\%#=1\_^\s*\z1\>/ display transparent contains=@crystalTop,crystalHeredocLine nextgroup=crystalOperator skipwhite
