@@ -34,10 +34,6 @@ syn keyword crystalTodo TODO NOTE XXX FIXME HACK TBD contained
 syn region crystalShebang start=/\%#=1\%^#!/ end=/\%#=1\_$/ display oneline
 
 " Operators {{{2
-" Unary operators
-syn match crystalUnaryOperator /\%#=1[+\-!~]/ display
-
-" Binary operators
 syn match crystalOperator /\%#=1=\%(==\=\|[>~]\)\=/ display contained
 syn match crystalOperator /\%#=1![=~]/ display contained
 syn match crystalOperator /\%#=1<\%(<=\=\|=>\=\)\=/ display contained
@@ -56,7 +52,7 @@ syn match crystalOperator /\%#=1\^=\=/ display contained
 syn match crystalOperator /\%#=1\./ display nextgroup=crystalVariableOrMethod,crystalOperatorMethod skipwhite
 execute 'syn match crystalOperatorMethod /\%#=1'.s:overloadable_operators.'/ display contained nextgroup=crystalOperator,crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalNamedTupleKey,crystalCapturedBlock skipwhite'
 
-syn match crystalOperator /\%#=1\.\.\.\=/ display contained
+syn match crystalOperator /\%#=1\.\.\.\=/ display contained nextgroup=crystalOperator skipwhite
 
 syn match crystalOperator /\%#=1->/ display nextgroup=crystalVariableOrMethod,crystalSelf skipwhite
 
@@ -285,7 +281,6 @@ hi def link crystalCommentDelimiter crystalComment
 hi def link crystalTodo Todo
 hi def link crystalShebang Special
 hi def link crystalOperator Operator
-hi def link crystalUnaryOperator crystalOperator
 hi def link crystalNamespaceOperator crystalOperator
 hi def link crystalDelimiter Delimiter
 hi def link crystalInstanceVariable Identifier
