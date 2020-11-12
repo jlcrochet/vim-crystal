@@ -41,7 +41,9 @@ syn match crystalOperator /\%#=1>>\==\=/ display contained
 syn match crystalOperator /\%#=1+=\=/ display contained
 syn match crystalOperator /\%#=1-=\=/ display contained
 syn match crystalOperator /\%#=1\*\*\==\=/ display contained
-syn match crystalOperator /\%#=1\/\/\==\=/ display contained
+syn match crystalOperator /\%#=1\// display contained
+" NOTE: Additional division operators are defined after /-style regexes
+" in order to take precedence
 syn match crystalOperator /\%#=1%=\=/ display contained
 syn match crystalOperator /\%#=1?/ display contained
 syn match crystalOperator /\%#=1:/ display contained
@@ -204,7 +206,11 @@ syn region crystalSymbol matchgroup=crystalSymbolDelimiter start=/\%#=1%i</  end
 syn region crystalSymbol matchgroup=crystalSymbolDelimiter start=/\%#=1%i|/  end=/\%#=1|/ display contains=crystalStringPipeEscape nextgroup=crystalOperator skipwhite
 
 " Regular Expressions {{{3
-syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1\/[/=]\@!/ end=/\%#=1\/[imx]*/ display oneline contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator skipwhite
+syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1\// end=/\%#=1\/[imx]*/ display oneline contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator skipwhite
+
+" NOTE: These operators are defined here in order to take precedence
+" over /-style regexes
+syn match crystalOperator /\%#=1\/[/=]/ display contained
 
 syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r(/  end=/\%#=1)/ skip=/\%#=1(.\{-})/  display contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator skipwhite
 syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r\[/ end=/\%#=1]/ skip=/\%#=1\[.\{-}]/ display contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator skipwhite
