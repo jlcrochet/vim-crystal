@@ -30,6 +30,24 @@ local multiline_regions = {
   crystalHeredocDelimiter = true
 }
 
+local indent_keywords = {
+  ["when"] = true,
+  ["in"] = true,
+  ["forall"] = true,
+  ["while"] = true,
+  ["until"] = true,
+  ["rescue"] = true,
+  ["ensure"] = true,
+  ["def"] = true,
+  ["macro"] = true,
+  ["class"] = true,
+  ["struct"] = true,
+  ["lib"] = true,
+  ["annotation"] = true,
+  ["enum"] = true,
+  ["module"] = true
+}
+
 local start_re = "\\<\\%(if\\|unless\\|begin\\|case\\|while\\|until\\|for\\|do\\|def\\|macro\\|class\\|struct\\|module\\|lib\\|annotation\\|enum\\)\\>"
 local middle_re = "\\<\\%(else\\|elsif\\|when\\|in\\|rescue\\|ensure\\)\\>"
 
@@ -208,9 +226,9 @@ local function get_msl(lnum)
   lnum = prev_non_multiline(lnum)
 
   local line = getline(lnum)
-  local first_col, _, first_char = find(line, "(%S)")
+  local first_col, _, first_char, second_char = find(line, "(%S)(%S?)")
 
-  if first_char == "." then
+  if first_char == "." and second_char ~= "." then
     return get_msl(prevnonblank(lnum - 1))
   elseif first_char == ")" then
     set_pos(lnum, 0)
@@ -224,7 +242,7 @@ local function get_msl(lnum)
     set_pos(lnum, 0)
     local found = searchpair_back("{", nil, "}", skip_char)
     return get_msl(found)
-  elseif first_char == "e" and find(line, "^nd", first_col + 1) and syngroup_at(lnum, first_col - 1) == "crystalKeyword" then
+  elseif first_char == "e" and second_char == "n" and sub(line, first_col + 2, first_col + 2) == "d" and syngroup_at(lnum, first_col - 1) == "crystalKeyword" then
     if first_col == 1 then
       return lnum
     end
@@ -271,14 +289,14 @@ return function()
   -- indent unless the previous logical line also started with a leading
   -- dot.
   local line = nvim_get_current_line()
-  local first_col, _, first_char = find(line, "(%S)")
+  local first_col, _, first_char, second_char = find(line, "(%S)(%S?)")
 
-  if first_char == "." then
+  if first_char == "." and second_char ~= "." then
     local prev_lnum = prev_non_multiline(prev_lnum)
     local prev_line = getline(prev_lnum)
-    local first_col, _, first_char = find(prev_line, "(%S)")
+    local first_col, _, first_char, second_char = find(prev_line, "(%S)(%S?)")
 
-    if first_char == "." then
+    if first_char == "." and second_char ~= "." then
       return first_col - 1
     else
       return first_col - 1 + shiftwidth()
@@ -301,7 +319,7 @@ return function()
   -- If the first character is a macro delimiter and the first word
   -- after the delimiter is a deindenting keyword, align with the
   -- nearest indenting keyword that is also after a macro delimiter.
-  if first_char == "{" and sub(line, first_col + 1, first_col + 1) == "%" then
+  if first_char == "{" and second_char == "%" then
     local word = match(line, "^%s*(%l%w*)", first_col + 2)
 
     if word == "end" or word == "else" or word == "elsif" then
@@ -311,7 +329,7 @@ return function()
 
       return idx
     end
-  elseif first_char == "\\" and find(line, "^{%%", first_col + 1) then
+  elseif first_char == "\\" and second_char == "{" and sub(line, first_col + 2, first_col + 2) == "%" then
     local word = match(line, "^%s*(%l%w*)", first_col + 3)
 
     if word == "end" or word == "else" or word == "elsif" then
@@ -429,17 +447,15 @@ return function()
     return indent(prev_lnum) + shiftwidth()
   end
 
-  local syngroup = syngroup_at(prev_lnum, last_idx)
-
   -- If the last character was a block parameter delimiter, add an
   -- indent.
-  if syngroup == "crystalBlockParameterDelimiter" then
+  if last_char == "|" and syngroup_at(prev_lnum, last_idx) == "crystalBlockParameterDelimiter" then
     return indent(prev_lnum) + shiftwidth()
   end
 
   -- If the last character was a hanging operator, add an indent unless
   -- the line before it also ended with a hanging operator.
-  if syngroup == "crystalOperator" then
+  if syngroup_at(prev_lnum, last_idx) == "crystalOperator" then
     set_pos(prev_non_multiline(prev_lnum), 0)
 
     local _, last_idx, prev_prev_lnum = get_last_char()
@@ -459,74 +475,73 @@ return function()
 
   local lnum, idx = search_back("\\<\\l", skip_word, true, msl)
 
-  while lnum do
-    local word = expand("<cword>")
+  if not lnum then
+    return indent(msl)
+  end
 
-    if word == "end" then
-      local found = unpack(searchpos("{%\\s*\\%#", "b"))
+  local word = expand("<cword>")
+
+  if word == "end" then
+    local found = unpack(searchpos("{%\\s*\\%#", "b"))
+
+    if found ~= 0 then
+      found = unpack(searchpos("\\\\\\%#", "b"))
 
       if found ~= 0 then
-        found = unpack(searchpos("\\\\\\%#", "b"))
-
-        if found ~= 0 then
-          lnum = searchpair_back(slash_macro_start_re, nil, slash_macro_end_re, skip_word)
-        else
-          lnum = searchpair_back(macro_start_re, nil, macro_end_re, skip_word)
-        end
+        lnum = searchpair_back(slash_macro_start_re, nil, slash_macro_end_re, skip_word)
       else
-        lnum = msl
+        lnum = searchpair_back(macro_start_re, nil, macro_end_re, skip_word)
       end
-
-      return indent(lnum)
-    elseif word == "if" or word == "unless" then
-      local _, prev_col = unpack(searchpos("\\S", "b", lnum))
-
-      if prev_col == 0 then
-        return idx + shiftwidth()
-      end
-
-      local syngroup = syngroup_at(lnum, prev_col - 1)
-
-      if syngroup == "crystalMacroDelimiter" then
-        _, prev_col = unpack(searchpos("\\\\\\={\\%#", "b"))
-        return prev_col - 1 + shiftwidth()
-      end
-
-      if syngroup == "crystalOperator" then
-        return idx + shiftwidth()
-      else
-        return indent(msl)
-      end
-    elseif word == "begin" or word == "else" or word == "elsif" then
-      local _, prev_col = unpack(searchpos("\\\\\\={%\\s*\\%#", "b"))
-
-      if prev_col ~= 0 then
-        idx = prev_col - 1
-      end
-
-      return idx + shiftwidth()
-    elseif word == "case" then
-      return idx + shiftwidth()
-    elseif word == "then" then
-      local found = search("\\<")
-
-      if found == lnum then
-        return indent(msl)
-      else
-        return indent(msl) + shiftwidth()
-      end
-    elseif word == "do" then
-      return indent(lnum) + shiftwidth()
-    elseif word == "when" or word == "in" or word == "forall" or word == "while" or word == "until" or word == "rescue" or word == "ensure" or word == "def" or word == "macro" or word == "class" or word == "struct" or word == "lib" or word == "annotation" or word == "enum" or word == "module" then
-      return indent(msl) + shiftwidth()
     else
-      return indent(msl)
+      lnum = msl
     end
+
+    return indent(lnum)
+  elseif word == "if" or word == "unless" then
+    local _, prev_col = unpack(searchpos("\\S", "b", lnum))
+
+    if prev_col == 0 then
+      return idx + shiftwidth()
+    end
+
+    local syngroup = syngroup_at(lnum, prev_col - 1)
+
+    if syngroup == "crystalMacroDelimiter" then
+      _, prev_col = unpack(searchpos("\\\\\\={\\%#", "b"))
+      return prev_col - 1 + shiftwidth()
+    end
+
+    if syngroup == "crystalOperator" then
+      return idx + shiftwidth()
+    end
+
+    return indent(msl)
+  elseif word == "begin" or word == "else" or word == "elsif" then
+    local _, prev_col = unpack(searchpos("\\\\\\={%\\s*\\%#", "b"))
+
+    if prev_col ~= 0 then
+      idx = prev_col - 1
+    end
+
+    return idx + shiftwidth()
+  elseif word == "case" then
+    return idx + shiftwidth()
+  elseif word == "then" then
+    local found = search("\\<")
+
+    if found == lnum then
+      return indent(msl)
+    else
+      return indent(msl) + shiftwidth()
+    end
+  elseif word == "do" then
+    return indent(lnum) + shiftwidth()
+  elseif indent_keywords[word] then
+    return indent(msl) + shiftwidth()
+  else
+    return indent(msl)
   end
   -- }}}1
-
-  -- Default
-  return indent(msl)
 end
 
 -- vim:fdm=marker
