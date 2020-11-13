@@ -292,7 +292,7 @@ hi def link crystalDelimiter Delimiter
 hi def link crystalInstanceVariable Identifier
 hi def link crystalClassVariable Identifier
 hi def link crystalGlobalVariable Identifier
-hi def link crystalConstant Constant
+hi def link crystalConstant Identifier
 hi def link crystalNil Constant
 hi def link crystalBoolean Boolean
 hi def link crystalSelf Constant
