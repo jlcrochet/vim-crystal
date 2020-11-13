@@ -58,7 +58,7 @@ syn match crystalOperator /\%#=1\.\.\.\=/ display contained nextgroup=crystalOpe
 
 syn match crystalOperator /\%#=1->/ display nextgroup=crystalVariableOrMethod,crystalSelf skipwhite
 
-syn match crystalNamespaceOperator /\%#=1::/ display contained nextgroup=crystalConstant
+syn match crystalNamespaceOperator /\%#=1::/ display nextgroup=crystalConstant
 
 " Delimiters {{{2
 syn match crystalDelimiter /\%#=1(/ display nextgroup=crystalNamedTupleKey skipwhite skipnl
@@ -254,9 +254,9 @@ syn match crystalTypeDefinition /\%#=1\u\w*\%(::\u\w*\)*/ display contained
 
 " Miscellaneous {{{2
 syn keyword crystalKeyword
-      \ if unless elsif else end return next break raise case when in
+      \ if unless elsif else end return next break case when in
       \ then while until private protected forall of alias begin
-      \ rescue ensure yield uninitialized out
+      \ rescue ensure yield uninitialized out include extend
 
 syn keyword crystalKeyword do nextgroup=crystalBlockParameters skipwhite
 syn region crystalBlockParameters matchgroup=crystalBlockParameterDelimiter start=/\%#=1|/ end=/\%#=1|/ display transparent oneline contained
