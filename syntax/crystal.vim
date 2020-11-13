@@ -58,7 +58,7 @@ syn match crystalOperator /\%#=1\.\.\.\=/ display contained nextgroup=crystalOpe
 
 syn match crystalOperator /\%#=1->/ display nextgroup=crystalVariableOrMethod,crystalSelf skipwhite
 
-syn match crystalNamespaceOperator /\%#=1::/ display nextgroup=crystalConstant
+syn match crystalNamespaceOperator /\%#=1::/ display
 
 " Delimiters {{{2
 syn match crystalDelimiter /\%#=1(/ display nextgroup=crystalNamedTupleKey skipwhite skipnl
@@ -250,7 +250,7 @@ syn match crystalMethodSelf /\%#=1self\./he=e-1 display contained nextgroup=crys
 execute 'syn match crystalMethodDefinition /\%#=1'.s:overloadable_operators.'/ display contained'
 
 syn keyword crystalKeyword class struct lib annotation enum module nextgroup=crystalTypeDefinition skipwhite
-syn match crystalTypeDefinition /\%#=1\u\w*\%(::\u\w*\)*/ display contained
+syn match crystalTypeDefinition /\%#=1\u\w*\%(::\u\w*\)*/ display contained contains=crystalNamespaceOperator
 
 " Miscellaneous {{{2
 syn keyword crystalKeyword
