@@ -111,7 +111,7 @@ function! s:get_msl(lnum) abort
   let lnum = s:prev_non_multiline(a:lnum)
 
   let line = getline(lnum)
-  let [first_char, first_idx, _] = matchstrpos(line, '\S')
+  let [first_char, first_idx, second_idx] = matchstrpos(line, '\S')
 
   " This line is *not* the MSL if:
   " 1. It starts with a leading dot
@@ -119,7 +119,7 @@ function! s:get_msl(lnum) abort
   " 3. It starts with `end`
   " 4. The previous line ended with a comma or hanging operator
 
-  if first_char == "." && line[first_idx + 1] != "."
+  if first_char == "." && line[second_idx] != "."
     return s:get_msl(prevnonblank(lnum - 1))
   elseif first_char == ")"
     call cursor(lnum, 1)
@@ -139,7 +139,7 @@ function! s:get_msl(lnum) abort
     let found = searchpair("{", "", "}", "bW", s:skip_char)
 
     return s:get_msl(found)
-  elseif first_char ==# "e" && match(line, '^nd\>', first_idx + 1) > -1
+  elseif first_char ==# "e" && match(line, '^nd\>', second_idx) > -1
     " As an optimization, we are not doing the search if the `end` has
     " no whitespace before it, indicating that there is no possibility
     " for a hanging indent.
@@ -189,14 +189,16 @@ function! GetCrystalIndent(lnum) abort
   " indent unless the previous logical line also started with a leading
   " dot.
   let line = getline(a:lnum)
-  let [first_char, first_idx, _] = matchstrpos(line, '\S')
+  let [first_char, first_idx, second_idx] = matchstrpos(line, '\S')
+  let second_char = line[second_idx]
 
-  if first_char == "." && line[first_idx + 1] != "."
+  if first_char == "." && second_char != "."
     let prev_lnum = s:prev_non_multiline(prev_lnum)
     let prev_line = getline(prev_lnum)
-    let [first_char, first_idx, _] = matchstrpos(prev_line, '\S')
+    let [first_char, first_idx, second_idx] = matchstrpos(prev_line, '\S')
+    let second_char = prev_line[second_idx]
 
-    if first_char == "." && prev_line[first_idx + 1] != "."
+    if first_char == "." && second_char != "."
       return first_idx
     else
       return first_idx + shiftwidth()
@@ -216,7 +218,7 @@ function! GetCrystalIndent(lnum) abort
   " If the first character is a macro delimiter and the first word after
   " the delimiter is a deindenting keyword, align with the nearest
   " indenting keyword that is also after a macro delimiter.
-  if first_char == "{" && line[first_idx + 1] == "%"
+  if first_char == "{" && second_char == "%"
     let word = matchstr(line, '^\s*\zs\l\w*', first_idx + 2)
 
     if word =~# '\v<%(end|else|elsif)>'
@@ -226,7 +228,7 @@ function! GetCrystalIndent(lnum) abort
 
       return col - 1
     endif
-  elseif first_char == '\' && line[first_idx+1:first_idx+2] == "{%"
+  elseif first_char == '\' && second_char == "{" && line[first_idx + 2] == "%"
     let word = matchstr(line, '^\s*\zs\l\w*', first_idx + 3)
 
     if word =~# '\v<%(end|else|elsif)>'
