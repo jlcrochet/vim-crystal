@@ -31,14 +31,12 @@ Results on my machine:
 
     vim-crystal/vim-crystal:
 
-    2.56s
-    5.30s  (g:crystal_no_expensive = 1) (?)
+    5.71s
+    5.56s  (g:crystal_no_expensive = 1)
 
     jlcrochet/vim-crystal:
 
     0.29s
-
-Surprisingly, vim-crystal's syntax highlighting is significantly slower when `g:crystal_no_expensive` is enabled. Regardless, this plugin far outperforms vim-crystal for syntax highlighting.
 
 ### Indentation
 
@@ -46,32 +44,26 @@ Benchmark:
 
     command! IndentBenchmark
           \ let start = reltime() |
-          \ for _ in range(15) |
           \ call feedkeys("ggVG=", "x") |
-          \ endfor |
           \ echo reltimestr(reltime(start)) |
           \ unlet start
 
-Again, a pretty rough test, but it gets the job done.
+Again, a pretty rough test, but it gets the job done. We simply re-indent the entire file once.
 
 Results:
 
     vim-crystal/vim-crystal:
 
-      13.34s
-    ~132.30s  (g:crystal_no_expensive = 1) (?!)
+    15.10s
+     9.61s  (g:crystal_no_expensive = 1)
 
     jlcrochet/vim-crystal (VimL):
 
-    12.00s
+    0.80s
 
     jlcrochet/vim-crystal (Lua):
 
-    4.58s
-
-For some reason, indentation with vim-crystal is *much* slower when `g:crystal_no_expensive` is enabled.
-
-This plugin's VimL-based indent function (`GetCrystalIndent`) is faster than that of vim-crystal, but not by much. If using NeoVim 0.5+, the Lua-based indent function is significantly faster.
+    0.31s
 
 ## TODO
 
