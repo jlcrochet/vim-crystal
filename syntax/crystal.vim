@@ -72,6 +72,8 @@ syn match crystalDelimiter /\%#=1}/ display nextgroup=crystalOperator skipwhite
 
 syn match crystalDelimiter /\%#=1,/ display nextgroup=crystalNamedTupleKey,crystalCapturedBlock skipwhite skipnl
 
+syn match crystalDelimiter /\%#=1\\/ display
+
 " Identifiers {{{2
 syn match crystalInstanceVariable /\%#=1@\h\w*/ display nextgroup=crystalOperator skipwhite
 syn match crystalClassVariable /\%#=1@@\h\w*/ display nextgroup=crystalOperator skipwhite
@@ -259,7 +261,7 @@ syn keyword crystalKeyword
       \ rescue ensure yield uninitialized out include extend
 
 syn keyword crystalKeyword do nextgroup=crystalBlockParameters skipwhite
-syn region crystalBlockParameters matchgroup=crystalBlockParameterDelimiter start=/\%#=1|/ end=/\%#=1|/ display transparent oneline contained
+syn region crystalBlockParameters matchgroup=crystalDelimiter start=/\%#=1|/ end=/\%#=1|/ display transparent oneline contained
 
 syn region crystalNestedBraces start=/\%#=1{/ matchgroup=crystalDelimiter end=/\%#=1}/ display contained contains=@crystalTop,crystalNestedBraces
 

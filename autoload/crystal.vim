@@ -21,5 +21,5 @@ endfor
 
 const g:crystal#keyword = hlID("crystalKeyword")
 const g:crystal#operator = hlID("crystalOperator")
-const g:crystal#block_parameter_delimiter = hlID("crystalBlockParameterDelimiter")
+const g:crystal#delimiter = hlID("crystalDelimiter")
 const g:crystal#macro_delimiter = hlID("crystalMacroDelimiter")

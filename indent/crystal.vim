@@ -45,7 +45,7 @@ const s:slash_macro_end_re = '\\{%\s*\zs\<end\>'
 
 " Similar to the `skip_word` expression above, but includes logic for
 " skipping postfix `if` and `unless`.
-function! s:skip_word_temp() abort
+function! s:skip_word_postfix_temp() abort
   let lnum = line(".")
   let col = col(".")
 
@@ -72,7 +72,7 @@ function! s:skip_word_temp() abort
   return 0
 endfunction
 
-const s:skip_word_postfix = function("s:skip_word_temp")
+const s:skip_word_postfix = function("s:skip_word_postfix_temp")
 
 " Find the nearest line up to and including the given line that does not
 " begin with a multiline region.
@@ -93,18 +93,22 @@ function! s:get_last_char() abort
     return
   endif
 
-  while synID(lnum, col, 0) == g:crystal#comment
+  let synid = synID(lnum, col, 0)
+
+  while synid == g:crystal#comment
     let [lnum, col] = searchpos('\S\_s*#', "bW")
 
     if !lnum
       return
     endif
+
+    let synid = synID(lnum, col, 0)
   endwhile
 
   let line = getline(lnum)
   let char = line[col - 1]
 
-  return [char, col, lnum, line]
+  return [char, synid, lnum, col]
 endfunction
 
 function! s:get_msl(lnum) abort
@@ -160,10 +164,22 @@ function! s:get_msl(lnum) abort
   else
     call cursor(lnum, 1)
 
-    let [last_char, last_col, prev_lnum, _] = s:get_last_char()
+    let [last_char, synid, prev_lnum, _] = s:get_last_char()
 
-    if last_char == "," || last_char == '\' || synID(prev_lnum, last_col, 0) == g:crystal#operator
+    if last_char =~ '[,\\]'
       return s:get_msl(prev_lnum)
+    elseif synid == g:crystal#operator
+      if last_char =~ "[?*]"
+        let [found_lnum, found_col] = searchpos(":", "b", prev_lnum)
+
+        if synID(found_lnum, found_col, 0) == g:crystal#operator
+          return lnum
+        else
+          return s:get_msl(prev_lnum)
+        endif
+      else
+        return s:get_msl(prev_lnum)
+      endif
     endif
   endif
 
@@ -223,20 +239,32 @@ function! GetCrystalIndent(lnum) abort
 
     if word =~# '\v<%(end|else|elsif)>'
       call cursor(a:lnum, 1)
-      call searchpair(s:macro_start_re, s:macro_middle_re, s:macro_end_re, "bW", s:skip_word)
-      let [_, col] = searchpairpos("{%", "", "%}", "bW", s:skip_macro_delimiter)
 
-      return col - 1
+      let lnum = searchpair(s:macro_start_re, s:macro_middle_re, s:macro_end_re, "bW", s:skip_word)
+      let word = expand("<cword>")
+
+      if word ==# "do" || word ==# "for"
+        return indent(lnum)
+      else
+        let [_, col] = searchpos('\S', "b")
+        return col - 2
+      endif
     endif
   elseif first_char == '\' && second_char == "{" && line[first_idx + 2] == "%"
     let word = matchstr(line, '^\s*\zs\l\w*', first_idx + 3)
 
     if word =~# '\v<%(end|else|elsif)>'
       call cursor(a:lnum, 1)
-      call searchpair(s:slash_macro_start_re, s:slash_macro_middle_re, s:slash_macro_end_re, "bW", s:skip_word)
-      let [_, col] = searchpairpos('\\{%', "", "%}", "bW", s:skip_macro_delimiter)
 
-      return col - 1
+      let lnum = searchpair(s:slash_macro_start_re, s:slash_macro_middle_re, s:slash_macro_end_re, "bW", s:skip_word)
+      let word = expand("<cword>")
+
+      if word ==# "do" || word ==# "for"
+        return indent(lnum)
+      else
+        let [_, col] = searchpos('\S', "b")
+        return col - 3
+      endif
     endif
   endif
 
@@ -287,83 +315,101 @@ function! GetCrystalIndent(lnum) abort
 
   " Previous line {{{1
   " Begin by finding the previous non-comment character in the file.
-  let [last_char, last_col, prev_lnum, prev_line] = s:get_last_char()
+  let [last_char, synid, prev_lnum, last_col] = s:get_last_char()
 
-  " If the last character was a backslash, add an indent unless the line
-  " before it also ended with a backslash.
-  if last_char == '\'
-    call cursor(s:prev_non_multiline(prev_lnum), 1)
+  " The only characters we care about for indentation are operators and
+  " delimiters.
 
-    let [last_char, _, _, _] = s:get_last_char()
-
-    if last_char == '\'
-      return indent(prev_lnum)
-    else
-      return indent(prev_lnum) + shiftwidth()
-    endif
-  endif
-
-  " If the last character was a comma, check the following:
-  "
-  " 1. If the comma is preceded by an unpaired opening bracket somewhere
-  " in the same line, align with the bracket.
-  " 2. If the next previous line also ended with a comma or it ended
-  " with an opening bracket, align with the beginning of the previous
-  " line.
-  " 3. If the next previous lined ended with a hanging operator, add an
-  " indent.
-  " 4. If the previous line is not its own MSL, align with the MSL.
-  " 5. Else, add an indent.
-  if last_char == ","
-    let [_, col] = searchpairpos('[([{]', "", '[)\]}]', "b", s:skip_char, prev_lnum)
-
-    if col
-      return col
-    endif
-
-    call cursor(prev_lnum, 1)
-    let [last_char, last_col, prev_prev_lnum, _] = s:get_last_char()
-
-    if last_char =~ '[,([{]'
-      return indent(prev_lnum)
-    endif
-
-    if synID(prev_prev_lnum, last_col, 0) == g:crystal#operator
-      return indent(prev_lnum) + shiftwidth()
-    endif
-
-    let msl = s:get_msl(prev_lnum)
-
-    if msl != prev_lnum
-      return indent(msl)
-    endif
-
-    return indent(prev_lnum) + shiftwidth()
-  endif
-
-  " If the last character was an opening bracket, add an indent.
-  if last_char =~ '[([{]'
-    return indent(prev_lnum) + shiftwidth()
-  endif
-
-  let synid = synID(prev_lnum, last_col, 0)
-
-  " If the last character was a block parameter delimiter, add an
-  " indent.
-  if synid == g:crystal#block_parameter_delimiter
-    return indent(prev_lnum) + shiftwidth()
-  endif
-
-  " If the last character was a hanging operator, add an indent unless
-  " the line before it also ended with a hanging operator.
   if synid == g:crystal#operator
-    call cursor(s:prev_non_multiline(prev_lnum), 1)
+    " If the last character was a hanging operator, add an indent unless
+    " the line before it also ended with a hanging operator.
 
-    let [_, last_col, prev_prev_lnum, _] = s:get_last_char()
+    if last_char =~ "[?*]"
+      " These are a tricky case, because they can indicate nilable and
+      " pointer types, respectively. Without doing a lot of lexical
+      " analysis, the easiest way to determine whether these should
+      " cause an indent is to simply look for a `:` operator earlier on
+      " the same line.
+      let [lnum, col] = searchpos(":", "b", prev_lnum)
 
-    if synID(prev_prev_lnum, last_col, 0) == g:crystal#operator
-      return indent(prev_lnum)
+      if !lnum || synID(lnum, col, 0) != g:crystal#operator
+        call cursor(s:prev_non_multiline(prev_lnum), 1)
+
+        let [_, synid, _, _] = s:get_last_char()
+
+        if synid == g:crystal#operator
+          return indent(prev_lnum)
+        else
+          return indent(prev_lnum) + shiftwidth()
+        endif
+      endif
     else
+      call cursor(s:prev_non_multiline(prev_lnum), 1)
+
+      let [_, synid, _, _] = s:get_last_char()
+
+      if synid == g:crystal#operator
+        return indent(prev_lnum)
+      else
+        return indent(prev_lnum) + shiftwidth()
+      endif
+    endif
+  elseif synid == g:crystal#delimiter
+    " If the last character was an opening bracket or block parameter
+    " delimiter, add an indent.
+    if last_char =~ '[([{|]'
+      return indent(prev_lnum) + shiftwidth()
+    endif
+
+    " If the last character was a backslash, add an indent unless the line
+    " before it also ended with a backslash.
+    if last_char == '\'
+      call cursor(s:prev_non_multiline(prev_lnum), 1)
+
+      let [last_char, _, _, _] = s:get_last_char()
+
+      if last_char == '\'
+        return indent(prev_lnum)
+      else
+        return indent(prev_lnum) + shiftwidth()
+      endif
+    endif
+
+    " If the last character was a comma, check the following:
+    "
+    " 1. If the comma is preceded by an unpaired opening bracket somewhere
+    " in the same line, align with the bracket.
+    " 2. If the next previous line also ended with a comma or it ended
+    " with an opening bracket, align with the beginning of the previous
+    " line.
+    " 3. If the next previous lined ended with a hanging operator, add an
+    " indent.
+    " 4. If the previous line is not its own MSL, align with the MSL.
+    " 5. Else, add an indent.
+    if last_char == ","
+      let [_, col] = searchpairpos('[([{]', "", '[)\]}]', "b", s:skip_char, prev_lnum)
+
+      if col
+        return col
+      endif
+
+      call cursor(prev_lnum, 1)
+      let [last_char, synid, _, _] = s:get_last_char()
+
+      if last_char =~ '[,([{]'
+        return indent(prev_lnum)
+      endif
+
+      if synid == g:crystal#operator
+        return indent(prev_lnum) + shiftwidth()
+      endif
+
+      let msl = s:get_msl(prev_lnum)
+
+      if msl != prev_lnum
+        return indent(msl)
+      endif
+
       return indent(prev_lnum) + shiftwidth()
     endif
   endif

@@ -116,18 +116,22 @@ local function get_last_char()
     return
   end
 
-  while syngroup_at(lnum, col - 1) == "crystalComment" do
+  local syngroup = syngroup_at(lnum, col - 1)
+
+  while syngroup == "crystalComment" do
     lnum, col = unpack(searchpos("\\S\\_s*#", "bW"))
 
     if lnum == 0 then
       return
     end
+
+    syngroup = syngroup_at(lnum, col - 1)
   end
 
   local line = nvim_get_current_line()
   local char = sub(line, col, col)
 
-  return char, col - 1, lnum, line
+  return char, syngroup, lnum, col - 1
 end
 
 local function get_pos()
@@ -260,10 +264,22 @@ local function get_msl(lnum)
   else
     set_pos(lnum, 0)
 
-    local last_char, last_idx, prev_lnum = get_last_char()
+    local last_char, syngroup, prev_lnum = get_last_char()
 
-    if last_char == "," or last_char == "\\" or syngroup_at(prev_lnum, last_idx) == "crystalOperator" then
+    if last_char == "," or last_char == "\\" then
       return get_msl(prev_lnum)
+    elseif syngroup == "crystalOperator" then
+      if last_char == "?" or last_char == "*" then
+        local found_lnum, found_col = unpack(searchpos(":", "b", prev_lnum))
+
+        if syngroup_at(found_lnum, found_col - 1) == "crystalOperator" then
+          return lnum
+        else
+          return get_msl(prev_lnum)
+        end
+      else
+        return get_msl(prev_lnum)
+      end
     end
   end
 
@@ -324,20 +340,32 @@ return function()
 
     if word == "end" or word == "else" or word == "elsif" then
       set_pos(lnum, 0)
-      searchpair_back(macro_start_re, macro_middle_re, macro_end_re, skip_word)
-      local _, idx = searchpair_back("{%", nil, "%}", skip_macro_delimiter)
 
-      return idx
+      lnum = searchpair_back(macro_start_re, macro_middle_re, macro_end_re, skip_word)
+      word = expand("<cword>")
+
+      if word == "do" or word == "for" then
+        return indent(lnum)
+      else
+        local _, col = unpack(searchpos("\\S", "b"))
+        return col - 2
+      end
     end
   elseif first_char == "\\" and second_char == "{" and sub(line, first_col + 2, first_col + 2) == "%" then
     local word = match(line, "^%s*(%l%w*)", first_col + 3)
 
     if word == "end" or word == "else" or word == "elsif" then
       set_pos(lnum, 0)
-      searchpair_back(slash_macro_start_re, slash_macro_middle_re, slash_macro_end_re, skip_word)
-      local _, idx = searchpair_back("\\\\{%", nil, "%}", skip_macro_delimiter)
 
-      return idx
+      lnum = searchpair_back(slash_macro_start_re, slash_macro_middle_re, slash_macro_end_re, skip_word)
+      word = expand("<cword>")
+
+      if word == "do" or word == "for" then
+        return indent(lnum)
+      else
+        local _, col = unpack(searchpos("\\S", "b"))
+        return col - 3
+      end
     end
   end
 
@@ -388,81 +416,96 @@ return function()
 
   -- Previous line {{{1
   -- Begin by finding the previous non-comment character in the file.
-  local last_char, last_idx, prev_lnum, prev_line = get_last_char()
+  local last_char, syngroup, prev_lnum, last_idx = get_last_char()
 
-  -- If the last character was a backslash, add an indent unless the
-  -- next previous line also ended with a backslash.
-  if last_char == "\\" then
-    set_pos(prev_non_multiline(prev_lnum), 0)
+  -- For indentation purposes, we only care about operators and
+  -- delimiters.
 
-    local last_char = get_last_char()
+  if syngroup == "crystalOperator" then
+    -- If the last character was a hanging operator, add an indent unless
+    -- the line before it also ended with a hanging operator.
 
+    if last_char == "?" or last_char == "*" then
+      local lnum, col = unpack(searchpos(":", "b", prev_lnum))
+
+      if lnum == 0 or syngroup_at(lnum, col - 1) ~= "crystalOperator" then
+        set_pos(prev_non_multiline(prev_lnum), 0)
+
+        local _, syngroup = get_last_char()
+
+        if syngroup == "crystalOperator" then
+          return indent(prev_lnum)
+        else
+          return indent(prev_lnum) + shiftwidth()
+        end
+      end
+    else
+      set_pos(prev_non_multiline(prev_lnum), 0)
+
+      local _, syngroup = get_last_char()
+
+      if syngroup == "crystalOperator" then
+        return indent(prev_lnum)
+      else
+        return indent(prev_lnum) + shiftwidth()
+      end
+    end
+  elseif syngroup == "crystalDelimiter" then
+    -- If the last character was a backslash, add an indent unless the
+    -- next previous line also ended with a backslash.
     if last_char == "\\" then
-      return indent(prev_lnum)
-    else
+      set_pos(prev_non_multiline(prev_lnum), 0)
+
+      local last_char = get_last_char()
+
+      if last_char == "\\" then
+        return indent(prev_lnum)
+      else
+        return indent(prev_lnum) + shiftwidth()
+      end
+    end
+
+    -- If the last character was a comma, check the following:
+    --
+    -- 1. If the comma is preceded by an unpaired opening bracket
+    -- somehwere in the same line, align with the bracket.
+    -- 2. If the next previous line also ended with a comma or it ended
+    -- with an opening bracket, align with the beginning of the previous
+    -- line.
+    -- 3. If the next previous line ended with a hanging operator, add an
+    -- indent.
+    -- 4. If the previous line is not its own MSL, align with the MSL.
+    -- 5. Else, add an indent.
+    if last_char == "," then
+      local _, idx = searchpair_back("[([{]", nil, "[)\\]}]", skip_char, true, prev_lnum)
+
+      if idx then
+        return idx + 1
+      end
+
+      set_pos(prev_lnum, 0)
+      local last_char, syngroup = get_last_char()
+
+      if find(last_char, "[,([{]") then
+        return indent(prev_lnum)
+      end
+
+      if syngroup == "crystalOperator" then
+        return indent(prev_lnum) + shiftwidth()
+      end
+
+      local msl = get_msl(prev_lnum)
+
+      if msl ~= prev_lnum then
+        return indent(msl)
+      end
+
       return indent(prev_lnum) + shiftwidth()
     end
-  end
 
-  -- If the last character was a comma, check the following:
-  --
-  -- 1. If the comma is preceded by an unpaired opening bracket
-  -- somehwere in the same line, align with the bracket.
-  -- 2. If the next previous line also ended with a comma or it ended
-  -- with an opening bracket, align with the beginning of the previous
-  -- line.
-  -- 3. If the next previous line ended with a hanging operator, add an
-  -- indent.
-  -- 4. If the previous line is not its own MSL, align with the MSL.
-  -- 5. Else, add an indent.
-  if last_char == "," then
-    local _, idx = searchpair_back("[([{]", nil, "[)\\]}]", skip_char, true, prev_lnum)
-
-    if idx then
-      return idx + 1
-    end
-
-    set_pos(prev_lnum, 0)
-    local last_char, last_idx, prev_prev_lnum = get_last_char()
-
-    if find(last_char, "[,([{]") then
-      return indent(prev_lnum)
-    end
-
-    if syngroup_at(prev_prev_lnum, last_idx) == "crystalOperator" then
-      return indent(prev_lnum) + shiftwidth()
-    end
-
-    local msl = get_msl(prev_lnum)
-
-    if msl ~= prev_lnum then
-      return indent(msl)
-    end
-
-    return indent(prev_lnum) + shiftwidth()
-  end
-
-  -- If the last character was an opening bracket, add an indent.
-  if find(last_char, "[([{]") then
-    return indent(prev_lnum) + shiftwidth()
-  end
-
-  -- If the last character was a block parameter delimiter, add an
-  -- indent.
-  if last_char == "|" and syngroup_at(prev_lnum, last_idx) == "crystalBlockParameterDelimiter" then
-    return indent(prev_lnum) + shiftwidth()
-  end
-
-  -- If the last character was a hanging operator, add an indent unless
-  -- the line before it also ended with a hanging operator.
-  if syngroup_at(prev_lnum, last_idx) == "crystalOperator" then
-    set_pos(prev_non_multiline(prev_lnum), 0)
-
-    local _, last_idx, prev_prev_lnum = get_last_char()
-
-    if syngroup_at(prev_prev_lnum, last_idx) == "crystalOperator" then
-      return indent(prev_lnum)
-    else
+    -- If the last character was an opening bracket or a block parameter
+    -- delimiter, add an indent.
+    if find(last_char, "[([{|]") then
       return indent(prev_lnum) + shiftwidth()
     end
   end
