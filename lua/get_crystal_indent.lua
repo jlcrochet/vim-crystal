@@ -118,7 +118,7 @@ local function get_last_char()
 
   local syngroup = syngroup_at(lnum, col - 1)
 
-  while syngroup == "crystalComment" do
+  while syngroup == "crystalComment" or syngroup == "crystalCommentDelimiter" do
     lnum, col = unpack(searchpos("\\S\\_s*#", "bW"))
 
     if lnum == 0 then

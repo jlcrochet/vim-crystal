@@ -95,7 +95,7 @@ function! s:get_last_char() abort
 
   let synid = synID(lnum, col, 0)
 
-  while synid == g:crystal#comment
+  while synid == g:crystal#comment || synid == g:crystal#comment_delimiter
     let [lnum, col] = searchpos('\S\_s*#', "bW")
 
     if !lnum

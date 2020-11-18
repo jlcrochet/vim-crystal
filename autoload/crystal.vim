@@ -22,4 +22,5 @@ endfor
 const g:crystal#keyword = hlID("crystalKeyword")
 const g:crystal#operator = hlID("crystalOperator")
 const g:crystal#delimiter = hlID("crystalDelimiter")
+const g:crystal#comment_delimiter = hlID("crystalCommentDelimiter")
 const g:crystal#macro_delimiter = hlID("crystalMacroDelimiter")
