@@ -487,6 +487,10 @@ return function()
       set_pos(prev_lnum, 0)
       local last_char, syngroup = get_last_char()
 
+      if not last_char then
+        return indent(prev_lnum) + shiftwidth()
+      end
+
       if find(last_char, "[,([{]") then
         return indent(prev_lnum)
       end
