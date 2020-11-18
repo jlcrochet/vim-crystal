@@ -188,12 +188,6 @@ function! s:get_msl(lnum) abort
 endfunction
 
 function! GetCrystalIndent(lnum) abort
-  let prev_lnum = prevnonblank(a:lnum - 1)
-
-  if !prev_lnum
-    return 0
-  endif
-
   " Current line {{{1
   " If the current line is inside of an ignorable multiline region, do
   " nothing.
@@ -206,116 +200,123 @@ function! GetCrystalIndent(lnum) abort
   " dot.
   let line = getline(a:lnum)
   let [first_char, first_idx, second_idx] = matchstrpos(line, '\S')
-  let second_char = line[second_idx]
 
-  if first_char == "." && second_char != "."
-    let prev_lnum = s:prev_non_multiline(prev_lnum)
-    let prev_line = getline(prev_lnum)
-    let [first_char, first_idx, second_idx] = matchstrpos(prev_line, '\S')
-    let second_char = prev_line[second_idx]
+  if first_idx > -1
+    let second_char = line[second_idx]
 
     if first_char == "." && second_char != "."
-      return first_idx
-    else
-      return first_idx + shiftwidth()
-    endif
-  endif
+      let prev_lnum = s:prev_non_multiline(prevnonblank(a:lnum - 1))
+      let prev_line = getline(prev_lnum)
+      let [first_char, first_idx, second_idx] = matchstrpos(prev_line, '\S')
+      let second_char = prev_line[second_idx]
 
-  " If the first character is a closing bracket, align with the line
-  " that contains the opening bracket.
-  if first_char == ")"
-    return indent(searchpair("(", "", ")", "bW", s:skip_char))
-  elseif first_char == "]"
-    return indent(searchpair("\\[", "", "]", "bW", s:skip_char))
-  elseif first_char == "}"
-    return indent(searchpair("{", "", "}", "bW", s:skip_char))
-  endif
-
-  " If the first character is a macro delimiter and the first word after
-  " the delimiter is a deindenting keyword, align with the nearest
-  " indenting keyword that is also after a macro delimiter.
-  if first_char == "{" && second_char == "%"
-    let word = matchstr(line, '^\s*\zs\l\w*', first_idx + 2)
-
-    if word =~# '\v<%(end|else|elsif)>'
-      call cursor(a:lnum, 1)
-
-      let lnum = searchpair(s:macro_start_re, s:macro_middle_re, s:macro_end_re, "bW", s:skip_word)
-      let word = expand("<cword>")
-
-      if word ==# "do" || word ==# "for"
-        return indent(lnum)
+      if first_char == "." && second_char != "."
+        return first_idx
       else
-        let [_, col] = searchpos('\S', "b")
-        return col - 2
+        return first_idx + shiftwidth()
       endif
     endif
-  elseif first_char == '\' && second_char == "{" && line[first_idx + 2] == "%"
-    let word = matchstr(line, '^\s*\zs\l\w*', first_idx + 3)
 
-    if word =~# '\v<%(end|else|elsif)>'
-      call cursor(a:lnum, 1)
+    " If the first character is a closing bracket, align with the line
+    " that contains the opening bracket.
+    if first_char == ")"
+      return indent(searchpair("(", "", ")", "bW", s:skip_char))
+    elseif first_char == "]"
+      return indent(searchpair("\\[", "", "]", "bW", s:skip_char))
+    elseif first_char == "}"
+      return indent(searchpair("{", "", "}", "bW", s:skip_char))
+    endif
 
-      let lnum = searchpair(s:slash_macro_start_re, s:slash_macro_middle_re, s:slash_macro_end_re, "bW", s:skip_word)
-      let word = expand("<cword>")
+    " If the first character is a macro delimiter and the first word after
+    " the delimiter is a deindenting keyword, align with the nearest
+    " indenting keyword that is also after a macro delimiter.
+    if first_char == "{" && second_char == "%"
+      let word = matchstr(line, '^\s*\zs\l\w*', first_idx + 2)
 
-      if word ==# "do" || word ==# "for"
-        return indent(lnum)
-      else
-        let [_, col] = searchpos('\S', "b")
-        return col - 3
+      if word =~# '\v<%(end|else|elsif)>'
+        call cursor(a:lnum, 1)
+
+        let lnum = searchpair(s:macro_start_re, s:macro_middle_re, s:macro_end_re, "bW", s:skip_word)
+        let word = expand("<cword>")
+
+        if word ==# "do" || word ==# "for"
+          return indent(lnum)
+        else
+          let [_, col] = searchpos('\S', "b")
+          return col - 2
+        endif
+      endif
+    elseif first_char == '\' && second_char == "{" && line[first_idx + 2] == "%"
+      let word = matchstr(line, '^\s*\zs\l\w*', first_idx + 3)
+
+      if word =~# '\v<%(end|else|elsif)>'
+        call cursor(a:lnum, 1)
+
+        let lnum = searchpair(s:slash_macro_start_re, s:slash_macro_middle_re, s:slash_macro_end_re, "bW", s:skip_word)
+        let word = expand("<cword>")
+
+        if word ==# "do" || word ==# "for"
+          return indent(lnum)
+        else
+          let [_, col] = searchpos('\S', "b")
+          return col - 3
+        endif
       endif
     endif
-  endif
 
-  " If the first word is a deindenting keyword, align with the nearest
-  " indenting keyword.
-  let first_word = matchstr(line, '^\l\w*', first_idx)
+    " If the first word is a deindenting keyword, align with the nearest
+    " indenting keyword.
+    let first_word = matchstr(line, '^\l\w*', first_idx)
 
-  call cursor(a:lnum, 1)
+    call cursor(a:lnum, 1)
 
-  if first_word ==# "end"
-    let [lnum, col] = searchpairpos(s:start_re, s:middle_re, '\<end\>', "bW", s:skip_word_postfix)
-    let word = expand("<cword>")
+    if first_word ==# "end"
+      let [lnum, col] = searchpairpos(s:start_re, s:middle_re, '\<end\>', "bW", s:skip_word_postfix)
+      let word = expand("<cword>")
 
-    if word =~# s:hanging_re
+      if word =~# s:hanging_re
+        return col - 1
+      else
+        return indent(lnum)
+      endif
+    elseif first_word ==# "else"
+      let [_, col] = searchpairpos(s:hanging_re, s:middle_re, '\<end\>', "bW", s:skip_word_postfix)
       return col - 1
-    else
-      return indent(lnum)
-    endif
-  elseif first_word ==# "else"
-    let [_, col] = searchpairpos(s:hanging_re, s:middle_re, '\<end\>', "bW", s:skip_word_postfix)
-    return col - 1
-  elseif first_word ==# "elsif"
-    let [_, col] = searchpairpos('\v<%(if|unless)', '\<elsif\>', '\<end\>', "bW", s:skip_word_postfix)
-    return col - 1
-  elseif first_word ==# "when"
-    let [_, col] = searchpairpos('\<case\>', '\<when\>', '\<end\>', "bW", s:skip_word)
-    return col - 1
-  elseif first_word ==# "in"
-    let [_, col] = searchpairpos('\<case\>', '\<in\>', '\<end\>', "bW", s:skip_word)
-    return col - 1
-  elseif first_word ==# "rescue"
-    let [lnum, col] = searchpairpos(s:exception_re, '\<rescue\>', '\<end\>', "bW", s:skip_word)
-
-    if expand("<cword>") ==# "begin"
+    elseif first_word ==# "elsif"
+      let [_, col] = searchpairpos('\v<%(if|unless)', '\<elsif\>', '\<end\>', "bW", s:skip_word_postfix)
       return col - 1
-    else
-      return indent(lnum)
-    endif
-  elseif first_word ==# "ensure"
-    let [lnum, col] = searchpairpos(s:exception_re, '\v<%(rescue|else)>', '\<end\>', "bW", s:skip_word)
-
-    if expand("<cword>") ==# "begin"
+    elseif first_word ==# "when"
+      let [_, col] = searchpairpos('\<case\>', '\<when\>', '\<end\>', "bW", s:skip_word)
       return col - 1
-    else
-      return indent(lnum)
+    elseif first_word ==# "in"
+      let [_, col] = searchpairpos('\<case\>', '\<in\>', '\<end\>', "bW", s:skip_word)
+      return col - 1
+    elseif first_word ==# "rescue"
+      let [lnum, col] = searchpairpos(s:exception_re, '\<rescue\>', '\<end\>', "bW", s:skip_word)
+
+      if expand("<cword>") ==# "begin"
+        return col - 1
+      else
+        return indent(lnum)
+      endif
+    elseif first_word ==# "ensure"
+      let [lnum, col] = searchpairpos(s:exception_re, '\v<%(rescue|else)>', '\<end\>', "bW", s:skip_word)
+
+      if expand("<cword>") ==# "begin"
+        return col - 1
+      else
+        return indent(lnum)
+      endif
     endif
   endif
 
   " Previous line {{{1
   " Begin by finding the previous non-comment character in the file.
   let [last_char, synid, prev_lnum, last_col] = s:get_last_char()
+
+  if last_char is 0
+    return 0
+  endif
 
   " The only characters we care about for indentation are operators and
   " delimiters.
