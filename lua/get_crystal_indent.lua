@@ -142,16 +142,12 @@ local function set_pos(lnum, idx)
   cursor(lnum, idx + 1)
 end
 
-local function search_back(re, skip_func, move_cursor, stop_line, include_current)
+local function search_back(re, skip_func, move_cursor, stop_line)
   stop_line = stop_line or 1
 
   local found_lnum, found_col
 
-  if include_current then
-    found_lnum, found_col = unpack(searchpos(re, "cbn", stop_line))
-  else
-    found_lnum, found_col = unpack(searchpos(re, "bn", stop_line))
-  end
+  found_lnum, found_col = unpack(searchpos(re, "bn", stop_line))
 
   if found_lnum == 0 then
     return
