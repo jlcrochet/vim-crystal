@@ -54,7 +54,7 @@ syn match crystalOperator /\%#=1\^=\=/ display contained
 syn match crystalOperator /\%#=1\./ display nextgroup=crystalVariableOrMethod,crystalOperatorMethod skipwhite
 execute 'syn match crystalOperatorMethod /\%#=1'.s:overloadable_operators.'/ display contained nextgroup=crystalOperator,crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalNamedTupleKey,crystalCapturedBlock skipwhite'
 
-syn match crystalOperator /\%#=1\.\.\.\=/ display contained nextgroup=crystalOperator skipwhite
+syn match crystalOperator /\%#=1\.\.\.\=/ display nextgroup=crystalOperator skipwhite
 
 syn match crystalOperator /\%#=1->/ display nextgroup=crystalVariableOrMethod,crystalSelf skipwhite
 
