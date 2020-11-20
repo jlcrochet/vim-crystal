@@ -556,7 +556,7 @@ return function()
       end
 
       set_pos(prev_lnum, 0)
-      local last_char, syngroup = get_last_char()
+      local last_char = get_last_char()
 
       if not last_char then
         return indent(prev_lnum) + shiftwidth()

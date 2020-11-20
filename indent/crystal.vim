@@ -463,7 +463,7 @@ function! GetCrystalIndent(lnum) abort
       endif
 
       call cursor(prev_lnum, 1)
-      let [last_char, synid, _, _] = s:get_last_char()
+      let [last_char, _, _, _] = s:get_last_char()
 
       if last_char is 0
         return indent(prev_lnum) + shiftwidth()
