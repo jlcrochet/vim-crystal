@@ -18,6 +18,7 @@ local cursor = fn.cursor
 local api = vim.api
 local nvim_get_current_line = api.nvim_get_current_line
 local nvim_win_get_cursor = api.nvim_win_get_cursor
+local echoerr = api.nvim_err_writeln
 
 local multiline_regions = {
   crystalString = true,
@@ -138,7 +139,7 @@ local function get_last_char()
   local line = nvim_get_current_line()
   local char = sub(line, col, col)
 
-  return char, syngroup, lnum, col - 1, line
+  return char, syngroup, lnum, col - 1
 end
 
 local function get_pos()
@@ -273,14 +274,12 @@ local function get_msl(lnum)
   else
     set_pos(lnum, 0)
 
-    local last_char, syngroup, prev_lnum, last_idx, prev_line = get_last_char()
+    local last_char, syngroup, prev_lnum = get_last_char()
 
     if last_char == "," or last_char == "\\" then
       return get_msl(prev_lnum)
     elseif syngroup == "crystalOperator" then
-      if last_char == "." and sub(prev_line, last_idx, last_idx) ~= "." then
-        return get_msl(prev_lnum)
-      elseif last_char == "?" or last_char == "*" then
+      if last_char == "?" or last_char == "*" then
         local found_lnum, found_col = unpack(searchpos(":", "b", prev_lnum))
 
         if syngroup_at(found_lnum, found_col - 1) == "crystalOperator" then
@@ -332,14 +331,12 @@ local function get_list_msl(lnum)
   else
     set_pos(lnum, 0)
 
-    local last_char, syngroup, prev_lnum, last_idx, prev_line = get_last_char()
+    local last_char, syngroup, prev_lnum = get_last_char()
 
     if last_char == "\\" then
       return get_list_msl(prev_lnum)
     elseif syngroup == "crystalOperator" then
-      if last_char == "." and sub(prev_line, last_idx, last_idx) ~= "." then
-        return get_list_msl(prev_lnum)
-      elseif last_char == "?" or last_char == "*" then
+      if last_char == "?" or last_char == "*" then
         local found_lnum, found_col = unpack(searchpos(":", "b", prev_lnum))
 
         if syngroup_at(found_lnum, found_col - 1) == "crystalOperator" then
@@ -483,7 +480,7 @@ return function()
 
   -- Previous line {{{1
   -- Begin by finding the previous non-comment character in the file.
-  local last_char, syngroup, prev_lnum, last_idx, prev_line = get_last_char()
+  local last_char, syngroup, prev_lnum, last_idx = get_last_char()
 
   if not last_char then
     return 0
@@ -496,9 +493,7 @@ return function()
     -- If the last character was a hanging operator, add an indent unless
     -- the line before it also ended with a hanging operator.
 
-    if last_char == "." and sub(prev_line, last_idx, last_idx) == "." then
-      -- Range operator; do nothing
-    elseif last_char == "?" or last_char == "*" then
+    if last_char == "?" or last_char == "*" then
       local lnum, col = unpack(searchpos(":", "b", prev_lnum))
 
       if lnum == 0 or syngroup_at(lnum, col - 1) ~= "crystalOperator" then

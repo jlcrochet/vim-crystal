@@ -109,7 +109,7 @@ function! s:get_last_char() abort
   let line = getline(lnum)
   let char = line[col - 1]
 
-  return [char, synid, lnum, col, line]
+  return [char, synid, lnum, col]
 endfunction
 
 function! s:get_msl(lnum) abort
@@ -165,14 +165,12 @@ function! s:get_msl(lnum) abort
   else
     call cursor(lnum, 1)
 
-    let [last_char, synid, prev_lnum, last_col, prev_line] = s:get_last_char()
+    let [last_char, synid, prev_lnum, _] = s:get_last_char()
 
     if last_char =~ '[,\\]'
       return s:get_msl(prev_lnum)
     elseif synid == g:crystal#operator
-      if last_char == "." && prev_line[last_col - 2] != "."
-        return s:get_msl(prev_lnum)
-      elseif last_char =~ "[?*]"
+      if last_char =~ "[?*]"
         let [found_lnum, found_col] = searchpos(":", "b", prev_lnum)
 
         if synID(found_lnum, found_col, 0) == g:crystal#operator
@@ -236,14 +234,12 @@ function! s:get_list_msl(lnum) abort
   else
     call cursor(lnum, 1)
 
-    let [last_char, synid, prev_lnum, last_col, prev_line] = s:get_last_char()
+    let [last_char, synid, prev_lnum, _] = s:get_last_char()
 
     if last_char == '\'
       return s:get_list_msl(prev_lnum)
     elseif synid == g:crystal#operator
-      if last_char == "." && prev_line[last_col - 2] != "."
-        return s:get_msl(prev_lnum)
-      elseif last_char =~ "[?*]"
+      if last_char =~ "[?*]"
         let [found_lnum, found_col] = searchpos(":", "b", prev_lnum)
 
         if synID(found_lnum, found_col, 0) == g:crystal#operator
@@ -386,7 +382,7 @@ function! GetCrystalIndent(lnum) abort
 
   " Previous line {{{1
   " Begin by finding the previous non-comment character in the file.
-  let [last_char, synid, prev_lnum, last_col, prev_line] = s:get_last_char()
+  let [last_char, synid, prev_lnum, last_col] = s:get_last_char()
 
   if !prev_lnum
     return 0
@@ -399,9 +395,7 @@ function! GetCrystalIndent(lnum) abort
     " If the last character was a hanging operator, add an indent unless
     " the line before it also ended with a hanging operator.
 
-    if last_char == "." && prev_line[last_col - 2] == "."
-      " Range operator; do nothing
-    elseif last_char =~ "[?*]"
+    if last_char =~ "[?*]"
       " These are a tricky case, because they can indicate nilable and
       " pointer types, respectively. Without doing a lot of lexical
       " analysis, the easiest way to determine whether these should
@@ -412,7 +406,7 @@ function! GetCrystalIndent(lnum) abort
       if !lnum || synID(lnum, col, 0) != g:crystal#operator
         call cursor(s:prev_non_multiline(prev_lnum), 1)
 
-        let [_, synid, _, _, _] = s:get_last_char()
+        let [_, synid, _, _] = s:get_last_char()
 
         if synid == g:crystal#operator
           return indent(prev_lnum)
@@ -423,7 +417,7 @@ function! GetCrystalIndent(lnum) abort
     else
       call cursor(s:prev_non_multiline(prev_lnum), 1)
 
-      let [_, synid, _, _, _] = s:get_last_char()
+      let [_, synid, _, _] = s:get_last_char()
 
       if synid == g:crystal#operator
         return indent(prev_lnum)
@@ -443,7 +437,7 @@ function! GetCrystalIndent(lnum) abort
     if last_char == '\'
       call cursor(s:prev_non_multiline(prev_lnum), 1)
 
-      let [last_char, _, _, _, _] = s:get_last_char()
+      let [last_char, _, _, _] = s:get_last_char()
 
       if last_char == '\'
         return indent(prev_lnum)
@@ -469,7 +463,7 @@ function! GetCrystalIndent(lnum) abort
       endif
 
       call cursor(prev_lnum, 1)
-      let [last_char, synid, _, _, _] = s:get_last_char()
+      let [last_char, synid, _, _] = s:get_last_char()
 
       if last_char is 0
         return indent(prev_lnum) + shiftwidth()
