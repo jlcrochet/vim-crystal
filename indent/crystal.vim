@@ -476,7 +476,7 @@ function! GetCrystalIndent(lnum) abort
       return col - 1 + shiftwidth()
     elseif word ==# "do"
       return indent(lnum) + shiftwidth()
-    elseif word =~# '\v<%(when|in|forall|while|until|rescue|ensure|def|macro|class|struct|lib|annotation|enum|module)>'
+    elseif word =~# '\v<%(when|then|in|forall|while|until|rescue|ensure|def|macro|class|struct|lib|annotation|enum|module)>'
       return indent(msl) + shiftwidth()
     else
       return indent(msl)

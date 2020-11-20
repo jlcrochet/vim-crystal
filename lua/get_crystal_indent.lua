@@ -32,6 +32,7 @@ local multiline_regions = {
 
 local indent_keywords = {
   ["when"] = true,
+  ["then"] = true,
   ["in"] = true,
   ["forall"] = true,
   ["while"] = true,
