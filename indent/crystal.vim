@@ -31,6 +31,7 @@ const s:skip_macro_delimiter = "synID(line('.'), col('.'), 0) != g:crystal#macro
 const s:hanging_re = '\v<%(if|unless|begin|case)>'
 const s:non_hanging_re = '\v<%(while|until|for|do|def|macro|class|struct|module|lib|annotation|enum)>'
 const s:exception_re = '\v<%(begin|do|def)>'
+const s:list_re = '\v<%(begin|do|if|unless|case)>'
 
 const s:start_re = s:hanging_re.'|'.s:non_hanging_re
 const s:middle_re = '\v<%(else|elsif|when|in|rescue|ensure)>'
@@ -179,6 +180,75 @@ function! s:get_msl(lnum) abort
         endif
       else
         return s:get_msl(prev_lnum)
+      endif
+    endif
+  endif
+
+  " If none of the above are true, this line is the MSL.
+  return lnum
+endfunction
+
+" Modified version of the above that doesn't consider commas to be
+" continuation starters; this is specifically for use inside of
+" multiline list-like regions where we don't want to traverse all the
+" way back to the beginning of the list to determine the indentation of
+" an item.
+function! s:get_list_msl(lnum) abort
+  let lnum = s:prev_non_multiline(a:lnum)
+
+  let line = getline(lnum)
+  let [first_char, first_idx, second_idx] = matchstrpos(line, '\S')
+
+  " This line is *not* the MSL if:
+  " 1. It starts with a leading dot
+  " 2. It starts with a closing bracket
+  " 3. It starts with `end`
+  " 4. The previous line ended with a comma or hanging operator
+
+  if first_char == "." && line[second_idx] != "."
+    return s:get_list_msl(prevnonblank(lnum - 1))
+  elseif first_char == ")"
+    call cursor(lnum, 1)
+
+    let found = searchpair("(", "", ")", "bW", s:skip_char)
+
+    return s:get_list_msl(found)
+  elseif first_char == "]"
+    call cursor(lnum, 1)
+
+    let found = searchpair('\[', "", "]", "bW", s:skip_char)
+
+    return s:get_list_msl(found)
+  elseif first_char == "}"
+    call cursor(lnum, 1)
+
+    let found = searchpair("{", "", "}", "bW", s:skip_char)
+
+    return s:get_list_msl(found)
+  elseif first_char ==# "e" && match(line, '^nd\>', second_idx) > -1
+    call cursor(lnum, 1)
+
+    let found = searchpair(s:list_re, "", '\<end\>', "bW", s:skip_word_postfix)
+
+    return s:get_list_msl(found)
+  else
+    call cursor(lnum, 1)
+
+    let [last_char, synid, prev_lnum, _] = s:get_last_char()
+
+    if last_char == '\'
+      return s:get_list_msl(prev_lnum)
+    elseif synid == g:crystal#operator
+      if last_char =~ "[?*]"
+        let [found_lnum, found_col] = searchpos(":", "b", prev_lnum)
+
+        if synID(found_lnum, found_col, 0) == g:crystal#operator
+          return lnum
+        else
+          return s:get_list_msl(prev_lnum)
+        endif
+      else
+        return s:get_list_msl(prev_lnum)
       endif
     endif
   endif
@@ -383,10 +453,8 @@ function! GetCrystalIndent(lnum) abort
     " 2. If the next previous line also ended with a comma or it ended
     " with an opening bracket, align with the beginning of the previous
     " line.
-    " 3. If the next previous lined ended with a hanging operator, add an
-    " indent.
-    " 4. If the previous line is not its own MSL, align with the MSL.
-    " 5. Else, add an indent.
+    " 3. If the previous line is not its own MSL, align with the MSL.
+    " 4. Else, add an indent.
     if last_char == ","
       let [_, col] = searchpairpos('[([{]', "", '[)\]}]', "b", s:skip_char, prev_lnum)
 
@@ -405,11 +473,7 @@ function! GetCrystalIndent(lnum) abort
         return indent(prev_lnum)
       endif
 
-      if synid == g:crystal#operator
-        return indent(prev_lnum) + shiftwidth()
-      endif
-
-      let msl = s:get_msl(prev_lnum)
+      let msl = s:get_list_msl(prev_lnum)
 
       if msl != prev_lnum
         return indent(msl)
