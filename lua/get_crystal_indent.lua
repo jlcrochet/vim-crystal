@@ -296,11 +296,6 @@ local function get_msl(lnum)
   return lnum
 end
 
--- Modified version of the above that doesn't consider commas to be
--- continuation starters; this is specifically for use inside of
--- multiline list-like regions where we don't want to traverse all the
--- way back to the beginning of the list to determine the indentation of
--- an item.
 local function get_list_msl(lnum)
   lnum = prev_non_multiline(lnum)
 
