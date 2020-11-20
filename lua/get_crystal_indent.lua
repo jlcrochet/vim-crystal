@@ -570,14 +570,6 @@ return function()
     return idx + shiftwidth()
   elseif word == "case" then
     return idx + shiftwidth()
-  elseif word == "then" then
-    local found = search("\\<")
-
-    if found == lnum then
-      return indent(msl)
-    else
-      return indent(msl) + shiftwidth()
-    end
   elseif word == "do" then
     return indent(lnum) + shiftwidth()
   elseif indent_keywords[word] then
