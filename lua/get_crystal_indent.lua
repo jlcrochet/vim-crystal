@@ -399,7 +399,7 @@ return function()
         return indent(lnum)
       end
     elseif first_word == "ensure" then
-      local lnum, idx = searchpair_back(exception_re, "\\<\\%(rescue\\\|else\\)\\>", "\\<end\\>", skip_word)
+      local lnum, idx = searchpair_back(exception_re, "\\<\\%(rescue\\|else\\)\\>", "\\<end\\>", skip_word)
 
       if expand("<cword>") == "begin" then
         return idx
