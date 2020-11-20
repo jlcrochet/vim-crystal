@@ -53,6 +53,7 @@ local start_re = "\\<\\%(if\\|unless\\|begin\\|case\\|while\\|until\\|for\\|do\\
 local middle_re = "\\<\\%(else\\|elsif\\|when\\|in\\|rescue\\|ensure\\)\\>"
 
 local hanging_re = "\\<\\%(if\\|unless\\|begin\\|case\\)\\>"
+local exception_re = "\\<\\%(begin\\|do\\|def\\)\\>"
 
 local macro_start_re = "{%\\s*\\zs\\<\\%(if\\|unless\\|begin\\|for\\)\\>\\|\\<do\\s*%}"
 local macro_middle_re = "{%\\s*\\zs\\<\\%(else\\|elsif\\)\\>"
@@ -390,7 +391,7 @@ return function()
       local _, idx = searchpair_back("\\<case\\>", "\\<in\\>", "\\<end\\>", skip_word)
       return idx
     elseif first_word == "rescue" then
-      local lnum, idx = searchpair_back("\\<\\%(begin\\|do\\|def\\)\\>", "\\<rescue\\>", "\\<end\\>", skip_word)
+      local lnum, idx = searchpair_back(exception_re, "\\<rescue\\>", "\\<end\\>", skip_word)
 
       if expand("<cword>") == "begin" then
         return idx
@@ -398,7 +399,7 @@ return function()
         return indent(lnum)
       end
     elseif first_word == "ensure" then
-      local lnum, idx = searchpair_back("\\<\\%(begin\\|do\\|def\\)\\>", "\\<ensure\\>", "\\<end\\>", skip_word)
+      local lnum, idx = searchpair_back(exception_re, "\\<\\%(rescue\\\|else\\)\\>", "\\<end\\>", skip_word)
 
       if expand("<cword>") == "begin" then
         return idx
