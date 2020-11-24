@@ -283,6 +283,10 @@ syn keyword crystalKeyword for contained containedin=crystalMacro
 
 unlet s:overloadable_operators
 
+" Synchronization {{{1
+syn sync match crystalSync grouphere crystalHeredocLine /\%#=1<<-\w\+/
+syn sync match crystalSync grouphere crystalHeredocLineRaw /\%#=1<<-'\w\+'/
+
 " Highlighting {{{1
 hi def link crystalComment Comment
 hi def link crystalCommentDelimiter crystalComment
