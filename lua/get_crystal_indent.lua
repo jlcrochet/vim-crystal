@@ -18,7 +18,6 @@ local cursor = fn.cursor
 local api = vim.api
 local nvim_get_current_line = api.nvim_get_current_line
 local nvim_win_get_cursor = api.nvim_win_get_cursor
-local echoerr = api.nvim_err_writeln
 
 local multiline_regions = {
   crystalString = true,
