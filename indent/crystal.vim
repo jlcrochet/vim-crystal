@@ -199,12 +199,6 @@ function! s:get_list_msl(lnum) abort
   let line = getline(lnum)
   let [first_char, first_idx, second_idx] = matchstrpos(line, '\S')
 
-  " This line is *not* the MSL if:
-  " 1. It starts with a leading dot
-  " 2. It starts with a closing bracket
-  " 3. It starts with `end`
-  " 4. The previous line ended with a comma or hanging operator
-
   if first_char == "." && line[second_idx] != "."
     return s:get_list_msl(prevnonblank(lnum - 1))
   elseif first_char == ")"
