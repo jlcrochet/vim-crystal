@@ -6,9 +6,11 @@
 " Caching important syntax ID's for use in indentation logic
 const g:crystal#multiline_regions = {}
 
-for id in ["crystalString", "crystalSymbol", "crystalRegex", "crystalCommand", "crystalComment", "crystalHeredocLine", "crystalHeredocLineRaw", "crystalHeredocDelimiter"]
-  let g:crystal#multiline_regions[hlID(id)] = 1
+for s:id in ["crystalString", "crystalSymbol", "crystalRegex", "crystalCommand", "crystalComment", "crystalHeredocLine", "crystalHeredocLineRaw", "crystalHeredocDelimiter"]
+  let g:crystal#multiline_regions[hlID(s:id)] = 1
 endfor
+
+unlet s:id
 
 const g:crystal#keyword = hlID("crystalKeyword")
 const g:crystal#operator = hlID("crystalOperator")
