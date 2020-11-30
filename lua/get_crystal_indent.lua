@@ -3,6 +3,8 @@ local find = string.find
 local match = string.match
 local sub = string.sub
 
+local v = vim.v
+
 local fn = vim.fn
 local prevnonblank = fn.prevnonblank
 local shiftwidth = fn.shiftwidth
@@ -353,7 +355,7 @@ local function get_list_msl(lnum)
 end
 
 return function()
-  local lnum = get_pos()
+  local lnum = v.lnum
 
   -- Current line {{{1
   -- If the current line is inside of an ignorable multiline region, do
