@@ -275,8 +275,8 @@ syn keyword crystalKeyword require nextgroup=crystalString skipwhite
 syn region crystalAnnotation matchgroup=crystalAnnotationDelimiter start=/\%#=1@\[/ end=/\%#=1]/ oneline transparent
 
 " Macros {{{2
-syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ containedin=ALLBUT,crystalComment contains=@crystalTop,crystalFreshVariable,crystalNestedBraces nextgroup=crystalOperator,crystalRangeOperator,crystalNamespaceOperator skipwhite
-syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ containedin=ALLBUT,crystalComment contains=@crystalTop,crystalFreshVariable
+syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline containedin=ALLBUT,crystalComment contains=@crystalTop,crystalFreshVariable,crystalNestedBraces nextgroup=crystalOperator,crystalRangeOperator,crystalNamespaceOperator skipwhite
+syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ oneline containedin=ALLBUT,crystalComment contains=@crystalTop,crystalFreshVariable
 
 syn keyword crystalKeyword for contained containedin=crystalMacro
 " }}}2
