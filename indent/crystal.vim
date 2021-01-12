@@ -1,6 +1,6 @@
 " Vim indent file
 " Language: Crystal <crystal-lang.org>
-" Author: Jeffrey Crochet <jlcrochet@pm.me>
+" Author: Jeffrey Crochet <jlcrochet@hey.com>
 " URL: https://github.com/jlcrochet/vim-crystal
 
 if get(b:, "did_indent")
@@ -13,8 +13,14 @@ setlocal indentkeys=0),0],0},.,o,O,!^F
 setlocal indentkeys+==end,=else,=elsif,0=when,0=in,0=rescue,0=ensure
 
 if has("nvim-0.5")
-  lua get_crystal_indent = require("get_crystal_indent")
+  if get(g:, "crystal_hanging_indents")
+    lua get_crystal_indent = require("get_crystal_indent_hanging")
+  else
+    lua get_crystal_indent = require("get_crystal_indent_default")
+  endif
+
   setlocal indentexpr=v:lua.get_crystal_indent()
+
   finish
 endif
 

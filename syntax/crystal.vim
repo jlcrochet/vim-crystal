@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language: Crystal <crystal-lang.org>
-" Author: Jeffrey Crochet <jlcrochet@pm.me>
+" Author: Jeffrey Crochet <jlcrochet@hey.com>
 " URL: https://github.com/jlcrochet/vim-crystal
 
 if has_key(b:, "current_syntax")
@@ -41,12 +41,10 @@ syn match crystalOperator /\%#=1>>\==\=/ contained
 syn match crystalOperator /\%#=1+=\=/ contained
 syn match crystalOperator /\%#=1-=\=/ contained
 syn match crystalOperator /\%#=1\*\*\==\=/ contained
-syn match crystalOperator /\%#=1\// contained
+syn match crystalOperator /\%#=1[/?:]/ contained
 " NOTE: Additional division operators are defined after /-style regexes
 " in order to take precedence
 syn match crystalOperator /\%#=1%=\=/ contained
-syn match crystalOperator /\%#=1?/ contained
-syn match crystalOperator /\%#=1:/ contained
 syn match crystalOperator /\%#=1&\%(&=\=\|=\|+=\=\|-=\=\|\*[*=]\=\|\)\=/ contained
 syn match crystalOperator /\%#=1||\==\=/ contained
 syn match crystalOperator /\%#=1\^=\=/ contained
@@ -54,14 +52,14 @@ syn match crystalOperator /\%#=1\^=\=/ contained
 syn match crystalOperator /\%#=1\./ nextgroup=crystalVariableOrMethod,crystalOperatorMethod skipwhite
 execute 'syn match crystalOperatorMethod /\%#=1'.s:overloadable_operators.'/ contained nextgroup=crystalOperator,crystalRangeOperator,crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalNamedTupleKey,crystalCapturedBlock skipwhite'
 
-syn match crystalRangeOperator /\%#=1\.\.\.\=/ nextgroup=crystalOperator,crystalRangeOperator skipwhite
+syn match crystalRangeOperator /\%#=1\.\.\.\=/ nextgroup=crystalOperator skipwhite
 
-syn match crystalOperator /\%#=1->/ nextgroup=crystalVariableOrMethod,crystalSelf skipwhite
+syn match crystalOperator /\%#=1->/
 
 syn match crystalNamespaceOperator /\%#=1::/
 
 " Delimiters {{{2
-syn match crystalDelimiter /\%#=1(/ nextgroup=crystalNamedTupleKey skipwhite skipnl
+syn match crystalDelimiter /\%#=1(/ nextgroup=crystalNamedTupleKey,crystalCapturedBlock skipwhite skipnl
 syn match crystalDelimiter /\%#=1)/ nextgroup=crystalOperator,crystalRangeOperator skipwhite
 
 syn match crystalDelimiter /\%#=1\[/
@@ -77,13 +75,13 @@ syn match crystalDelimiter /\%#=1\\/
 " Identifiers {{{2
 syn match crystalInstanceVariable /\%#=1@\h\w*/ nextgroup=crystalOperator,crystalRangeOperator skipwhite
 syn match crystalClassVariable /\%#=1@@\h\w*/ nextgroup=crystalOperator,crystalRangeOperator skipwhite
-syn match crystalGlobalVariable /\%#=1\$\%([~?]\|\d\+?\=\|\h\w*\)/ nextgroup=crystalOperator,crystalRangeOperator skipwhite
 syn match crystalFreshVariable /\%#=1%\h\w*/ contained nextgroup=crystalOperator,crystalRangeOperator skipwhite
+syn match crystalGlobalVariable /\%#=1\$\%([~?]\|\d\+?\=\)/ nextgroup=crystalOperator,crystalRangeOperator skipwhite
 
 syn match crystalConstant /\%#=1\u\w*/ nextgroup=crystalOperator,crystalRangeOperator,crystalNamespaceOperator skipwhite
 syn match crystalVariableOrMethod /\%#=1[_[:lower:]]\w*[=?!]\=/ nextgroup=crystalOperator,crystalRangeOperator,crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalNamedTupleKey,crystalCapturedBlock skipwhite
 
-syn match crystalCapturedBlock /\%#=1&\%(\.\|->\)/ contained nextgroup=crystalVariableOrMethod skipwhite
+syn match crystalCapturedBlock /\%#=1&\%(\.\|->\)/ contained nextgroup=crystalVariableOrMethod,crystalOperatorMethod skipwhite
 
 syn match crystalNamedTupleKey /\%#=1[[:lower:]_]\w*[?!]\=:/he=e-1 contained
 syn match crystalNamedTupleKey /\%#=1\u\w*::\@!/he=e-1 contained
@@ -257,8 +255,8 @@ syn match crystalTypeDefinition /\%#=1\u\w*\%(::\u\w*\)*/ contained contains=cry
 " Miscellaneous {{{2
 syn keyword crystalKeyword
       \ if unless elsif else end return next break case when in
-      \ then while until private protected forall of alias begin
-      \ rescue ensure yield uninitialized out include extend
+      \ then while until private protected begin rescue ensure
+      \ yield uninitialized out include extend alias type forall of
 
 syn keyword crystalKeyword do nextgroup=crystalBlockParameters skipwhite
 syn region crystalBlockParameters matchgroup=crystalDelimiter start=/\%#=1|/ end=/\%#=1|/ transparent oneline contained
