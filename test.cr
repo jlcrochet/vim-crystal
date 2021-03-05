@@ -1,37 +1,5 @@
 #!/usr/bin/env crystal
 
-x : Int32
-x : My::Nested::Type
-x : Array(String)
-x : Int32 | String
-x : Int32?
-x : ::Int32
-x : Int32? | ::Nil
-x : Int32*
-x : Int32?***???**
-x : Pointer(Int32)
-x : Int32[8]
-x : Int32[8] | ::Nil
-x : StaticArray(Int32, 8)
-x : Tuple(Int32, String)
-x : {Int32, String}
-x : {x: Int32, y: String}
-x : NamedTuple(x: Int32, y: String)
-x : Int32 -> String
-x : Proc(Int32, String)
-x : -> Int32
-x : Int32, Char -> String
-x : Int32 -> String
-x : self | FOO
-x : Int32.class
-x : Int32.class.class.class***??**?*.class
-x : _, _ -> Int32
-x : (Int32, Int64), String -> String
-x = [] of Parent.class
-x : typeof(1 + 2)[8].class
-x : typeof(y, z, FOO) | FOO
-x = {} of Int32 => String
-
 def foo(x : Int32, y = 123, z : Int32 = 123) : Int32 | self
   jksldfjklsdf
 end
@@ -54,12 +22,46 @@ class Foo::Bar::Baz
   def self.foo
     "foo"
   end
+
+  def Baz.bar
+    "bar"
+  end
 end
+
+!foobar
+~foobar
 
 if foo
   x : Int*
   jksldf
   jksdlf
+end
+
+alias Int32ToString = Int32 -> String
+
+def some_method
+  something_dangerous
+ensure
+  # always execute this
+end
+
+foo if bar
+
+module Ticker
+  def self.on_tick(&callback : Int32 ->)
+    boxed_data = Box.box(callback)
+
+    @@box = boxed_data
+
+    LibTicker.on_tick(->(tick, data) {
+      data_as_callback = Box(typeof(callback)).unbox(data)
+      data_as_callback.call(tick)
+    }, boxed_data)
+  end
+end
+
+Ticker.on_tick do |tick|
+  puts tick
 end
 
 %( (\))\)\(\) )
@@ -68,13 +70,6 @@ jkl
 
 %(jkl)
 
-jksldf
-...jksldfsdf +
-  ..jklsdfjlksdf +
-  jksldf
-
-foo: 12
-
 "jksldf'jklsdf" jksdlfjklsdf
 
 %w(foo bar baz)
@@ -82,12 +77,27 @@ foo: 12
 %w(foo(bar) baz)
 %w(foo\ bar #{baz})
 %( foo\ (bar) baz )
-%q( foo\ (bar\) baz )
+%q( foo\ (bar\) #{baz} )
+
+%r(jkl|jksldfjklsdf #{jklsdf}?)
+
+{ name: "Crystal", year: 2011 }, { "this is a key": 1 }
 
 foo12
 
 def foo(x : T(Int32) = 123, y = 123, z = /jksldfsdf/, w = z / y) : Int32 forall T
   T
+end
+
+class Object
+  def has_instance_var?(name) : Bool
+    name.in? {{ @type.instance_vars.map &.name.stringify }}
+  end
+end
+
+macro dont_update_x
+  %x = 1
+  puts %x
 end
 
 foo x: 1, y: 2
@@ -122,10 +132,15 @@ end
 0f32
 0i64
 0_123.123_E+1_f32
+0xFE012D
+1_000_000
+1_000_000.111_111
 
 :foo
 
 foo.+ bar: 3
+
+"\012jksldfjklsdf"
 
 foo:bar
 {foo:"bar"}
@@ -180,14 +195,9 @@ rescue bleh
   jskdlf
 end
 
-jksldf =
-  begin
-  jksldf
-rescue bleh
-  jskdlf
-end
-
 sjkdflsdf
+
+->(x : Int32, y : Int32) { x + y }
 
 0.. + ..123
 
@@ -201,6 +211,84 @@ sjkdflsdf
 
 if x // /bar/ / bleh // boo
   boop
+end
+
+def one
+  1
+end
+
+def plan(begin begin_time, end end_time)
+end
+
+plan begin: Time.now, end: 2.days.from_now
+
+close_door unless door_closed?
+
+proc = ->str.count(Char)
+proc.call
+
+struct Vector2
+  getter x, y
+
+  def initialize(@x : Int32, @y : Int32)
+  end
+
+  def - : self
+    Vector2.new(-x, -y)
+  end
+
+  def +(other : self) : self
+    Vector2.new(x + other.x, y + other.y)
+  end
+end
+
+class Person
+  private def say(message)
+    puts message
+  end
+end
+
+abstract class Animal
+  abstract def talk
+  abstract def walk
+end
+
+case num
+when .even?
+  do_something
+when .odd?
+  do_something_else
+end
+
+case num
+when .even? then do_something
+when .odd? then do_something_else
+end
+
+def some_method(x, y = 1, z = 2, w = 3)
+  # do something...
+end
+
+some_method 10
+some_method 10, z: 10
+some_method 10, w: 1, y: 2, z: 3
+
+foo *tuple
+
+lib LibPerson
+  fun compute_default_age(age_ptr) : Int32*
+end
+
+$? success?
+
+object.[]=(2, 3)
+
+if a = some_expression
+  jksldjflksdf
+end
+
+@a.try do |a|
+  jksldfjksldf
 end
 
 x // y // z
@@ -226,6 +314,24 @@ foo /bleh/, /bloo/
 foo <<-TEXT
 jkalsdjfkl
 TEXT
+
+print(<<-'FIRST', <<-SECOND)
+hello
+FIRST
+World
+SECOND
+jksldf
+
+print(<<-'FIRST', <<-SECOND, <<-'THIRD')
+hello
+FIRST
+World
+SECOND
+jksldf
+#{jksldf}
+jskdlfjklsdfj
+THIRD
+jksdlf
 
 foo "jklasdf", 'j', %w(foo bar baz)
 
@@ -294,7 +400,6 @@ array = [0, 1, 2]
 
 $1
 $?
-$Foojaksldfasdf
 
 123.123
 123.123f32
@@ -303,6 +408,13 @@ $Foojaksldfasdf
 0o123u8
 0b111u8
 123u8
+
+:unquoted_symbol
+:"quoted symbol"
+:"a"
+
+:question?
+:exclamation!
 
 foo.each { |bleh|
   { 1, 2 }
@@ -458,22 +570,6 @@ jkalsdfasdf
 jklsdfsdf
 STRING
 
-<<-STRING # => "  Hello\n    world"
-Hello
-world
-  STRING
-
-(foo) +
-  bar
-
-<<-SOME.upcase # => "HELLO"
-      hello
-      SOME
-
-def upcase(string)
-  string.upcase
-end
-
 upcase <<-SOME, "bleh" # => jkl
 jklsdf
 SOME
@@ -607,6 +703,8 @@ if foo
     lo = pointerof(word).as(Byte*)
     hi = lo + 1
   {% end %}
+
+  bleh
 end
 
 foo.self
@@ -820,7 +918,7 @@ end
 x = "if"
 bar
 
-# foo = (([%{jk(l[{}]}])
+foo = ([%{jk(l[{}]}])
 
 foo(
   bar(
@@ -839,6 +937,10 @@ foo(
 #       1
 #     end
 define_method foo, 1
+
+bar.foo= 123
+
+foo[0]= 123
 
 :+
 :-
@@ -999,9 +1101,11 @@ baz # => 3
   puts "We are in test mode"
 {% end %}
 
+{{foo}} * bar
+
 macro define_constants(count)
   {% for i in (1..count) %}
-    PI_{{i.id}} = Math::PI * {{i}}
+    PI_{{i.id}} = Math::PI * {{i}} * jklsdf
   {% end %}
 end
 
@@ -1620,13 +1724,20 @@ bar
 foo!
 bar
 
-foo +
-  bar
-  .jklsdf
-  .jksldfjklsdf +
-  jklsdfjklsdf -
-  kalsdf
-  .jkalsdfjklasdf
+class Array
+  def self.elem_type(typ)
+    if typ.is_a?(Array)
+      elem_type(typ.first)
+    else
+      typ
+    end
+  end
+end
+
+next = [1, ["b", [:c, ['d']]]]
+flat = Array(typeof(Array.elem_type(nest))).new
+typeof(nest)
+typeof(flat)
 
 # :nodoc:
 record ToU64Info,
@@ -1644,13 +1755,13 @@ foo = begin
   jksldf
 end
 
-$def = "bleh"
+@def = "bleh"
 
 Foo*
-  jksldfsdf
+jksldfsdf
 jksldf
 Foo?
-  jksldf
+jksldf
 jskldf
 
 def []?(regex : Regex, group) : Int?
@@ -1658,14 +1769,6 @@ def []?(regex : Regex, group) : Int?
   jksldf
   jklsdf
   match = match(regex)
-end
-
-def []?(regex : Regex,
-  group) : Int?
-match[group]? if match
-jksdlf
-jskldf
-jksldfjklsdf
 end
 
 def foo : Int*
@@ -1761,108 +1864,30 @@ module Colorize
       (to_i + 10).to_s io
     end
   end
-
-  method_call one,
-  two {
-    three
-  }
-
-  method_call one,
-  two do
-    three
-  end
-
-  record Color256,
-  value : UInt8 do
-    def fore(io : IO) : Nil
-      io << "38;5;"
-      value.to_s io
-    end
-
-    def back(io : IO) : Nil
-      io << "48;5;"
-      value.to_s io
-    end
-  end
-
-  record ColorRGB,
-  red : UInt8,
-  green : UInt8,
-  blue : UInt8 do
-    def fore(io : IO) : Nil
-      io << "38;2;"
-      io << red << ";"
-      io << green << ";"
-      io << blue
-    end
-
-    def back(io : IO) : Nil
-      io << "48;2;"
-      io << red << ";"
-      io << green << ";"
-      io << blue
-    end
-  end
 end
 
 jksdlfsdf
 
-x = if foo
-  record ColorRGB,
-  red : UInt8,
-  green : UInt8,
-  blue : UInt8 do
-    def fore(io) : Nil
-      io << "bleh"
-    end
-
-    def back
-      jksldf
-    end
-  end
-end
-
 jksldf
 
-x =
+x = if foo
+  jksldfjklsdf
+  asjkdflasdf
+  ajksldf
+end
+
+x = [
   if foo
-jksldfjklsdf
-asjkdflasdf
-ajksldf
-  end
-
-  x = [
-    if foo
-      bleh
-    else
-      bloo
-    end,
-    if blerp
-      blorp
-    else
-      fjkdlsjfklds
-    end,
-  ]
-
-  foo =
-    begin
-  jksldfjsdf
-end
-
-x = case y
-when 1
-  "foo"
-when 2
-  "bar"
-when 3 then "baz"
-when 4
-  "bleh"
-  "bloo"
-when 5 then
-  "jskdlf"
-else
-  "blerp"
-end
+    bleh
+  else
+    bloo
+  end,
+  if blerp
+    blorp
+  else
+    fjkdlsjfklds
+  end,
+]
 
 x = case y
 when 1
@@ -1949,8 +1974,122 @@ x = {
 
 alias Formatter = Severity, Time, String, String, IO -> self
 
+class Foo < Bar
+  jksldfjlk
+end
+
 private DEFAULT_FORMATTER = Formatter.new do |severity, datetime, progname, message, io|
   label = severity.unknown? ? "ANY" : severity.to_s
   io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
   io << label.rjust(5) << " -- " << progname << ": " << message
 end
+
+# Floating indentation samples:
+
+# jksldf =
+#   begin
+#     jksldf
+#   rescue bleh
+#     jskdlf
+#   end
+
+# <<-STRING # => "  Hello\n    world"
+# Hello
+# world
+#   STRING
+
+#   (foo) +
+#     bar
+
+# <<-SOME.upcase # => "HELLO"
+#       hello
+#       SOME
+
+#     def upcase(string)
+#       string.upcase
+#     end
+
+# def []?(regex : Regex,
+#   group) : Int?
+# match[group]? if match
+# jksdlf
+# jskldf
+# jksldfjklsdf
+# end
+
+# method_call one,
+# two {
+#   three
+# }
+
+# method_call one,
+# two do
+#   three
+# end
+
+# record Color256,
+# value : UInt8 do
+#   def fore(io : IO) : Nil
+#     io << "38;5;"
+#     value.to_s io
+#   end
+
+#   def back(io : IO) : Nil
+#     io << "48;5;"
+#     value.to_s io
+#   end
+# end
+
+# record ColorRGB,
+# red : UInt8,
+# green : UInt8,
+# blue : UInt8 do
+#   def fore(io : IO) : Nil
+#     io << "38;2;"
+#     io << red << ";"
+#     io << green << ";"
+#     io << blue
+#   end
+
+#   def back(io : IO) : Nil
+#     io << "48;2;"
+#     io << red << ";"
+#     io << green << ";"
+#     io << blue
+#   end
+# end
+
+# x = if foo
+#   record ColorRGB,
+#   red : UInt8,
+#   green : UInt8,
+#   blue : UInt8 do
+#     def fore(io) : Nil
+#       io << "bleh"
+#     end
+
+#     def back
+#       jksldf
+#     end
+#   end
+# end
+
+# foo =
+#   begin
+#     jksldfjsdf
+#   end
+
+# x = case y
+# when 1
+#   "foo"
+# when 2
+#   "bar"
+# when 3 then "baz"
+# when 4
+#   "bleh"
+#   "bloo"
+# when 5 then
+#   "jskdlf"
+# else
+#   "blerp"
+# end
