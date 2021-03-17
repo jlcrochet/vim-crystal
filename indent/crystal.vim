@@ -12,11 +12,11 @@ let b:did_indent = 1
 setlocal indentkeys=0),0],0},.,o,O,!^F
 setlocal indentkeys+==end,=else,=elsif,0=when,0=in,0=rescue,0=ensure
 
-" if has("nvim-0.5")
-"   lua get_crystal_indent = require("get_crystal_indent")
-"   setlocal indentexpr=v:lua.get_crystal_indent()
-"   finish
-" endif
+if has("nvim-0.5")
+  lua get_crystal_indent = require("get_crystal_indent")
+  setlocal indentexpr=v:lua.get_crystal_indent()
+  finish
+endif
 
 setlocal indentexpr=GetCrystalIndent()
 
@@ -25,7 +25,7 @@ if exists("*GetCrystalIndent")
 endif
 
 " Helpers {{{
-let s:start_re = '\<\%(def\|macro\|class\|struct\|module\|enum\|annotation\|lib\|union\|if\|unless\|while\|until\|for\|begin\|do\)\>:\@!'
+let s:start_re = '\<\%(def\|macro\|class\|struct\|module\|enum\|annotation\|lib\|union\|if\|unless\|case\|while\|until\|for\|begin\|do\)\>:\@!'
 let s:middle_re = '\<\%(else\|elsif\|when\|in\|rescue\|ensure\)\>:\@!'
 let s:end_re = '\<end\>:\@!'
 
@@ -101,7 +101,7 @@ endfunction
 " }}}
 
 " GetCrystalIndent {{{
-if get(g:, "crystal_simple_indent")
+if 1
   " Simple {{{
   function GetCrystalIndent() abort
     " If the current line is inside of a multiline region, do nothing.
@@ -301,7 +301,7 @@ if get(g:, "crystal_simple_indent")
   endfunction
   " }}}
 else
-  " Default {{{
+  " Default (TODO) {{{
   function GetCrystalIndent() abort
     " If the current line is inside of a multiline region, do nothing.
     if get(g:crystal#multiline_regions, synID(v:lnum, 1, 0))

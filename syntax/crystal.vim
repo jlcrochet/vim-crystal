@@ -48,13 +48,14 @@ syn region crystalShebang start=/\%#=1\%^#!/ end=/\%#=1\_$/ oneline
 
 " Operators {{{2
 syn match crystalUnaryOperator /\%#=1[+\-*!~&?]/
+syn match crystalUnaryOperator /\%#=1->/ nextgroup=crystalVariableOrMethod,crystalDelimiter skipwhite
 
 syn match crystalOperator /\%#=1=\%(==\=\|[>~]\)\=/ contained
 syn match crystalOperator /\%#=1![=~]/ contained
 syn match crystalOperator /\%#=1<\%(<=\=\|=>\=\)\=/ contained
 syn match crystalOperator /\%#=1>>\==\=/ contained
 syn match crystalOperator /\%#=1+=\=/ contained
-syn match crystalOperator /\%#=1-=\=/ contained
+syn match crystalOperator /\%#=1-[=>]\=/ contained
 syn match crystalOperator /\%#=1\*\*\==\=/ contained
 syn match crystalOperator /\%#=1[/?:]/ contained
 " NOTE: Additional division operators are defined after /-style regexes
@@ -68,8 +69,6 @@ syn match crystalOperator /\%#=1\./ nextgroup=crystalVariableOrMethod,crystalOpe
 execute 'syn match crystalOperatorMethod /\%#=1'.s:overloadable_operators.'/ contained nextgroup=crystalOperator,crystalRangeOperator,crystalString,crystalFreshVariable,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalNamedTupleKey,crystalPostfixKeyword skipwhite'
 
 syn match crystalRangeOperator /\%#=1\.\.\.\=/ nextgroup=crystalOperator,crystalPostfixKeyword skipwhite
-
-syn match crystalOperator /\%#=1->/ nextgroup=crystalVariableOrMethod,crystalDelimiter skipwhite
 
 syn match crystalNamespaceOperator /\%#=1::/ nextgroup=crystalConstant
 
@@ -198,13 +197,13 @@ syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w|/ end=
 syn match crystalStringPipeEscape /\%#=1\\[\\|[:space:]]/ contained
 
 " Here Documents {{{3
-syn region crystalHeredoc matchgroup=crystalHeredocDelimiter start=/\%#=1<<-\z(\w\+\)/ end=/\%#=1\_^\s*\z1\>/ transparent contains=@crystalTop,crystalHeredocLine nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn region crystalHeredocSkip matchgroup=crystalHeredocDelimiter start=/\%#=1<<-\w\+/ end=/\%#=1\ze<<-/ transparent oneline nextgroup=crystalHeredoc,crystalHeredocSkip
+syn region crystalHeredoc matchgroup=crystalHeredocDelimiter start=/\%#=1<<-\z(\w\+\)/ end=/\%#=1\_^\s*\z1\>/ transparent contains=@crystalTop,crystalHeredocLine
 syn region crystalHeredocLine start=/\%#=1\_^/ end=/\%#=1\_$/ oneline contained contains=crystalStringInterpolation,crystalStringEscape nextgroup=crystalHeredocLine skipempty
 
-syn region crystalHeredoc matchgroup=crystalHeredocDelimiter start=/\%#=1<<-'\z(\w\+\)'/ end=/\%#=1\_^\s*\z1\>/ transparent contains=@crystalTop,crystalHeredocLineRaw nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn region crystalHeredocSkip matchgroup=crystalHeredocDelimiter start=/\%#=1<<-'\w\+'/ end=/\%#=1\ze<<-/ transparent oneline nextgroup=crystalHeredoc,crystalHeredocSkip
+syn region crystalHeredoc matchgroup=crystalHeredocDelimiter start=/\%#=1<<-'\z(\w\+\)'/ end=/\%#=1\_^\s*\z1\>/ transparent contains=@crystalTop,crystalHeredocLineRaw
 syn region crystalHeredocLineRaw start=/\%#=1\_^/ end=/\%#=1\_$/ oneline contained nextgroup=crystalHeredocLineRaw skipempty
+
+syn region crystalHeredocSkip matchgroup=crystalHeredocDelimiter start=/\%#=1<<-\('\=\)\w\+\1/ end=/\%#=1\ze<<-'\=\w/ transparent oneline nextgroup=crystalHeredoc,crystalHeredocSkip
 
 " Symbols {{{3
 syn match crystalSymbol /\%#=1:\h\w*[=?!]\=/ contains=crystalSymbolDelimiter nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
@@ -227,11 +226,11 @@ syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1\// end=/\%
 " over /-style regexes
 syn match crystalOperator /\%#=1\/[/=]/ contained
 
-syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r(/  end=/\%#=1)/ skip=/\%#=1(.\{-})/  contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r\[/ end=/\%#=1]/ skip=/\%#=1\[.\{-}]/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r{/  end=/\%#=1}/ skip=/\%#=1{.\{-}}/  contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r</  end=/\%#=1>/ skip=/\%#=1<.\{-}>/  contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r|/  end=/\%#=1|/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
+syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r(/  end=/\%#=1)[imx]*/ skip=/\%#=1(.\{-})/  contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
+syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r\[/ end=/\%#=1][imx]*/ skip=/\%#=1\[.\{-}]/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
+syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r{/  end=/\%#=1}[imx]*/ skip=/\%#=1{.\{-}}/  contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
+syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r</  end=/\%#=1>[imx]*/ skip=/\%#=1<.\{-}>/  contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
+syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r|/  end=/\%#=1|[imx]*/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
 " PCRE {{{4
 syn match crystalRegexMetacharacter /\%#=1[.^$|]/ contained
@@ -239,8 +238,8 @@ syn match crystalRegexQuantifier /\%#=1[*+?]/ contained
 syn match crystalRegexQuantifier /\%#=1{\d*,\=\d*}/ contained
 syn region crystalRegexClass matchgroup=crystalRegexMetacharacter start=/\%#=1\[\^\=/ end=/\%#=1]/ oneline transparent contained contains=crystalRegexEscape,crystalRegexPOSIXClass
 syn match crystalRegexPOSIXClass /\%#=1\[\^\=:\%(alnum\|alpha\|ascii\|blank\|cntrl\|digit\|graph\|lower\|print\|punct\|space\|upper\|word\|xdigit\):]/ contained
-syn region crystalRegexGroup matchgroup=crystalRegexMetacharacter start=/\%#=1(\%(?\%([:>|=!]\|<\%([=!]\|\h\w*>\)\|[imx]\+\)\)\=/ end=/\%#=1)/ transparent oneline contained
-syn region crystalRegexComment start=/\%#=1(#/ end=/\%#=1)/ oneline contained
+syn region crystalRegexGroup matchgroup=crystalRegexMetacharacter start=/\%#=1(\%(?\%([:>|=!]\|<\%([=!]\|\h\w*>\)\|[imx]\+\)\)\=/ end=/\%#=1)/ transparent contained
+syn region crystalRegexComment start=/\%#=1(#/ end=/\%#=1)/ contained
 syn match crystalRegexEscape /\%#=1\\[dDsSwWAZbBG]/ contained
 syn region crystalRegexEscape matchgroup=crystalRegexMetacharacter start=/\%#=1\\Q/ end=/\%#=1\\E/ transparent contained contains=NONE
 syn match crystalRegexCapturedGroup /\%#=1\\\%(\d\+\|g\%({\w\+}\|<\w\+>\)\)/ contained
@@ -270,7 +269,7 @@ if get(g:, "crystal_highlight_definitions")
   syn match crystalDefine /\%#=1\<\%(def\|macro\)\>/ nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn match crystalDefine /\%#=1\<\%(class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ nextgroup=crystalTypeDefinition skipwhite
 
-  syn region crystalBlock start=/\%#=1\<\%(if\|unless\|case\|while\|until\|begin\|do\)\>/ matchgroup=crystalKeyword end=/\%#=1\<end\>/ transparent fold
+  syn region crystalBlock start=/\%#=1\<\%(if\|unless\|case\|while\|until\|begin\|do\)\>/ matchgroup=crystalKeyword end=/\%#=1\<end\>/ transparent
   syn region crystalDefineBlock start=/\%#=1\<\%(def\|macro\|class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ matchgroup=crystalDefine end=/\%#=1\<end\>/ transparent fold
 
   syn keyword crystalKeyword abstract nextgroup=crystalDefineNoBlock skipwhite
@@ -292,10 +291,14 @@ else
 
   syn keyword crystalKeywordNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalKeywordNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
+
+  " TEMP
+  syn sync fromstart
 endif
 
-syn match crystalTypeDefinition /\%#=1\u\w*/ contained nextgroup=crystalTypeDefinitionNamespace,crystalOperator skipwhite
-syn match crystalTypeDefinitionNamespace /\%#=1::/ contained nextgroup=crystalTypeDefinition
+syn match crystalTypeDefinition /\%#=1\u\w*/ contained nextgroup=crystalTypeNamespace,crystalInheritanceOperator skipwhite
+syn match crystalTypeNamespace /\%#=1::/ contained nextgroup=crystalTypeDefinition
+syn match crystalInheritanceOperator /\%#=1</ contained nextgroup=crystalConstant skipwhite
 
 syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ contained nextgroup=crystalOperator skipwhite
 execute 'syn match crystalMethodDefinition /\%#=1'.s:overloadable_operators.'/ contained nextgroup=crystalOperator skipwhite'
@@ -303,15 +306,15 @@ syn match crystalMethodReceiver /\%#=1\u\w*/ contained nextgroup=crystalMethodDo
 syn keyword crystalMethodSelf self contained nextgroup=crystalMethodDot
 syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
 
+" Miscellaneous {{{2
 syn keyword crystalKeyword
       \ elsif else when in then private protected rescue ensure
-      \ uninitialized out include extend alias type forall of with raise
+      \ uninitialized out include extend alias type forall of with
 
-syn keyword crystalKeyword return next break yield nextgroup=crystalPostfixKeyword skipwhite
+syn keyword crystalKeyword return next break yield raise nextgroup=crystalPostfixKeyword skipwhite
 
 syn keyword crystalPostfixKeyword if unless contained
 
-" Miscellaneous {{{2
 syn region crystalBlockParameters matchgroup=crystalDelimiter start=/\%#=1|/ end=/\%#=1|/ transparent oneline contained
 
 syn region crystalNestedBraces start=/\%#=1{/ matchgroup=crystalDelimiter end=/\%#=1}/ contained contains=@crystalTop,crystalNestedBraces
@@ -388,7 +391,8 @@ hi def link crystalMethodReceiver crystalConstant
 hi def link crystalMethodSelf crystalSelf
 hi def link crystalMethodDot crystalOperator
 hi def link crystalTypeDefinition Typedef
-hi def link crystalTypeDefinitionNamespace crystalNamespaceOperator
+hi def link crystalTypeNamespace crystalNamespaceOperator
+hi def link crystalInheritanceOperator crystalOperator
 hi def link crystalMacroDelimiter PreProc
 hi def link crystalFreshVariable Identifier
 hi def link crystalAnnotationDelimiter Special

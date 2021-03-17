@@ -479,7 +479,7 @@ end
 /a(?<grp>sd)f/.match("_asdf_")               # => #<Regex::MatchData "asdf" grp:"sd">
 /a(?<grp>sd)f/.match("_asdf_").try &.["grp"] # => "sd"
 
-/a\Qjklsdfjklsdf|jksldf\Ejksl(?imx)dfjlksdf|jksdl#{jksdlf + 123}fjkls{{ foo + 123 }}df/
+/a\Qjkls\b\\dfj/klsdf|jksldf\Ejksl(?imx)dfjlksdf|jksdl#{jksdlf + 123}fjkls{{ foo + 123 }}df/
 /jskldf{,123}\123\g{foo}\g<foo>/
 
 /foo|bar/.match("foo")     # => #<Regex::MatchData "foo">
@@ -1986,110 +1986,110 @@ end
 
 # Floating indentation samples:
 
-# jksldf =
-#   begin
-#     jksldf
-#   rescue bleh
-#     jskdlf
-#   end
+jksldf =
+  begin
+    jksldf
+  rescue bleh
+    jskdlf
+  end
 
-# <<-STRING # => "  Hello\n    world"
-# Hello
-# world
-#   STRING
+  <<-string # => "  hello\n    world"
+                 hello
+                 world
+                 string
 
-#   (foo) +
-#     bar
+                 (foo) +
+                   bar
 
-# <<-SOME.upcase # => "HELLO"
-#       hello
-#       SOME
+                 <<-some.upcase # => "hello"
+                 hello
+                 some
 
-#     def upcase(string)
-#       string.upcase
-#     end
+                 def upcase(string)
+                   string.upcase
+                 end
 
-# def []?(regex : Regex,
-#   group) : Int?
-# match[group]? if match
-# jksdlf
-# jskldf
-# jksldfjklsdf
-# end
+                 def []?(regex : regex,
+                   group) : int?
+                 match[group]? if match
+                 jksdlf
+                 jskldf
+                 jksldfjklsdf
+               end
 
-# method_call one,
-# two {
-#   three
-# }
+               method_call one,
+                 two {
+                   three
+                 }
 
-# method_call one,
-# two do
-#   three
-# end
+                 method_call one,
+                   two do
+                     three
+                   end
 
-# record Color256,
-# value : UInt8 do
-#   def fore(io : IO) : Nil
-#     io << "38;5;"
-#     value.to_s io
-#   end
+                   record color256,
+                     value : uint8 do
+                       def fore(io : io) : nil
+                         io << "38;5;"
+                         value.to_s io
+                       end
 
-#   def back(io : IO) : Nil
-#     io << "48;5;"
-#     value.to_s io
-#   end
-# end
+                       def back(io : io) : nil
+                         io << "48;5;"
+                         value.to_s io
+                       end
+                     end
 
-# record ColorRGB,
-# red : UInt8,
-# green : UInt8,
-# blue : UInt8 do
-#   def fore(io : IO) : Nil
-#     io << "38;2;"
-#     io << red << ";"
-#     io << green << ";"
-#     io << blue
-#   end
+                     record colorrgb,
+                       red : uint8,
+                       green : uint8,
+                       blue : uint8 do
+                         def fore(io : io) : nil
+                           io << "38;2;"
+                           io << red << ";"
+                           io << green << ";"
+                           io << blue
+                         end
 
-#   def back(io : IO) : Nil
-#     io << "48;2;"
-#     io << red << ";"
-#     io << green << ";"
-#     io << blue
-#   end
-# end
+                         def back(io : io) : nil
+                           io << "48;2;"
+                           io << red << ";"
+                           io << green << ";"
+                           io << blue
+                         end
+                       end
 
-# x = if foo
-#   record ColorRGB,
-#   red : UInt8,
-#   green : UInt8,
-#   blue : UInt8 do
-#     def fore(io) : Nil
-#       io << "bleh"
-#     end
+                       x = if foo
+                         record colorrgb,
+                           red : uint8,
+                           green : uint8,
+                           blue : uint8 do
+                             def fore(io) : nil
+                               io << "bleh"
+                             end
 
-#     def back
-#       jksldf
-#     end
-#   end
-# end
+                             def back
+                               jksldf
+                             end
+                           end
+                         end
 
-# foo =
-#   begin
-#     jksldfjsdf
-#   end
+                         foo =
+                           begin
+                             jksldfjsdf
+                           end
 
-# x = case y
-# when 1
-#   "foo"
-# when 2
-#   "bar"
-# when 3 then "baz"
-# when 4
-#   "bleh"
-#   "bloo"
-# when 5 then
-#   "jskdlf"
-# else
-#   "blerp"
-# end
+                           x = case y
+                           when 1
+                             "foo"
+                           when 2
+                             "bar"
+                           when 3 then "baz"
+                           when 4
+                             "bleh"
+                             "bloo"
+                           when 5 then
+                             "jskdlf"
+                           else
+                             "blerp"
+                           end

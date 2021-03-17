@@ -17,3 +17,14 @@ endif
 setlocal comments=:#
 setlocal commentstring=#\ %s
 setlocal suffixesadd=.cr
+
+" matchit.vim
+let s:match_words = [
+      \ '\<\%(def\|macro\|class\|struct\|module\|enum\|annotation\|lib\|union\|if\|unless\|case\|while\|until\|for\|begin\|do\)\>:\@!',
+      \ '\<\%(else\|elsif\|when\|in\|rescue\|ensure\|break\|next\|yield\|return\)\>:\@!',
+      \ '\<end\>:\@!'
+      \ ]
+let b:match_words = join(s:match_words, ":")
+unlet s:match_words
+
+let b:match_skip = 'S:^crystal\%(Keyword\|Define\)$'

@@ -574,9 +574,12 @@ local function get_keyword_pairs(line, lnum, i, j)
     ::kw_start::
 
     if (start == 1 or is_boundary(line:byte(start - 1))) and
-      (i == j or is_boundary(line:byte(i + 1))) and
-      syngroup_at(lnum, start) == "crystalKeyword" then
-      pairs = pairs + 1
+      (i == j or is_boundary(line:byte(i + 1))) then
+      local syngroup = syngroup_at(lnum, start)
+
+      if syngroup == "crystalKeyword" or syngroup == "crystalDefine" then
+        pairs = pairs + 1
+      end
     end
 
     goto next
@@ -592,9 +595,12 @@ local function get_keyword_pairs(line, lnum, i, j)
     ::kw_end::
 
     if (start == 1 or is_boundary(line:byte(start - 1))) and
-      (i == j or is_boundary(line:byte(i + 1))) and
-      syngroup_at(lnum, start) == "crystalKeyword" then
-      pairs = pairs - 1
+      (i == j or is_boundary(line:byte(i + 1))) then
+      local syngroup = syngroup_at(lnum, start)
+
+      if syngroup == "crystalKeyword" or syngroup == "crystalDefine" then
+        pairs = pairs - 1
+      end
     end
 
     ::next::
@@ -607,7 +613,7 @@ end
 -- }}}
 
 -- get_crystal_indent {{{
-if vim.g.crystal_simple_indent == 1 then
+if true then
   -- Simple {{{
   return function()
     local lnum = v.lnum
@@ -628,7 +634,7 @@ if vim.g.crystal_simple_indent == 1 then
 
     local first_col, start_lnum, start_line
 
-    -- This variables tells whether or not the previous line is
+    -- This variable tells whether or not the previous line is
     -- a continuation of another line.
     -- 0 -> no continuation
     -- 1 -> continuation caused by a backslash or hanging operator
@@ -665,7 +671,7 @@ if vim.g.crystal_simple_indent == 1 then
         if start_line:byte(first_col + 1) ~= 46 then
           continuation = 1
         end
-      else
+      elseif not (first_byte == 93 or first_byte == 125) then  -- ] }
         local lnum = prevnonblank(start_lnum - 1)
 
         if lnum ~= 0 then
@@ -1057,7 +1063,7 @@ if vim.g.crystal_simple_indent == 1 then
   end
   -- }}}
 else
-  -- Default {{{
+  -- Default (TODO) {{{
   return function()
     local lnum = v.lnum
 
@@ -1072,73 +1078,8 @@ else
       return 0
     end
 
-    -- Retrieve indentation info for the previous line.
-    local last_byte, last_col, prev_line = get_last_byte(prev_lnum)
-
-    local first_col, start_lnum, start_line
-
-    -- This variables tells whether or not the previous line is
-    -- a continuation of another line.
-    -- 0 -> no continuation
-    -- 1 -> continuation caused by a backslash or hanging operator
-    -- 2 -> continuation caused by a comma (list continuation)
-    -- 3 -> continuation caused by an opening bracket
-    local continuation = 0
-
-    if last_byte then
-      -- If the previous line begins in a multiline region, find the line
-      -- that began that region.
-
-      if MULTILINE_REGIONS[syngroup_at(prev_lnum, 1)] then
-        start_lnum = prev_non_multiline(prevnonblank(prev_lnum - 1))
-        start_line = get_line(prev_lnum)
-      else
-        start_lnum = prev_lnum
-        start_line = prev_line
-      end
-
-      -- Find the first column and first byte of the line.
-      local first_byte
-
-      for i = 1, #start_line do
-        first_byte = start_line:byte(i)
-
-        if first_byte > 32 then  -- %S
-          first_col = i
-          break
-        end
-      end
-
-      -- Determine whether or not the line is a continuation.
-      if first_byte == 46 then  -- .
-        if start_line:byte(first_col + 1) ~= 46 then
-          continuation = 1
-        end
-      else
-        local lnum = prevnonblank(start_lnum - 1)
-
-        if lnum ~= 0 then
-          local b, col, line = get_last_byte(lnum)
-
-          if b then
-            if b == 92 then  -- \
-              continuation = 1
-            elseif b == 44 then  -- ,
-              continuation = 2
-            elseif b == 40 or b == 91 or b == 123 then  -- ( [ {
-              continuation = 3
-            elseif is_operator(b, lnum, col, line) then
-              continuation = 1
-            end
-          end
-        end
-      end
-    else
-      -- The previous line is a comment line.
-      first_col = last_col
-      start_lnum = prev_lnum
-      start_line = prev_line
-    end
+    -- Find the MSL of the previous line.
+    local start_lnum, start_line, first_col = get_msl(prev_lnum)
 
     -- Find the first character in the current line.
     local line = nvim_get_current_line()
