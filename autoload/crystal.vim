@@ -19,3 +19,12 @@ const g:crystal#delimiter = hlID("crystalDelimiter")
 const g:crystal#comment = hlID("crystalComment")
 const g:crystal#comment_delimiter = hlID("crystalCommentDelimiter")
 const g:crystal#macro_delimiter = hlID("crystalMacroDelimiter")
+
+" matchit.vim
+let s:match_words = [
+      \ '\<\%(def\|macro\|class\|struct\|module\|enum\|annotation\|lib\|union\|if\|unless\|case\|while\|until\|for\|begin\|do\):\@!\>',
+      \ '\<\%(else\|elsif\|when\|in\|rescue\|ensure\|break\|next\|yield\|return\):\@!\>',
+      \ '\<end:\@!\>'
+      \ ]
+const g:crystal#match_words = join(s:match_words, ":")
+unlet s:match_words

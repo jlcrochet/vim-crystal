@@ -2,6 +2,8 @@
 
 This was originally a fork of [vim-crystal](https://github.com/vim-crystal/vim-crystal) that discarded many of the original's features in order to study how syntax highlighting and indentation could be improved. It turned into a complete rewrite of the original plugin and merging my changes was no longer feasible, so I decided to move it to a separate repository for anyone who wants a faster and more accurate alternative to the original vim-crystal.
 
+This plugin includes support for [embedded crystal (ECR)](https://crystal-lang.org/api/latest/ECR.html).
+
 ## Configuration
 
 NOTE: The following variables are read only when this plugin is first loaded, so in order for any changes to take effect, you must place them in `.vimrc` or some other file loaded on startup and then restart Vim.
@@ -107,7 +109,7 @@ NOTE: Setting this will have no effect unless `g:crystal_simple_indent` has been
 
 Comparisons made between the respective HEAD's of each plugin as of this writing (2021-4-10), using [this test file](https://gist.github.com/jlcrochet/720c5a83aa15eef2d2eda2c05bc5b2f1). The test file is comprised of snippets taken from the official documentation along with some random edge cases I came up with myself. The benchmarks were run with NeoVim 0.5.0.
 
-#### Syntax
+### Syntax
 
 Benchmark:
 
@@ -140,7 +142,7 @@ Results:
     0.35s
     0.54s  (g:crystal_highlight_definitions == 1)
 
-#### Indentation
+### Indentation
 
 Benchmark:
 
@@ -170,7 +172,3 @@ Results:
     0.24s
     0.08s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 0)
     0.14s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 1)
-
-## TODO
-
-* Support for ECR (Embedded Crystal)

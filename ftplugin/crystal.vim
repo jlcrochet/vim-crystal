@@ -9,11 +9,6 @@ endif
 
 let b:did_ftplugin = 1
 
-" This file is loaded on 'ecrystal' filetype
-if &filetype !=# 'crystal'
-  finish
-endif
-
 setlocal shiftwidth=2
 setlocal comments=:#
 setlocal commentstring=#\ %s
@@ -29,17 +24,15 @@ if get(g:, "crystal_fold")
 endif
 
 " matchit.vim
-let s:match_words = [
-      \ '\<\%(def\|macro\|class\|struct\|module\|enum\|annotation\|lib\|union\|if\|unless\|case\|while\|until\|for\|begin\|do\):\@!\>',
-      \ '\<\%(else\|elsif\|when\|in\|rescue\|ensure\|break\|next\|yield\|return\):\@!\>',
-      \ '\<end:\@!\>'
-      \ ]
-let b:match_words = join(s:match_words, ":")
-unlet s:match_words
-
+let b:match_words = g:crystal#match_words
 let b:match_skip = 'S:^crystal\%(Keyword\|Define\)$'
 
 " vim-endwise
-let b:endwise_addition = "end"
-let b:endwise_words = "def,macro,class,struct,module,enum,annotation,lib,union,if,unless,case,while,until,for,begin,do"
-let b:endwise_syngroups = "crystalKeyword,crystalDefine"
+if get(g:, "loaded_endwise")
+  augroup endwise
+    autocmd! FileType crystal
+          \ let b:endwise_addition = "end" |
+          \ let b:endwise_words = "def,macro,class,struct,module,enum,annotation,lib,union,if,unless,case,while,until,for,begin,do" |
+          \ let b:endwise_syngroups = "crystalKeyword,crystalDefine"
+  augroup END
+endif

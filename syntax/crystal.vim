@@ -7,8 +7,6 @@ if has_key(b:, "current_syntax")
   finish
 endif
 
-let b:current_syntax = "crystal"
-
 " Syntax {{{1
 " This pattern helps to match all overloadable operators; these are also
 " the only operators that can be referenced as symbols or used as
@@ -32,7 +30,12 @@ let s:overloadable_operators = '\%('.join(s:overloadable_operators, '\|').'\)'
 syn cluster crystalTop contains=TOP
 
 " Comments {{{2
-syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1\_$/ oneline contains=crystalTodo
+if get(b:, "is_ecrystal")
+  syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1\ze-\=%>/ oneline contains=crystalTodo
+else
+  syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1\_$/ oneline contains=crystalTodo
+endif
+
 syn keyword crystalTodo BUG DEPRECATED FIXME NOTE OPTIMIZE TODO contained
 
 syn region crystalShebang start=/\%#=1\%^#!/ end=/\%#=1\_$/ oneline
@@ -249,7 +252,7 @@ syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%x</  e
 syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%r|/  end=/\%#=1|/ contains=crystalStringInterpolation,crystalStringEscape nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
 " Blocks {{{2
-if get(g:, "crystal_highlight_definitions")
+if get(g:, "crystal_highlight_definitions") && !get(b:, "is_ecrystal")
   " NOTE: When definition blocks are highlighted, the following keywords
   " have to be matched with :syn-match instead of :syn-keyword to
   " prevent the block regions from being clobbered.
@@ -387,5 +390,7 @@ hi def link crystalMacroDelimiter PreProc
 hi def link crystalFreshVariable Identifier
 hi def link crystalAnnotationDelimiter Special
 " }}}1
+
+let b:current_syntax = "crystal"
 
 " vim:fdm=marker
