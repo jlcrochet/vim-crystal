@@ -6,7 +6,7 @@ This was originally a fork of [vim-crystal](https://github.com/vim-crystal/vim-c
 
 NOTE: The following variables are read only when this plugin is first loaded, so in order for any changes to take effect, you must place them in `.vimrc` or some other file loaded on startup and then restart Vim.
 
-#### `g:crystal_simple_indent` (TODO)
+#### `g:crystal_simple_indent`
 
 The default indentation style used by this plugin is the one most commonly found in the Crystal community, which allows for "hanging" or "floating" indentation. Some examples:
 
@@ -167,11 +167,10 @@ Results:
 
     jlcrochet/vim-crystal (Lua):
 
-    0.25s
-    0.09s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 0)
-    0.15s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 1)
+    0.24s
+    0.08s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 0)
+    0.14s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 1)
 
 ## TODO
 
 * Support for ECR (Embedded Crystal)
-* Support for vim-endwise

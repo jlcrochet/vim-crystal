@@ -2057,8 +2057,6 @@ local function has_starting_keyword(lnum, line, i, j)
   end
 end
 
-local echoerr = vim.api.nvim_err_writeln
-
 local function get_msl(lnum, line, start, finish, skip_commas, pairs)
   local prev_lnum = prevnonblank(lnum - 1)
 
@@ -2600,7 +2598,6 @@ else
 
     -- If the current line is inside of a multiline region, do nothing.
     if MULTILINE_REGIONS[syngroup_at(lnum, 1)] then
-      echoerr "1"
       return -1
     end
 
@@ -2608,7 +2605,6 @@ else
     local prev_lnum = prevnonblank(lnum - 1)
 
     if prev_lnum == 0 then
-      echoerr "2"
       return 0
     end
 
@@ -2657,7 +2653,6 @@ else
         -- backslash...
         if prev_last_byte == 92 or is_operator(prev_last_byte, prev_last_col, prev_prev_line, prev_prev_lnum) then  -- \
           -- Align with the starting column.
-          echoerr "3"
           return start_col - 1
         end
 
@@ -2675,12 +2670,10 @@ else
               if b ~= 35 then  -- #
                 -- If one is found and it is not a comment delimiter,
                 -- align with it.
-                echoerr "4"
                 return j - 1
               else
                 -- Else, align with the first column of the previous
                 -- line and add a shift.
-                echoerr "5"
                 return start_col - 1 + shiftwidth()
               end
             end
@@ -2690,7 +2683,6 @@ else
 
       -- If one could not be found, align with the first column of the
       -- previous line and add a shift.
-      echoerr "6"
       return start_col - 1 + shiftwidth()
     elseif last_byte == 44 then  -- ,
       -- If the previous line ends with a comma...
@@ -2720,7 +2712,6 @@ else
 
             if b > 32 then
               if b == 41 or b == 93 or b == 125 then  -- ) ] }
-                echoerr "7"
                 return ind - shiftwidth()
               end
 
@@ -2728,12 +2719,10 @@ else
             end
           end
 
-          echoerr "8"
           return ind
         elseif prev_last_byte == 92 or is_operator(prev_last_byte, prev_last_col, prev_prev_line, prev_prev_lnum) then  -- \
           -- If the next previous line ended with a backslash or hanging
           -- operator, align with the MSL.
-          echoerr "9"
           return ind
         end
 
@@ -2742,10 +2731,8 @@ else
 
       -- Else, align with the previous line and add a shift.
       if floating_col then
-        echoerr "10"
         return floating_col - 1
       else
-        echoerr "11"
         return first_col - 1 + shiftwidth()
       end
     elseif last_byte == 40 or last_byte == 91 or last_byte == 123 or  -- ( [ {
@@ -2760,12 +2747,10 @@ else
 
         if b > 32 then
           if b == 41 or b == 93 or b == 125 then  -- ) ] }
-            echoerr "12"
             return start_col - 1
           elseif b == 101 and line:byte(i + 1) == 110 and line:byte(i + 2) == 100 then  -- e n d
             if (i == 1 or is_boundary(line:byte(i - 1))) and (i + 2 == #line or is_boundary(line:byte(i + 3))) then
               if line:byte(i + 3) ~= 58 then  -- :
-                echoerr "13"
                 return start_col - 1
               end
             end
@@ -2775,7 +2760,6 @@ else
         end
       end
 
-      echoerr "14"
       return start_col - 1 + shiftwidth()
     end
 
@@ -2810,12 +2794,10 @@ else
           local b = prev_line:byte(i)
 
           if b == 46 and prev_line:byte(i + 1) ~= 46 and syngroup_at(prev_lnum, i) == "crystalOperator" then  -- .
-            echoerr "15"
             return i - 1
           end
         end
 
-        echoerr "16"
         return start_col - 1 + shiftwidth()
       end
     elseif b == 41 or b == 93 or b == 125 then  -- ) ] }
@@ -2823,11 +2805,9 @@ else
       -- a shift.
 
       if floating_col then
-        echoerr "17"
         return floating_col - 1
       else
         local _, ind = get_msl(prev_lnum, prev_line, first_col, last_col, true)
-        echoerr "18"
         return ind - shiftwidth()
       end
     elseif b == 92 then  -- \
@@ -3054,18 +3034,15 @@ else
 
       if i == #line or b == 58 or is_boundary(b) then  -- :
         if floating_col then
-          echoerr "19"
           return floating_col - 1
         else
           local _, ind = get_msl(prev_lnum, prev_line, first_col, last_col)
-          echoerr "20"
           return ind - shiftwidth()
         end
       end
     end
 
     if floating_col then
-      echoerr "21"
       return floating_col - 1 + shiftwidth()
     else
       local _, ind, shift = get_msl(prev_lnum, prev_line, first_col, last_col)
@@ -3074,7 +3051,6 @@ else
         ind = ind + shiftwidth()
       end
 
-      echoerr "22"
       return ind
     end
   end
