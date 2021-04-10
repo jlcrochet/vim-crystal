@@ -1,5 +1,197 @@
 #!/usr/bin/env crystal
 
+# Floating indentation samples:
+
+<<-string # => "  hello\n    world"
+                hello
+        world
+                 string
+
+foo = 1 + 5 -
+      10 * 4 /
+      bar
+
+foo =
+  1 + 5 -
+  10 * 4 /
+  bar
+
+foo,
+  bar,
+  jksldf
+
+foo bar: 1,
+  baz: 2,
+  bleh: 3
+
+foo(
+  bar
+  jksldf
+  jksdlf
+)
+
+foo { |foo|
+  foo * 2
+}
+
+foo(bleh: {
+  jksldfjklsdf
+})
+
+if foo
+  bar
+end
+
+if foo
+  if bar  # jskdljskldf
+  end
+end
+
+jksldf =
+  begin
+    jksldf
+  rescue bleh
+    jskdlf
+  end
+
+(foo) +
+  bar
+
+foo = [:foo, :bar,
+       "bleh", "bloo",
+       :baz, :qux]
+
+<<-some.upcase # => "hello"
+                 hello
+      some
+
+def upcase(string)
+  string.upcase
+end
+
+def []?(regex : Regex,
+        x : Int,
+        y : String,
+        group) : Int?
+  match[group]? if match
+  jksdlf
+  jskldf
+  jksldfjklsdf
+end
+
+x = [
+  1
+] + [
+  3
+]
+
+x = if y
+      5
+    else
+      10
+    end
+
+x = begin
+      h["foo"]
+    rescue KeyError
+      "Not Found"
+    end
+
+x = case y
+    when :foo
+      5
+    when :bar
+      10
+    else
+      1
+    end
+
+x = y.foo
+     .bar
+     .baz
+
+x = y
+  .foo
+  .bar
+  .baz
+
+method_call one,
+  two {
+    three
+  }
+
+method_call one,
+  two do
+    three
+  end
+
+record Color256,
+  value : UInt8 do
+    def fore(io : io) : nil
+      io << "38;5;"
+      value.to_s io
+    end
+
+    def back(io : io) : nil
+      io << "48;5;"
+      value.to_s io
+    end
+  end
+
+record ColorRGB,
+  red : UInt8,
+  green : UInt8,
+  blue : UInt8 do
+    def fore(io : io) : nil
+      io << "38;2;"
+      io << red << ";"
+      io << green << ";"
+      io << blue
+    end
+
+    def back(io : io) : nil
+      io << "48;2;"
+      io << red << ";"
+      io << green << ";"
+      io << blue
+    end
+  end
+
+x = if foo
+      record ColorRGB,
+        red : UInt8,
+        green : UInt8,
+        blue : UInt8 do
+          def fore(io) : nil
+            io << "bleh"
+          end
+
+          def back
+            jksldf
+          end
+        end
+    end
+
+foo =
+  begin
+    jksldfjsdf
+  end
+
+x = case y
+    when 1
+      "foo"
+    when 2
+      "bar"
+    when 3 then "baz"
+    when 4
+      "bleh"
+      "bloo"
+    when 5 then
+      "jskdlf"
+    else
+      "blerp"
+    end
+
 def foo(x : Int32, y = 123, z : Int32 = 123) : Int32 | self
   jksldfjklsdf
 end
@@ -84,6 +276,20 @@ jkl
 { name: "Crystal", year: 2011 }, { "this is a key": 1 }
 
 foo12
+
+input = %w(nail shoe horse rider message battle kingdom)
+
+one = -> do
+  output = [] of String
+
+  input.each_cons_pair do |a, b|
+    output << "For want of a #{a} the #{b} was lost."
+  end
+
+  output << "And all for the want of a #{input.first}."
+
+  return output
+end
 
 def foo(x : T(Int32) = 123, y = 123, z = /jksldfsdf/, w = z / y) : Int32 forall T
   T
@@ -190,10 +396,10 @@ if foo[0]? / jkflds / sjdkflsdf
 end
 
 jksldf = begin
-  jksldf
-rescue bleh
-  jskdlf
-end
+           jksldf
+         rescue bleh
+           jskdlf
+         end
 
 sjkdflsdf
 
@@ -217,7 +423,8 @@ def one
   1
 end
 
-def plan(begin begin_time, end end_time)
+def plan(begin x, end y)
+  jksldfjklsdf
 end
 
 plan begin: Time.now, end: 2.days.from_now
@@ -312,25 +519,25 @@ foo %(jkljkljkl)
 foo /bleh/, /bloo/
 
 foo <<-TEXT
-jkalsdjfkl
-TEXT
+            jkalsdjfkl
+            TEXT
 
 print(<<-'FIRST', <<-SECOND)
-hello
-FIRST
-World
-SECOND
+            hello
+            FIRST
+            World
+            SECOND
 jksldf
 
 print(<<-'FIRST', <<-SECOND, <<-'THIRD')
-hello
-FIRST
-World
-SECOND
-jksldf
-#{jksldf}
-jskdlfjklsdfj
-THIRD
+            hello
+            FIRST
+            World
+            SECOND
+            jksldf
+            #{jksldf}
+            jskdlfjklsdfj
+            THIRD
 jksdlf
 
 foo "jklasdf", 'j', %w(foo bar baz)
@@ -534,14 +741,14 @@ jkl
   "no newlines" # same as "hello world, no newlines"
 
 foo = "hello
-sdfsdfds
-jksldf world \"
-jklsdf" + :foo
+            sdfsdfds
+            jksldf world \"
+            jklsdf" + :foo
 
 x + " foo " +
-  " bar " +
-  jskldfjklsdf +
-  jaksldf
+    " bar " +
+    jskldfjklsdf +
+    jaksldf
 jksldfjsdf
 
 # Supports double quotes and nested parentheses
@@ -561,49 +768,49 @@ unless foo + bar - bleh
 end
 
 <<-STRING # => "Hello\n  world"
-Hello
-world
-<F5>
-    jklasdfasdf
-jkalsdfasdf
-#{jklasdfasdf}
-jklsdfsdf
-STRING
+            Hello
+            world
+            <F5>
+              jklasdfasdf
+            jkalsdfasdf
+            #{jklasdfasdf}
+            jklsdfsdf
+            STRING
 
 upcase <<-SOME, "bleh" # => jkl
-jklsdf
-SOME
+            jklsdf
+            SOME
 
 upcase(<<-SOME, :bleh, "bleh", 'b', /bleh/ / foo) # => "HELLO"
-hello
-SOME
+            hello
+            SOME
 
 upcase(<<-'SOME', "bleh")  # => "HELLO"
-foo
-bar
-SOME
+            foo
+            bar
+            SOME
 
 <<-HERE
-hello \n \#{world}
-HERE
+            hello \n \#{world}
+            HERE
 
 <<-HERE
-hello \n #{world}
-HERE
+            hello \n #{world}
+            HERE
 
 foo = <<-'HERE' # => "hello \\n \#{world}"
-hello \n #{world}
-HERE
+            hello \n #{world}
+            HERE
 
 foo = <<-'HERE' # => jklasdf
-hello \n #{wordl}
-HERE
+            hello \n #{wordl}
+            HERE
 
 :"jklsdfjklsdf"
 
 a = 1
 b = 2
-"sum = #{foo { |a, b| jksldfjklsdf + {{ foo { |x| x ** 2 } }} + 123 } } jksldfsdf"
+"sum = #{foo { |a, b| jksldfjklsdf + {{ foo { |x| x ** 2 } }} + 123 }} jksldfsdf"
 "sum = #{foo { |a, b| jskldf { |x, y| x + {{ 123 }} + 123 } }} + 1" # "sum = 3"
 
 $1?
@@ -622,14 +829,13 @@ $1232321321?
 module Json(Int32)
   private property? @@jkl : Int32 = 123
 
-  alias Type =
-    Nil |
-    Bool |
-    Int64 |
-    Float64 |
-    String |
-    Array(Type) |
-    Hash(String, Type)
+  alias Type = Nil |
+               Bool |
+               Int64 |
+               Float64 |
+               String |
+               Array(Type) |
+               Hash(String, Type)
 
   require "jksldf"
 
@@ -711,8 +917,8 @@ foo.self
 foo.nil
 foo.__FILE__
 foo.true.true
-  .false
-  .jaskldf
+   .false
+   .jaskldf
 
 self
 nil
@@ -721,19 +927,19 @@ true
 
 x = 1 || "a"
 z = case x
-when Int32
-  true
-when String
-  false
-end
+    when Int32
+      true
+    when String
+      false
+    end
 
 x = 1 || "a"
 z = case x
-in Int32
-  true
-in String
-  false
-end
+    in Int32
+      true
+    in String
+      false
+    end
 
 typeof(z) # => Bool
 
@@ -758,10 +964,10 @@ if foo
 end
 
 foo = (bar,
-  bleh,
-  blerp,
-  blorp,
-  bloo)
+       bleh,
+       blerp,
+       blorp,
+       bloo)
 
 foo = {
   x: 1,
@@ -779,6 +985,20 @@ foo = (
     bleh -
     bloo * fjdkls,
   jskdlf
+)
+
+foo = (
+  bleh,
+  bloo,
+  bar + bleh -
+        bloo * fjkdlsjfklds,
+  jksldf
+)
+
+foo = (
+  bleh,
+  bar + bleh -
+        jskdlfjklsdf
 )
 
 foo bar,
@@ -839,7 +1059,7 @@ foo + bar
   true
 
 foo = bar(bleh, blerp,
-  jklsdf, fjdklsajfkdlsa)
+          jklsdf, fjdklsajfkdlsa)
 
 macro define_method(name, content)
   def bleh(sdf)
@@ -889,16 +1109,16 @@ end
 annotation_read
 
 x = if true
-  5
-else
-  10
-end
+      5
+    else
+      10
+    end
 
 x + if true
-  5
-else
-  10
-end
+      5
+    else
+      10
+    end
 
 case x
 in foo
@@ -910,10 +1130,10 @@ end
 x = if true 5 else 10 end
 
 x = if true
-  5
-else
-  10
-end
+      5
+    else
+      10
+    end
 
 x = "if"
 bar
@@ -1177,8 +1397,8 @@ end
 foo = :foo
 
 foo = :"
-foo
-"
+            foo
+            "
 
 println 1, 2, 3 # outputs 123\n
 
@@ -1189,10 +1409,10 @@ else
 end
 
 x = if true
-  5
-else
-  10
-end
+      5
+    else
+      10
+    end
 
 while true
   if foo
@@ -1301,9 +1521,9 @@ greeting_for_bob "hola"    # => "¡hola bob!"
 end
 
 foo = <<-TEXT
-bleh
-bloo blerp
-TEXT
+            bleh
+            bloo blerp
+            TEXT
 
 foo.each do |bleh|
   bleh
@@ -1319,6 +1539,18 @@ foo /
   bar
 
 foo //
+  bar
+
+foo &+
+  bar
+
+foo &*
+  bar
+
+foo &**
+  bar
+
+foo <<=
   bar
 
 bleh
@@ -1411,9 +1643,9 @@ foo(
 )
 
 foo(bleh,
-  bloo,
-  bleh,
-  boop)
+    bloo,
+    bleh,
+    boop)
 
 foo = [
   foo,
@@ -1422,8 +1654,8 @@ foo = [
 ]
 
 foo = [foo,
-  bar,
-  bloop]
+       bar,
+       bloop]
 
 foo = {
   foo,
@@ -1432,8 +1664,8 @@ foo = {
 }
 
 foo = {foo,
-  bar,
-  bloop}
+       bar,
+       bloop}
 
 foo = {
   foo +
@@ -1442,10 +1674,10 @@ foo = {
   blerp,
   jksldf if true,
   jksldf + if true
-    jksldfjskdlf
-  else
-    10
-  end,
+             jksldfjskdlf
+           else
+             10
+           end,
   jksldfjksldf
 }
 
@@ -1562,7 +1794,7 @@ end
 end
 
 foo = "bar" \
-  "baz"
+      "baz"
 
 method_call one,
   two,
@@ -1699,16 +1931,16 @@ end
 
 # :nodoc:
 CHAR_TO_DIGIT = begin
-  table = StaticArray(Int8, 256).new(-1_i8)
-  10_i8.times do |i|
-    table.to_unsafe[48 + i] = i
-  end
-  26_i8.times do |i|
-    table.to_unsafe[65 + i] = i + 10
-    table.to_unsafe[97 + i] = i + 10
-  end
-  table
-end
+                  table = StaticArray(Int8, 256).new(-1_i8)
+                  10_i8.times do |i|
+                    table.to_unsafe[48 + i] = i
+                  end
+                  26_i8.times do |i|
+                    table.to_unsafe[65 + i] = i + 10
+                    table.to_unsafe[97 + i] = i + 10
+                  end
+                  table
+                end
 
 { jksldfsdf } {%  %}
 
@@ -1752,8 +1984,8 @@ def =~(regex : Regex)
 end
 
 foo = begin
-  jksldf
-end
+        jksldf
+      end
 
 @def = "bleh"
 
@@ -1799,32 +2031,32 @@ end
 require "file_utils"
 
 logger = if Lucky::Env.test?
-  # Logs to `tmp/test.log` so you can see what's happening without having
-  # a bunch of log output in your specs results.
-  FileUtils.mkdir_p("tmp")
-  Dexter::Logger.new(
-    io: File.new("tmp/test.log", mode: "w"),
-    level: Logger::Severity::DEBUG,
-    log_formatter: Lucky::PrettyLogFormatter
-  )
-elsif Lucky::Env.production?
-  # This sets the log formatter to JSON so you can parse the logs with
-  # services like Logentries or Logstash.
-  #
-  # If you want logs like in development use `Lucky::PrettyLogFormatter`.
-  Dexter::Logger.new(
-    io: STDOUT,
-    level: Logger::Severity::INFO,
-    log_formatter: Dexter::Formatters::JsonLogFormatter
-  )
-else
-  # For development, log everything to STDOUT with the pretty formatter.
-  Dexter::Logger.new(
-    io: STDOUT,
-    level: Logger::Severity::DEBUG,
-    log_formatter: Lucky::PrettyLogFormatter
-  )
-end
+           # Logs to `tmp/test.log` so you can see what's happening without having
+           # a bunch of log output in your specs results.
+           FileUtils.mkdir_p("tmp")
+           Dexter::Logger.new(
+             io: File.new("tmp/test.log", mode: "w"),
+             level: Logger::Severity::DEBUG,
+             log_formatter: Lucky::PrettyLogFormatter
+           )
+         elsif Lucky::Env.production?
+           # This sets the log formatter to JSON so you can parse the logs with
+           # services like Logentries or Logstash.
+           #
+           # If you want logs like in development use `Lucky::PrettyLogFormatter`.
+           Dexter::Logger.new(
+             io: STDOUT,
+             level: Logger::Severity::INFO,
+             log_formatter: Dexter::Formatters::JsonLogFormatter
+           )
+         else
+           # For development, log everything to STDOUT with the pretty formatter.
+           Dexter::Logger.new(
+             io: STDOUT,
+             level: Logger::Severity::DEBUG,
+             log_formatter: Lucky::PrettyLogFormatter
+           )
+         end
 
 Lucky.configure do |settings|
   settings.logger = logger
@@ -1871,10 +2103,10 @@ jksdlfsdf
 jksldf
 
 x = if foo
-  jksldfjklsdf
-  asjkdflasdf
-  ajksldf
-end
+      jksldfjklsdf
+      asjkdflasdf
+      ajksldf
+    end
 
 x = [
   if foo
@@ -1889,20 +2121,31 @@ x = [
   end,
 ]
 
+x = [
+  if foo
+    bleh
+  else
+    bloo
+  end,
+  y + if bar
+        bleh
+      end,
+]
+
 x = case y
-when 1
-  "foo"
-when 2
-  "bar"
-when 3 then "baz"
-when 4
-  "bleh"
-  "bloo"
-when 5 then
-  "jskdlf"
-else
-  "blerp"
-end
+    when 1
+      "foo"
+    when 2
+      "bar"
+    when 3 then "baz"
+    when 4
+      "bleh"
+      "bloo"
+    when 5 then
+      "jskdlf"
+    else
+      "blerp"
+    end
 
 true if bleh
 
@@ -1938,10 +2181,10 @@ def self.each
 end
 
 NULL = {% if flag?(:win32) %}
-  "NUL"
-{% else %}
-  "/dev/null"
-{% end %}
+         "NUL"
+       {% else %}
+         "/dev/null"
+       {% end %}
 
 def self.each
   @type.constants.each do |member|
@@ -1983,113 +2226,3 @@ private DEFAULT_FORMATTER = Formatter.new do |severity, datetime, progname, mess
   io << label[0] << ", [" << datetime << " #" << Process.pid << "] "
   io << label.rjust(5) << " -- " << progname << ": " << message
 end
-
-# Floating indentation samples:
-
-jksldf =
-  begin
-    jksldf
-  rescue bleh
-    jskdlf
-  end
-
-  <<-string # => "  hello\n    world"
-                 hello
-                 world
-                 string
-
-                 (foo) +
-                   bar
-
-                 <<-some.upcase # => "hello"
-                 hello
-                 some
-
-                 def upcase(string)
-                   string.upcase
-                 end
-
-                 def []?(regex : regex,
-                   group) : int?
-                 match[group]? if match
-                 jksdlf
-                 jskldf
-                 jksldfjklsdf
-               end
-
-               method_call one,
-                 two {
-                   three
-                 }
-
-                 method_call one,
-                   two do
-                     three
-                   end
-
-                   record color256,
-                     value : uint8 do
-                       def fore(io : io) : nil
-                         io << "38;5;"
-                         value.to_s io
-                       end
-
-                       def back(io : io) : nil
-                         io << "48;5;"
-                         value.to_s io
-                       end
-                     end
-
-                     record colorrgb,
-                       red : uint8,
-                       green : uint8,
-                       blue : uint8 do
-                         def fore(io : io) : nil
-                           io << "38;2;"
-                           io << red << ";"
-                           io << green << ";"
-                           io << blue
-                         end
-
-                         def back(io : io) : nil
-                           io << "48;2;"
-                           io << red << ";"
-                           io << green << ";"
-                           io << blue
-                         end
-                       end
-
-                       x = if foo
-                         record colorrgb,
-                           red : uint8,
-                           green : uint8,
-                           blue : uint8 do
-                             def fore(io) : nil
-                               io << "bleh"
-                             end
-
-                             def back
-                               jksldf
-                             end
-                           end
-                         end
-
-                         foo =
-                           begin
-                             jksldfjsdf
-                           end
-
-                           x = case y
-                           when 1
-                             "foo"
-                           when 2
-                             "bar"
-                           when 3 then "baz"
-                           when 4
-                             "bleh"
-                             "bloo"
-                           when 5 then
-                             "jskdlf"
-                           else
-                             "blerp"
-                           end

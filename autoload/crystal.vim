@@ -6,7 +6,7 @@
 " Caching important syntax ID's for use in indentation logic
 const g:crystal#multiline_regions = {}
 
-for s:name in ["crystalString", "crystalSymbol", "crystalRegex", "crystalCommand", "crystalHeredocLine", "crystalHeredocLineRaw", "crystalHeredocDelimiter"]
+for s:name in ["crystalString", "crystalSymbol", "crystalRegex", "crystalRegexGroup", "crystalRegexComment", "crystalRegexEscape", "crystalCommand", "crystalHeredocLine", "crystalHeredocLineRaw", "crystalHeredocEnd"]
   let g:crystal#multiline_regions[hlID(s:name)] = 1
 endfor
 

@@ -105,7 +105,7 @@ NOTE: Setting this will have no effect unless `g:crystal_simple_indent` has been
 
 ## Performance Comparison with [vim-crystal](https://github.com/vim-crystal/vim-crystal)
 
-Comparisons made between the respective HEAD's of each plugin as of this writing (2021-3-17), using `test.cr` as the test file. `test.cr` is comprised of snippets taken from the official documentation along with some random edge cases I came up with myself. The benchmarks were run with NeoVim 0.5.0.
+Comparisons made between the respective HEAD's of each plugin as of this writing (2021-4-10), using [this test file](https://gist.github.com/jlcrochet/720c5a83aa15eef2d2eda2c05bc5b2f1). The test file is comprised of snippets taken from the official documentation along with some random edge cases I came up with myself. The benchmarks were run with NeoVim 0.5.0.
 
 #### Syntax
 
@@ -132,13 +132,13 @@ Results:
 
     vim-crystal/vim-crystal:
 
-    4.74s
-    8.54s  (g:crystal_no_expensive == 1)
+    6.03s
+    5.34s  (g:crystal_no_expensive == 1)
 
     jlcrochet/vim-crystal:
 
-    0.37s
-    0.58s  (g:crystal_highlight_definitions == 1)
+    0.35s
+    0.54s  (g:crystal_highlight_definitions == 1)
 
 #### Indentation
 
@@ -156,21 +156,22 @@ Results:
 
     vim-crystal/vim-crystal:
 
-    7.61s
-    7.24s  (g:crystal_no_expensive == 1)
+    11.43s
+    14.54s  (g:crystal_no_expensive == 1)
 
     jlcrochet/vim-crystal (VimL):
 
-    TODO
-    0.49s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 0)
-    0.54s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 1)
+    1.17s
+    0.53s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 0)
+    0.59s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 1)
 
     jlcrochet/vim-crystal (Lua):
 
-    TODO
-    0.11s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 0)
-    0.14s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 1)
+    0.25s
+    0.09s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 0)
+    0.15s  (g:crystal_simple_indent == 1 && g:crystal_highlight_definitions == 1)
 
 ## TODO
 
 * Support for ECR (Embedded Crystal)
+* Support for vim-endwise
