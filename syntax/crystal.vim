@@ -7,6 +7,10 @@ if has_key(b:, "current_syntax")
   finish
 endif
 
+if get(g:, "crystal_fold")
+  setlocal foldmethod=syntax
+endif
+
 " Syntax {{{1
 " This pattern helps to match all overloadable operators; these are also
 " the only operators that can be referenced as symbols or used as
