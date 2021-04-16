@@ -105,7 +105,24 @@ If `1`, definition keywords &mdash; `def`, `macro`, `class`, `module`, `struct`,
 
 NOTE: Setting this will have no effect unless `g:crystal_simple_indent` has been set, since definition keywords need to be matched in order to efficiently indent floating blocks. Additionally, setting this will have no effect if `g:crystal_fold` has been set, since definition keywords have to be matched for folding to work.
 
-#### `g:crystal_exte`
+#### `g:ecrystal_extensions`
+
+This plugin uses a dictionary of filetype extensions to determine which filetype to use when loading ECR files. For example, opening a file named `foo.html.ecr` will load HTML as the filetype.
+
+The default recognized filetype extensions are as follows:
+
+    html => html
+    js => javascript
+    json => json
+    yml => yaml
+    txt => text
+    md => markdown
+
+each extension maps to the name of the filetype that you want to load for that extension.
+
+To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize XML files and would cause `*.js` files to be recognized as JSX:
+
+    let g:ecrystal_extensions = { "xml": "xml", "js": "javascriptreact }
 
 ## Performance Comparison with [vim-crystal](https://github.com/vim-crystal/vim-crystal)
 
