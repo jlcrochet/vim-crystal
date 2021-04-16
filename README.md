@@ -118,7 +118,7 @@ The default recognized filetype extensions are as follows:
     txt => text
     md => markdown
 
-each extension maps to the name of the filetype that you want to load for that extension.
+Each extension maps to the name of the filetype that you want to load for that extension.
 
 To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize XML files and would cause `*.js` files to be recognized as JSX:
 
