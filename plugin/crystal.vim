@@ -3,7 +3,13 @@
 " Author: Jeffrey Crochet <jlcrochet@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-if !get(g:, "crystal_simple_indent") || get(g:, "crystal_fold")
+if get(g:, "crystal_simple_indent")
+  let g:crystal_highlight_definitions = 0
+else
+  let g:crystal_highlight_definitions = 1
+endif
+
+if get(g:, "crystal_fold")
   let g:crystal_highlight_definitions = 1
 endif
 

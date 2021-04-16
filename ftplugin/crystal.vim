@@ -13,7 +13,9 @@ setlocal commentstring=#\ %s
 setlocal suffixesadd=.cr
 
 " matchit.vim
-let b:match_words = g:crystal#match_words
-let b:match_skip = 'S:^crystal\%(Keyword\|Define\)$'
+if get(g:, "loaded_matchit")
+  let b:match_words = g:crystal#match_words
+  let b:match_skip = 'S:^crystal\%(Keyword\|Define\)$'
+endif
 
 let b:did_ftplugin = 1

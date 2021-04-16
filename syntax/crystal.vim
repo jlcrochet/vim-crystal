@@ -3,7 +3,7 @@
 " Author: Jeffrey Crochet <jlcrochet@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-if has_key(b:, "current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
@@ -35,7 +35,7 @@ syn cluster crystalTop contains=TOP
 
 " Comments {{{2
 if get(b:, "is_ecrystal")
-  syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1\ze-\=%>/ oneline contains=crystalTodo
+  syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1\%(\_$\|\ze-\=%>\)/ oneline contains=crystalTodo
 else
   syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1\_$/ oneline contains=crystalTodo
 endif
@@ -256,18 +256,19 @@ syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%x</  e
 syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%r|/  end=/\%#=1|/ contains=crystalStringInterpolation,crystalStringEscape nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
 " Blocks {{{2
-if get(g:, "crystal_highlight_definitions") && !get(b:, "is_ecrystal")
+if get(g:, "crystal_highlight_definitions") && !get(b:, is_ecrystal)
   " NOTE: When definition blocks are highlighted, the following keywords
   " have to be matched with :syn-match instead of :syn-keyword to
   " prevent the block regions from being clobbered.
 
-  syn match crystalKeyword /\%#=1\<\%(if\|unless\|case\|while\|until\|begin\)\>/
+  syn region crystalBlock matchgroup=crystalKeyword start=/\%#=1\<\%(if\|unless\|case\|while\|until\|begin\)\>/ end=/\%#=1\<end\>/ transparent
+
   syn match crystalKeyword /\%#=1\<do\>/ nextgroup=crystalBlockParameters skipwhite
+  syn region crystalBlock start=/\%#=1\<do\>/ matchgroup=crystalKeyword end=/\%#=1\<end\>/ transparent
 
   syn match crystalDefine /\%#=1\<\%(def\|macro\)\>/ nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn match crystalDefine /\%#=1\<\%(class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ nextgroup=crystalTypeDefinition skipwhite
 
-  syn region crystalBlock start=/\%#=1\<\%(if\|unless\|case\|while\|until\|begin\|do\)\>/ matchgroup=crystalKeyword end=/\%#=1\<end\>/ transparent
   syn region crystalDefineBlock start=/\%#=1\<\%(def\|macro\|class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ matchgroup=crystalDefine end=/\%#=1\<end\>/ transparent fold
 
   syn keyword crystalKeyword abstract nextgroup=crystalDefineNoBlock skipwhite
@@ -297,7 +298,7 @@ syn match crystalInheritanceOperator /\%#=1</ contained nextgroup=crystalConstan
 
 syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ contained nextgroup=crystalMethodParameters,crystalOperator skipwhite
 execute 'syn match crystalMethodDefinition /\%#=1'.s:overloadable_operators.'/ contained nextgroup=crystalMethodParameters,crystalOperator skipwhite'
-syn region crystalMethodParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=TOP,crystalKeyword,crystalDefine,crystalBlock,crystalDefineBlock,crystalNamedTupleKey nextgroup=crystalOperator skipwhite
+syn region crystalMethodParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=TOP,crystalKeyword,crystalDefine,crystalBlock,crystalDefineBlock nextgroup=crystalOperator skipwhite
 syn match crystalMethodReceiver /\%#=1\u\w*/ contained nextgroup=crystalMethodDot
 syn keyword crystalMethodSelf self contained nextgroup=crystalMethodDot
 syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
@@ -394,7 +395,5 @@ hi def link crystalMacroDelimiter PreProc
 hi def link crystalFreshVariable Identifier
 hi def link crystalAnnotationDelimiter Special
 " }}}1
-
-let b:current_syntax = "crystal"
 
 " vim:fdm=marker
