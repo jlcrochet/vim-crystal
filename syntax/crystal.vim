@@ -315,8 +315,8 @@ syn keyword crystalKeyword
       \ private protected
 
 syn keyword crystalKeyword include extend nextgroup=crystalConstant skipwhite
-
 syn keyword crystalKeyword return next break yield raise nextgroup=crystalPostfixKeyword skipwhite
+syn keyword crystalKeyword require nextgroup=crystalString skipwhite
 
 syn keyword crystalPostfixKeyword if unless contained
 
@@ -328,8 +328,6 @@ syn keyword crystalKeyword nextgroup=crystalNilableModifier
       \ getter setter property class_getter class_setter class_property
 
 syn match crystalNilableModifier /\%#=1?/ contained
-
-syn keyword crystalKeyword require nextgroup=crystalString skipwhite
 
 syn region crystalAnnotation matchgroup=crystalAnnotationDelimiter start=/\%#=1@\[/ end=/\%#=1]/ oneline transparent
 
