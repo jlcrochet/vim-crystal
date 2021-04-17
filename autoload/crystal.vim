@@ -23,7 +23,7 @@ const g:crystal#comment_delimiter = hlID("crystalCommentDelimiter")
 " matchit.vim
 let s:match_words = [
       \ '\<\%(def\|macro\|class\|struct\|module\|enum\|annotation\|lib\|union\|if\|unless\|case\|while\|until\|for\|begin\|do\):\@!\>',
-      \ '\<\%(else\|elsif\|when\|in\|rescue\|ensure\|break\|next\|yield\|return\):\@!\>',
+      \ '\<\%(else\|elsif\|when\|in\|rescue\|ensure\|break\|next\|yield\|return\|raise\):\@!\>',
       \ '\<end:\@!\>'
       \ ]
 const g:crystal#match_words = join(s:match_words, ":")
