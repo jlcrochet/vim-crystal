@@ -39,24 +39,24 @@ let s:floating_re = '\<\%(\(\%(begin\|case\|if\|unless\|until\|while\)\)\|\(else
 if get(g:, "crystal_highlight_definitions")
   function s:skip_keyword()
     let synid = synID(line("."), col("."), 0)
-    return synid != g:crystal#keyword && synid != g:crystal#define && synid != g:crystal#block_control && synid != g:crystal#define_block_control
+    return synid != g:crystal#indent#keyword && synid != g:crystal#indent#define && synid != g:crystal#indent#block_control && synid != g:crystal#indent#define_block_control
   endfunction
 
   function s:skip_pair()
     let synid = synID(line("."), col("."), 0)
-    return synid != g:crystal#keyword && synid != g:crystal#define && synid != g:crystal#block_control && synid != g:crystal#define_block_control && synid != g:crystal#delimiter
+    return synid != g:crystal#indent#keyword && synid != g:crystal#indent#define && synid != g:crystal#indent#block_control && synid != g:crystal#indent#define_block_control && synid != g:crystal#indent#delimiter
   endfunction
 
   let s:skip_keyword_expr = function("s:skip_keyword")
   let s:skip_pair_expr = function("s:skip_pair")
 else
-  let s:skip_keyword_expr = 'synID(line("."), col("."), 0) != g:crystal#keyword'
+  let s:skip_keyword_expr = 'synID(line("."), col("."), 0) != g:crystal#indent#keyword'
 endif
 
 function s:prev_non_multiline(lnum)
   let lnum = a:lnum
 
-  while get(g:crystal#multiline_regions, synID(lnum, 1, 0))
+  while get(g:crystal#indent#multiline_regions, synID(lnum, 1, 0))
     let lnum -= 1
   endwhile
 
@@ -65,7 +65,7 @@ endfunction
 
 function s:is_operator(char, col, line, lnum)
   if a:char =~# '[%&+\-/:<=>^|~]'
-    return synID(a:lnum, a:col, 0) == g:crystal#operator
+    return synID(a:lnum, a:col, 0) == g:crystal#indent#operator
   elseif a:char =~# '[*?]'
     " Find the first character prior to this one that isn't also a * or
     " ?.
@@ -76,7 +76,7 @@ function s:is_operator(char, col, line, lnum)
         if char =~# '[[:alnum:]_)\]}]'
           return 0
         else
-          return synID(a:lnum, a:col, 0) == g:crystal#operator
+          return synID(a:lnum, a:col, 0) == g:crystal#indent#operator
         endif
       endif
     endfor
@@ -100,7 +100,7 @@ function s:get_last_char(lnum, line)
       return [-1, -1]
     endif
 
-    if synID(a:lnum, found + 1, 0) == g:crystal#comment_delimiter
+    if synID(a:lnum, found + 1, 0) == g:crystal#indent#comment_delimiter
       break
     endif
   endwhile
@@ -117,7 +117,7 @@ function s:find_floating_index(lnum, i, j)
 
   while col >= a:i + 1
     if p == 2  " begin case if unless until while
-      if synID(a:lnum, col, 0) == g:crystal#keyword
+      if synID(a:lnum, col, 0) == g:crystal#indent#keyword
         if pairs == 0
           " If this is a macro tag keyword, return the index for the macro
           " tag.
@@ -134,12 +134,14 @@ function s:find_floating_index(lnum, i, j)
       endif
     elseif p == 3  " else elsif ensure in rescue when
       if pairs == 0
-        if synID(a:lnum, col, 0) == g:crystal#keyword
+        let synid = synID(a:lnum, col, 0)
+
+        if synid == g:crystal#indent#keyword || synid == g:crystal#indent#block_control || synid == g:crystal#indent#define_block_control
           return a:i
         endif
       endif
     elseif p == 4  " annotation class def enum lib macro module struct union
-      if synID(a:lnum, col, 0) == g:crystal#define
+      if synID(a:lnum, col, 0) == g:crystal#indent#define
         if pairs == 0
           return a:i
         else
@@ -147,7 +149,7 @@ function s:find_floating_index(lnum, i, j)
         endif
       endif
     elseif p == 5  " do
-      if synID(a:lnum, col, 0) == g:crystal#keyword
+      if synID(a:lnum, col, 0) == g:crystal#indent#keyword
         if pairs == 0
           return a:i
         else
@@ -157,11 +159,11 @@ function s:find_floating_index(lnum, i, j)
     elseif p == 6  " end
       let synid = synID(a:lnum, col, 0)
 
-      if synid == g:crystal#keyword || synid == g:crystal#define
+      if synid == g:crystal#indent#keyword || synid == g:crystal#indent#define
         let pairs -= 1
       endif
     elseif p == 7  " ( [ {
-      if synID(a:lnum, col, 0) == g:crystal#delimiter
+      if synID(a:lnum, col, 0) == g:crystal#indent#delimiter
         if pairs == 0
           let [_, col2] = searchpos('\S', "z", a:lnum)
 
@@ -175,11 +177,11 @@ function s:find_floating_index(lnum, i, j)
         endif
       endif
     elseif p == 8  " ) ] }
-      if synID(a:lnum, col, 0) == g:crystal#delimiter
+      if synID(a:lnum, col, 0) == g:crystal#indent#delimiter
         let pairs -= 1
       endif
     elseif p == 9  " |
-      if synID(a:lnum, col, 0) == g:crystal#delimiter
+      if synID(a:lnum, col, 0) == g:crystal#indent#delimiter
         if pairs == 0
           return a:i
         endif
@@ -203,7 +205,7 @@ function s:find_msl(skip_commas, pairs)
   " This line is *not* the MSL if:
 
   " It is part of a multiline region.
-  if get(g:crystal#multiline_regions, synID(lnum, 1, 0))
+  if get(g:crystal#indent#multiline_regions, synID(lnum, 1, 0))
     call cursor(prev_lnum, 1)
     return s:find_msl(a:skip_commas, v:null)
   endif
@@ -228,7 +230,7 @@ function s:find_msl(skip_commas, pairs)
         return [lnum, col - 1, 0]
       endif
 
-      if synID(lnum, col, 0) == g:crystal#define
+      if synID(lnum, col, 0) == g:crystal#indent#define
         return [lnum, col - 1, 0]
       endif
 
@@ -276,7 +278,7 @@ if get(g:, "crystal_simple_indent")
   " Simple {{{
   function GetCrystalIndent() abort
     " If the current line is inside of a multiline region, do nothing.
-    if get(g:crystal#multiline_regions, synID(v:lnum, 1, 0))
+    if get(g:crystal#indent#multiline_regions, synID(v:lnum, 1, 0))
       return -1
     endif
 
@@ -302,7 +304,7 @@ if get(g:, "crystal_simple_indent")
       " If the previous line begins in a multiline region, find the line
       " that began that region.
 
-      if get(g:crystal#multiline_regions, synID(prev_lnum, 1, 0))
+      if get(g:crystal#indent#multiline_regions, synID(prev_lnum, 1, 0))
         let start_lnum = s:prev_non_multiline(prevnonblank(prev_lnum - 1))
         let start_line = getline(start_lnum)
       else
@@ -395,7 +397,7 @@ if get(g:, "crystal_simple_indent")
     elseif char ==# "}"
       let shift = 1
 
-      if last_char ==# "{" || (last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#delimiter)
+      if last_char ==# "{" || (last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#indent#delimiter)
         let shift = 0
       endif
 
@@ -428,7 +430,7 @@ if get(g:, "crystal_simple_indent")
     endif
 
     if (last_char =~# '[\\(\[{]')
-          \ || (last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#delimiter)
+          \ || (last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#indent#delimiter)
           \ || s:is_operator(last_char, last_idx + 1, prev_line, prev_lnum)
       if continuation == 1
         return first_idx
@@ -473,7 +475,7 @@ else
   " Default {{{
   function GetCrystalIndent() abort
     " If the current line is inside of a multiline region, do nothing.
-    if get(g:crystal#multiline_regions, synID(v:lnum, 1, 0))
+    if get(g:crystal#indent#multiline_regions, synID(v:lnum, 1, 0))
       return -1
     endif
 
@@ -530,7 +532,7 @@ else
       while idx != -1
         let [char, idx, offset] = matchstrpos(prev_line, '[%&+\-/:<=>^|~]\|[[:alnum:]_)\]}]\@1<![*?]\+', offset)
 
-        if synID(prev_lnum, idx + 1, 0) == g:crystal#operator
+        if synID(prev_lnum, idx + 1, 0) == g:crystal#indent#operator
           " Find the first non-whitespace column after the operator that
           " is not also an operator.
           let [char, idx, _] = matchstrpos(prev_line, '[^[:space:]%&+\-/:<=>^|~*?]', offset)
@@ -586,7 +588,7 @@ else
       else
         return first_idx + shiftwidth()
       endif
-    elseif last_char =~# '[(\[{]' || last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#delimiter
+    elseif last_char =~# '[(\[{]' || last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#indent#delimiter
       " If the previous line ends with an opening bracket, align with
       " the starting column and add a shift unless the current line
       " begins with a closing bracket or `end`.
