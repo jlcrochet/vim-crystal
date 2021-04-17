@@ -17,5 +17,5 @@ setlocal suffixesadd=.cr
 " matchit.vim
 if get(g:, "loaded_matchit")
   let b:match_words = g:crystal#match_words
-  let b:match_skip = 'S:^crystal\%(Keyword\|Define\)$'
+  let b:match_skip = 'S:^crystal\%(Keyword\|Define\|BlockControl\|DefineBlockControl\)$'
 endif

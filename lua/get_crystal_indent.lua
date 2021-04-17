@@ -573,9 +573,7 @@ local function get_keyword_pairs(lnum, line, i, j)
     ::kw_start::
 
     if (start == 1 or is_boundary(line:byte(start - 1))) and (i == j or is_boundary(line:byte(i + 1))) then
-      local syngroup = syngroup_at(lnum, start)
-
-      if syngroup == "crystalKeyword" or syngroup == "crystalDefine" then
+      if syngroup_at(lnum, start) == "crystalKeyword" then
         pairs = pairs + 1
       end
     end
@@ -584,8 +582,10 @@ local function get_keyword_pairs(lnum, line, i, j)
 
     ::kw_middle::
 
-    if pairs == 0 then
-      goto kw_start
+    if (start == 1 or is_boundary(line:byte(start - 1))) and (i == j or is_boundary(line:byte(i + 1))) then
+      if syngroup_at(lnum, start) == "crystalKeyword" then
+        pairs = pairs + 1
+      end
     end
 
     goto next
@@ -593,9 +593,7 @@ local function get_keyword_pairs(lnum, line, i, j)
     ::kw_end::
 
     if (start == 1 or is_boundary(line:byte(start - 1))) and (i == j or is_boundary(line:byte(i + 1))) then
-      local syngroup = syngroup_at(lnum, start)
-
-      if syngroup == "crystalKeyword" or syngroup == "crystalDefine" then
+      if syngroup_at(lnum, start) == "crystalKeyword" then
         pairs = pairs - 1
       end
     end
@@ -1498,7 +1496,9 @@ local function find_floating_column(lnum, line, i, j)
 
     if pairs == 0 then
       if (k == 1 or is_boundary(line:byte(k - 1))) and (offset == j or is_boundary(line:byte(offset + 1))) then
-        if syngroup_at(lnum, k) == "crystalKeyword" then
+        local syngroup = syngroup_at(lnum, k)
+
+        if syngroup == "crystalKeyword" or syngroup == "crystalBlockControl" or syngroup == "crystalDefineBlockControl" then
           return i
         end
       end

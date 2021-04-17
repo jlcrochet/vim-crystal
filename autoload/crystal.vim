@@ -16,6 +16,8 @@ unlet s:name
 
 const g:crystal#keyword = hlID("crystalKeyword")
 const g:crystal#define = hlID("crystalDefine")
+const g:crystal#block_control = hlID("crystalBlockControl")
+const g:crystal#define_block_control = hlID("crystalDefineBlockControl")
 const g:crystal#operator = hlID("crystalOperator")
 const g:crystal#delimiter = hlID("crystalDelimiter")
 const g:crystal#comment_delimiter = hlID("crystalCommentDelimiter")

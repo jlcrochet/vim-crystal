@@ -261,7 +261,9 @@ if get(g:, "crystal_highlight_definitions") && !get(b:, "is_ecrystal")
   " have to be matched with :syn-match instead of :syn-keyword to
   " prevent the block regions from being clobbered.
 
-  syn region crystalBlock matchgroup=crystalKeyword start=/\%#=1\<\%(if\|unless\|case\|while\|until\|begin\)\>/ end=/\%#=1\<end\>/ transparent nextgroup=crystalPostfixKeyword skipwhite
+  syn region crystalBlock matchgroup=crystalKeyword start=/\%#=1\<\%(if\|unless\|case\|while\|until\|begin\)\>/ end=/\%#=1\<end\>/ contains=@crystalTop,crystalBlockControl nextgroup=crystalPostfixKeyword skipwhite
+  syn keyword crystalBlockControl else ensure contained
+  syn keyword crystalBlockControl rescue contained nextgroup=crystalConstant skipwhite
 
   syn match crystalKeyword /\%#=1\<do\>/ nextgroup=crystalBlockParameters skipwhite
   syn region crystalBlock start=/\%#=1\<do\>/ matchgroup=crystalKeyword end=/\%#=1\<end\>/ transparent nextgroup=crystalPostfixKeyword skipwhite
@@ -269,21 +271,21 @@ if get(g:, "crystal_highlight_definitions") && !get(b:, "is_ecrystal")
   syn match crystalDefine /\%#=1\<\%(def\|macro\)\>/ nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn match crystalDefine /\%#=1\<\%(class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ nextgroup=crystalTypeDefinition skipwhite
 
-  syn region crystalDefineBlock start=/\%#=1\<\%(def\|macro\|class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ matchgroup=crystalDefine end=/\%#=1\<end\>/ transparent fold
+  syn region crystalDefineBlock start=/\%#=1\<\%(def\|macro\|class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ matchgroup=crystalDefine end=/\%#=1\<end\>/ contains=@crystalTop,crystalDefineBlockControl fold
+  syn keyword crystalDefineBlockControl else ensure contained
+  syn keyword crystalDefineBlockControl rescue contained nextgroup=crystalConstant skipwhite
 
   syn keyword crystalKeyword abstract nextgroup=crystalDefineNoBlock skipwhite
 
   syn keyword crystalDefineNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalDefineNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
 
-  syn keyword crystalKeyword else rescue ensure contained containedin=crystalBlock
-  syn keyword crystalDefine else rescue ensure contained containedin=crystalDefineBlock
-
-  syn keyword crystalKeyword if unless begin for do end contained containedin=crystalMacro
+  syn keyword crystalKeyword if unless else begin for do end contained containedin=crystalMacro
 
   syn sync fromstart
 else
-  syn keyword crystalKeyword if unless case while until begin for else rescue ensure
+  syn keyword crystalKeyword if unless case while until begin for else ensure
+  syn keyword crystalKeyword rescue nextgroup=crystalConstant skipwhite
   syn keyword crystalKeyword end nextgroup=crystalPostfixKeyword skipwhite
   syn keyword crystalKeyword do nextgroup=crystalBlockParameters skipwhite
 
@@ -309,8 +311,10 @@ syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
 
 " Miscellaneous {{{2
 syn keyword crystalKeyword
-      \ elsif when in then private protected uninitialized out include
-      \ extend alias type forall of with
+      \ elsif when in then uninitialized out alias type forall of with
+      \ private protected
+
+syn keyword crystalKeyword include extend nextgroup=crystalConstant skipwhite
 
 syn keyword crystalKeyword return next break yield raise nextgroup=crystalPostfixKeyword skipwhite
 
@@ -388,6 +392,8 @@ hi def link crystalPostfixKeyword crystalKeyword
 hi def link crystalNilableModifier crystalKeyword
 hi def link crystalDefine Define
 hi def link crystalDefineNoBlock crystalDefine
+hi def link crystalBlockControl crystalKeyword
+hi def link crystalDefineBlockControl crystalDefine
 hi def link crystalMethodDefinition Typedef
 hi def link crystalMethodReceiver crystalConstant
 hi def link crystalMethodSelf crystalSelf

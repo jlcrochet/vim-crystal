@@ -39,12 +39,12 @@ let s:floating_re = '\<\%(\(\%(begin\|case\|if\|unless\|until\|while\)\)\|\(else
 if get(g:, "crystal_highlight_definitions")
   function s:skip_keyword()
     let synid = synID(line("."), col("."), 0)
-    return synid != g:crystal#keyword && synid != g:crystal#define
+    return synid != g:crystal#keyword && synid != g:crystal#define && synid != g:crystal#block_control && synid != g:crystal#define_block_control
   endfunction
 
   function s:skip_pair()
     let synid = synID(line("."), col("."), 0)
-    return synid != g:crystal#keyword && synid != g:crystal#define && synid != g:crystal#delimiter
+    return synid != g:crystal#keyword && synid != g:crystal#define && synid != g:crystal#block_control && synid != g:crystal#define_block_control && synid != g:crystal#delimiter
   endfunction
 
   let s:skip_keyword_expr = function("s:skip_keyword")
