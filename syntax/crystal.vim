@@ -177,22 +177,22 @@ syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%q|/  end
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w(/ end=/\%#=1)/ contains=crystalStringArrayParentheses,crystalStringParenthesisEscape nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 syn region crystalStringArrayParentheses matchgroup=crystalString start=/\%#=1(/ end=/\%#=1)/ transparent contained contains=crystalStringArrayParentheses,crystalStringParenthesisEscape
-syn match crystalStringParenthesisEscape /\%#=1\\[\\()[:space:]]/ contained
+syn match crystalStringParenthesisEscape /\%#=1\\[()[:space:]]/ contained
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w\[/ end=/\%#=1]/ contains=crystalStringArraySquareBrackets,crystalStringSquareBracketEscape nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 syn region crystalStringArraySquareBrackets matchgroup=crystalString start=/\%#=1\[/ end=/\%#=1]/ transparent contained contains=crystalStringArraySquareBrackets,crystalStringSquareBracketEscape
-syn match crystalStringSquareBracketEscape /\%#=1\\[\\[\][:space:]]/ contained
+syn match crystalStringSquareBracketEscape /\%#=1\\[\[\][:space:]]/ contained
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w{/ end=/\%#=1}/ contains=crystalStringArrayCurlyBraces,crystalStringCurlyBraceEscape nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 syn region crystalStringArrayCurlyBraces matchgroup=crystalString start=/\%#=1{/ end=/\%#=1}/ transparent contained contains=crystalStringArrayCurlyBraces,crystalStringCurlyBraceEscape
-syn match crystalStringCurlyBraceEscape /\%#=1\\[\\{}[:space:]]/ contained
+syn match crystalStringCurlyBraceEscape /\%#=1\\[{}[:space:]]/ contained
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w</ end=/\%#=1>/ contains=crystalStringArrayAngleBrackets,crystalStringAngleBracketEscape nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 syn region crystalStringArrayAngleBrackets matchgroup=crystalString start=/\%#=1</ end=/\%#=1>/ transparent contained contains=crystalStringArrayAngleBrackets,crystalStringAngleBracketEscape
-syn match crystalStringAngleBracketEscape /\%#=1\\[\\<>[:space:]]/ contained
+syn match crystalStringAngleBracketEscape /\%#=1\\[<>[:space:]]/ contained
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w|/ end=/\%#=1|/ contains=crystalStringPipeEscape nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn match crystalStringPipeEscape /\%#=1\\[\\|[:space:]]/ contained
+syn match crystalStringPipeEscape /\%#=1\\[|[:space:]]/ contained
 
 " Here Documents {{{3
 syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-\z(\w\+\)/ matchgroup=crystalHeredocEnd end=/\%#=1\_^\s*\z1\>/ transparent contains=@crystalTop,crystalHeredocLine
@@ -224,10 +224,10 @@ syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1\// end=/\%
 " over /-style regexes
 syn match crystalOperator /\%#=1\/[/=]/ contained
 
-syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r(/  end=/\%#=1)[imx]*/ skip=/\%#=1(.\{-})/  contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r\[/ end=/\%#=1][imx]*/ skip=/\%#=1\[.\{-}]/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r{/  end=/\%#=1}[imx]*/ skip=/\%#=1{.\{-}}/  contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r</  end=/\%#=1>[imx]*/ skip=/\%#=1<.\{-}>/  contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
+syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r(/  end=/\%#=1)[imx]*/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
+syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r\[/ end=/\%#=1][imx]*/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
+syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r{/  end=/\%#=1}[imx]*/ skip=/\%#=1{.\{-}}/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
+syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r</  end=/\%#=1>[imx]*/ skip=/\%#=1<.\{-}>/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r|/  end=/\%#=1|[imx]*/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
 " PCRE {{{4
@@ -256,7 +256,7 @@ syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%x</  e
 syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%r|/  end=/\%#=1|/ contains=crystalStringInterpolation,crystalStringEscape nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
 " Blocks {{{2
-if get(g:, "crystal_highlight_definitions") && !get(b:, is_ecrystal)
+if get(g:, "crystal_highlight_definitions") && !get(b:, "is_ecrystal")
   " NOTE: When definition blocks are highlighted, the following keywords
   " have to be matched with :syn-match instead of :syn-keyword to
   " prevent the block regions from being clobbered.

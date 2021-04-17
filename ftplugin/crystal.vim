@@ -7,6 +7,8 @@ if get(b:, "did_ftplugin")
   finish
 endif
 
+let b:did_ftplugin = 1
+
 setlocal shiftwidth=2
 setlocal comments=:#
 setlocal commentstring=#\ %s
@@ -17,5 +19,3 @@ if get(g:, "loaded_matchit")
   let b:match_words = g:crystal#match_words
   let b:match_skip = 'S:^crystal\%(Keyword\|Define\)$'
 endif
-
-let b:did_ftplugin = 1
