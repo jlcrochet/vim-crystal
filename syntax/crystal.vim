@@ -261,10 +261,10 @@ if get(g:, "crystal_highlight_definitions") && !get(b:, "is_ecrystal")
   " have to be matched with :syn-match instead of :syn-keyword to
   " prevent the block regions from being clobbered.
 
-  syn region crystalBlock matchgroup=crystalKeyword start=/\%#=1\<\%(if\|unless\|case\|while\|until\|begin\)\>/ end=/\%#=1\<end\>/ transparent
+  syn region crystalBlock matchgroup=crystalKeyword start=/\%#=1\<\%(if\|unless\|case\|while\|until\|begin\)\>/ end=/\%#=1\<end\>/ transparent nextgroup=crystalPostfixKeyword skipwhite
 
   syn match crystalKeyword /\%#=1\<do\>/ nextgroup=crystalBlockParameters skipwhite
-  syn region crystalBlock start=/\%#=1\<do\>/ matchgroup=crystalKeyword end=/\%#=1\<end\>/ transparent
+  syn region crystalBlock start=/\%#=1\<do\>/ matchgroup=crystalKeyword end=/\%#=1\<end\>/ transparent nextgroup=crystalPostfixKeyword skipwhite
 
   syn match crystalDefine /\%#=1\<\%(def\|macro\)\>/ nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn match crystalDefine /\%#=1\<\%(class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ nextgroup=crystalTypeDefinition skipwhite
@@ -276,11 +276,15 @@ if get(g:, "crystal_highlight_definitions") && !get(b:, "is_ecrystal")
   syn keyword crystalDefineNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalDefineNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
 
+  syn keyword crystalKeyword else rescue ensure contained containedin=crystalBlock
+  syn keyword crystalDefine else rescue ensure contained containedin=crystalDefineBlock
+
   syn keyword crystalKeyword if unless begin for do end contained containedin=crystalMacro
 
   syn sync fromstart
 else
-  syn keyword crystalKeyword if unless case while until begin for end
+  syn keyword crystalKeyword if unless case while until begin for else rescue ensure
+  syn keyword crystalKeyword end nextgroup=crystalPostfixKeyword skipwhite
   syn keyword crystalKeyword do nextgroup=crystalBlockParameters skipwhite
 
   syn keyword crystalKeyword def macro fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
@@ -305,8 +309,8 @@ syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
 
 " Miscellaneous {{{2
 syn keyword crystalKeyword
-      \ elsif else when in then private protected rescue ensure
-      \ uninitialized out include extend alias type forall of with
+      \ elsif when in then private protected uninitialized out include
+      \ extend alias type forall of with
 
 syn keyword crystalKeyword return next break yield raise nextgroup=crystalPostfixKeyword skipwhite
 
