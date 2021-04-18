@@ -64,7 +64,7 @@ syn match crystalOperator /\%#=1||\==\=/ contained
 syn match crystalOperator /\%#=1\^=\=/ contained
 
 syn match crystalOperator /\%#=1\./ nextgroup=crystalVariableOrMethod,crystalOperatorMethod skipwhite
-execute 'syn match crystalOperatorMethod /\%#=1'.s:overloadable_operators.'/ contained nextgroup=crystalOperator,crystalRangeOperator,crystalString,crystalFreshVariable,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalNamedTupleKey,crystalPostfixKeyword skipwhite'
+execute 'syn match crystalOperatorMethod /\%#=1'.s:overloadable_operators.'/ contained nextgroup=crystalOperator,crystalRangeOperator,crystalString,crystalFreshVariable,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey,crystalPostfixKeyword skipwhite'
 
 syn match crystalRangeOperator /\%#=1\.\.\.\=/ nextgroup=crystalOperator,crystalPostfixKeyword skipwhite
 
@@ -91,7 +91,7 @@ syn match crystalFreshVariable /\%#=1%\h\w*/ nextgroup=crystalOperator,crystalRa
 syn match crystalExternalVariable /\%#=1\$\%([~?]\|\d\+?\=\|[[:lower:]_]\w*\)/ nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
 syn match crystalConstant /\%#=1\u\w*/ nextgroup=crystalOperator,crystalRangeOperator,crystalNamespaceOperator,crystalPostfixKeyword skipwhite
-syn match crystalVariableOrMethod /\%#=1[_[:lower:]]\w*[=?!]\=/ nextgroup=crystalOperator,crystalRangeOperator,crystalString,crystalFreshVariable,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalNamedTupleKey,crystalPostfixKeyword skipwhite
+syn match crystalVariableOrMethod /\%#=1[_[:lower:]]\w*[=?!]\=/ nextgroup=crystalOperator,crystalRangeOperator,crystalString,crystalFreshVariable,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey,crystalPostfixKeyword skipwhite
 
 syn match crystalNamedTupleKey /\%#=1[[:lower:]_]\w*[?!]\=:/he=e-1 contained
 syn match crystalNamedTupleKey /\%#=1\u\w*::\@!/he=e-1 contained
