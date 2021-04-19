@@ -9,6 +9,7 @@ endif
 
 let b:did_indent = 1
 
+setlocal indentkeys=<>>,o,O,!^F
 setlocal indentexpr=GetEcrystalIndent()
 
 if exists("*GetEcrystalIndent")
@@ -19,28 +20,22 @@ let s:start_re = '\<\%(if\|unless\|begin\|do\):\@!\>'
 let s:middle_re = '\<\%(else\|elsif\):\@!\>'
 let s:end_re = '\<end:\@!\>'
 
-let s:skip_expr = "synID(line('.'), col('.'), 0) != g:crystal#keyword"
+let s:skip_expr = "synID(line('.'), col('.'), 0) != g:crystal#indent#keyword"
 
 function GetEcrystalIndent() abort
-  let has_shifted = 0
-  let shift = 0
-
   if searchpair(s:start_re, s:middle_re, s:end_re, "nz", s:skip_expr, v:lnum)
-    let has_shifted = 1
-    let shift -= 1
+    return indent(searchpair(s:start_re, s:middle_re, s:end_re, "bW", s:skip_expr))
   endif
 
   let prev_lnum = prevnonblank(v:lnum - 1)
 
-  if searchpair(s:start_re, s:middle_re, s:end_re, "b", s:skip_expr, prev_lnum)
-    let has_shifted = 1
-    let shift += 1
+  if prev_lnum == 0
+    return 0
   endif
 
-  " If no shifts occurred, fall back to subtype indentation.
-  if has_shifted
-    return indent(prev_lnum) + shift * shiftwidth()
-  else
-    return eval(b:ecrystal_subtype_indentexpr)
+  if searchpair(s:start_re, s:middle_re, s:end_re, "b", s:skip_expr, prev_lnum)
+    return indent(prev_lnum) + shiftwidth()
   endif
+
+  return eval(b:ecrystal_subtype_indentexpr)
 endfunction

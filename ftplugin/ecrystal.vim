@@ -16,8 +16,8 @@ let s:parts = split(expand("%:t"), '\.')
 if len(s:parts) > 2
   let s:sub_extension = s:parts[-2]
 
-  if has_key(g:ecrystal#extensions, s:sub_extension)
-    let b:ecrystal_subtype = g:ecrystal#extensions[s:sub_extension]
+  if has_key(g:ecrystal#ftplugin#extensions, s:sub_extension)
+    let b:ecrystal_subtype = g:ecrystal#ftplugin#extensions[s:sub_extension]
   endif
 endif
 

@@ -3,7 +3,7 @@
 " Author: Jeffrey Crochet <jlcrochet@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-let g:ecrystal#extensions = {
+let g:ecrystal#ftplugin#extensions = {
       \ "html": "html",
       \ "js": "javascript",
       \ "json": "json",
@@ -13,7 +13,7 @@ let g:ecrystal#extensions = {
       \ }
 
 if exists("g:ecrystal_extensions")
-  call extend(g:ecrystal#extensions, g:ecrystal_extensions)
+  call extend(g:ecrystal#ftplugin#extensions, g:ecrystal_extensions)
 endif
 
-lockvar g:ecrystal#extensions
+lockvar g:ecrystal#ftplugin#extensions
