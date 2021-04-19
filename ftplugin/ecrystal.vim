@@ -28,6 +28,7 @@ if exists("b:ecrystal_subtype")
   execute printf("runtime! ftplugin/%s.vim indent/%s.vim", b:ecrystal_subtype, b:ecrystal_subtype)
 
   let b:ecrystal_subtype_indentexpr = &indentexpr
+  let &indentkeys .= ",=end,=else,=elsif"
 
   unlet b:did_indent
 else
@@ -35,6 +36,7 @@ else
 
   setlocal shiftwidth=2
   setlocal commentstring=<%#\ %s\ %>
+  setlocal indentkeys==end,=else,=elsif
 endif
 
 let b:did_ftplugin = 1

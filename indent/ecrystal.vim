@@ -9,7 +9,6 @@ endif
 
 let b:did_indent = 1
 
-setlocal indentkeys=<>>,o,O,!^F
 setlocal indentexpr=GetEcrystalIndent()
 
 if exists("*GetEcrystalIndent")
