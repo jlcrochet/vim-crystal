@@ -23,6 +23,8 @@ let s:end_re = '\<end:\@!\>'
 let s:skip_expr = "synID(line('.'), col('.'), 0) != g:crystal#indent#keyword"
 
 function GetEcrystalIndent() abort
+  call cursor(0, 1)
+
   if searchpair(s:start_re, s:middle_re, s:end_re, "nz", s:skip_expr, v:lnum)
     return indent(searchpair(s:start_re, s:middle_re, s:end_re, "bW", s:skip_expr))
   endif
