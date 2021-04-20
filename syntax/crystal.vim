@@ -31,7 +31,11 @@ let s:overloadable_operators = [
       \ ]
 let s:overloadable_operators = '\%('.join(s:overloadable_operators, '\|').'\)'
 
-syn cluster crystalTop contains=TOP
+if get(b:, "is_ecrystal")
+  syn cluster crystalTop contains=@crystal
+else
+  syn cluster crystalTop contains=TOP
+endif
 
 " Comments {{{2
 if get(b:, "is_ecrystal")
