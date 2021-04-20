@@ -122,7 +122,7 @@ Each extension maps to the name of the filetype that you want to load for that e
 
 To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize XML files and would cause `*.js` files to be recognized as JSX:
 
-    let g:ecrystal_extensions = { "xml": "xml", "js": "javascriptreact }
+    let g:ecrystal_extensions = { "xml": "xml", "js": "javascriptreact" }
 
 ## Performance Comparison with [vim-crystal](https://github.com/vim-crystal/vim-crystal)
 
