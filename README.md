@@ -111,12 +111,12 @@ This plugin uses a dictionary of filetype extensions to determine which filetype
 
 The default recognized filetype extensions are as follows:
 
-    html => html
-    js => javascript
-    json => json
-    yml => yaml
-    txt => text
-    md => markdown
+    .html => html
+    .js => javascript
+    .json => json
+    .yml => yaml
+    .txt => text
+    .md => markdown
 
 Each extension maps to the name of the filetype that you want to load for that extension.
 
