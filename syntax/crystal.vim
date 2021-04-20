@@ -310,9 +310,10 @@ syn keyword crystalMethodSelf self contained nextgroup=crystalMethodDot
 syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
 
 " Miscellaneous {{{2
-syn keyword crystalKeyword
-      \ elsif when in then uninitialized out alias type forall of with
-      \ private protected
+syn keyword crystalKeyword elsif when in then uninitialized out forall of with private protected
+
+syn keyword crystalKeyword type alias nextgroup=crystalTypeAlias skipwhite
+syn match crystalTypeAlias /\%#=1\u\w*/ contained nextgroup=crystalOperator skipwhite
 
 syn keyword crystalKeyword include extend nextgroup=crystalConstant skipwhite
 syn keyword crystalKeyword return next break yield raise nextgroup=crystalPostfixKeyword skipwhite
@@ -397,6 +398,7 @@ hi def link crystalMethodReceiver crystalConstant
 hi def link crystalMethodSelf crystalSelf
 hi def link crystalMethodDot crystalOperator
 hi def link crystalTypeDefinition Typedef
+hi def link crystalTypeAlias crystalTypeDefinition
 hi def link crystalTypeNamespace crystalNamespaceOperator
 hi def link crystalInheritanceOperator crystalOperator
 hi def link crystalMacroDelimiter PreProc
