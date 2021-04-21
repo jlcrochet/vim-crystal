@@ -280,7 +280,7 @@ if get(g:, "crystal_highlight_definitions") && !get(b:, "is_ecrystal")
   syn keyword crystalDefineBlockControl rescue contained nextgroup=crystalConstant skipwhite
 
   syn keyword crystalDefine abstract nextgroup=crystalDefineNoBlock skipwhite
-  syn keyword crystalDefine private protected
+  syn keyword crystalDefine private protected nextgroup=crystalDefineBlock,crystalConstant skipwhite
 
   syn keyword crystalDefineNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalDefineNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
@@ -298,7 +298,7 @@ else
   syn keyword crystalKeyword class struct lib annotation enum module union nextgroup=crystalTypeDefinition skipwhite
 
   syn keyword crystalKeyword abstract nextgroup=crystalKeywordNoBlock skipwhite
-  syn keyword crystalKeyword private protected
+  syn keyword crystalKeyword private protected nextgroup=crystalConstant skipwhite
 
   syn keyword crystalKeywordNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalKeywordNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
