@@ -200,10 +200,10 @@ syn match crystalStringPipeEscape /\%#=1\\[|[:space:]]/ contained
 
 " Here Documents {{{3
 syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-\z(\w\+\)/ matchgroup=crystalHeredocEnd end=/\%#=1\_^\s*\z1\>/ transparent contains=@crystalTop,crystalHeredocLine
-syn region crystalHeredocLine start=/\%#=1\_^/ end=/\%#=1\_$/ oneline contained contains=crystalStringInterpolation,crystalStringEscape nextgroup=crystalHeredocLine skipempty
+syn region crystalHeredocLine start=/\%#=1\_^/ end=/\%#=1\_$/ oneline contained contains=crystalStringInterpolation,crystalStringEscape nextgroup=crystalHeredocLine skipnl
 
 syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-'\z(\w\+\)'/ matchgroup=crystalHeredocEnd end=/\%#=1\_^\s*\z1\>/ transparent contains=@crystalTop,crystalHeredocLineRaw
-syn region crystalHeredocLineRaw start=/\%#=1\_^/ end=/\%#=1\_$/ oneline contained nextgroup=crystalHeredocLineRaw skipempty
+syn region crystalHeredocLineRaw start=/\%#=1\_^/ end=/\%#=1\_$/ oneline contained nextgroup=crystalHeredocLineRaw skipnl
 
 syn region crystalHeredocSkip matchgroup=crystalHeredocStart start=/\%#=1<<-\('\=\)\w\+\1/ end=/\%#=1\ze<<-'\=\w/ transparent oneline nextgroup=crystalHeredoc,crystalHeredocSkip
 
@@ -379,6 +379,7 @@ hi def link crystalHeredocStart crystalStringDelimiter
 hi def link crystalHeredocEnd crystalHeredocStart
 hi def link crystalSymbol String
 hi def link crystalSymbolDelimiter crystalSymbol
+hi def link crystalNamedTupleKey crystalSymbol
 hi def link crystalRegex String
 hi def link crystalRegexDelimiter crystalRegex
 hi def link crystalRegexMetacharacter SpecialChar
