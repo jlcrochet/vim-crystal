@@ -71,7 +71,9 @@ For those who prefer a more traditional indentation style or who desire faster i
 
     x = [:foo, :bar,
       :baz, :qux]
+
     # OR
+
     x = [
       :foo, :bar,
       :baz, :qux
@@ -80,7 +82,9 @@ For those who prefer a more traditional indentation style or who desire faster i
     x = 5 + 10 +
       15 + 20 -
       5 * 3
+
     # OR
+
     x =
       5 + 10 +
       15 + 20 -
@@ -89,7 +93,9 @@ For those who prefer a more traditional indentation style or who desire faster i
     x = y.foo
       .bar
       .baz
+
     # OR
+
     x = y
       .foo
       .bar

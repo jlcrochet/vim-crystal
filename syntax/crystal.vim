@@ -283,6 +283,8 @@ if get(g:, "crystal_highlight_definitions") && !get(b:, "is_ecrystal")
   syn keyword crystalDefine abstract nextgroup=crystalDefineNoBlock skipwhite
   syn keyword crystalDefine private protected nextgroup=crystalDefineBlock,crystalConstant skipwhite
 
+  syn keyword crystalDefine type alias nextgroup=crystalTypeAlias skipwhite
+
   syn keyword crystalDefineNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalDefineNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
 
@@ -300,6 +302,8 @@ else
 
   syn keyword crystalKeyword abstract nextgroup=crystalKeywordNoBlock skipwhite
   syn keyword crystalKeyword private protected nextgroup=crystalConstant skipwhite
+
+  syn keyword crystalKeyword type alias nextgroup=crystalTypeAlias skipwhite
 
   syn keyword crystalKeywordNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalKeywordNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
@@ -319,11 +323,10 @@ syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
 " Miscellaneous {{{2
 syn keyword crystalKeyword elsif when in then uninitialized out forall of with
 
-syn keyword crystalKeyword type alias nextgroup=crystalTypeAlias skipwhite
 syn match crystalTypeAlias /\%#=1\u\w*/ contained nextgroup=crystalOperator skipwhite
 
 syn keyword crystalKeyword include extend nextgroup=crystalConstant skipwhite
-syn keyword crystalKeyword return next break yield nextgroup=crystalPostfixKeyword skipwhite
+syn keyword crystalKeyword return next break nextgroup=crystalPostfixKeyword skipwhite
 syn keyword crystalKeyword require nextgroup=crystalString skipwhite
 
 syn keyword crystalPostfixKeyword if unless contained
@@ -382,7 +385,6 @@ hi def link crystalHeredocStart crystalStringDelimiter
 hi def link crystalHeredocEnd crystalHeredocStart
 hi def link crystalSymbol String
 hi def link crystalSymbolDelimiter crystalSymbol
-hi def link crystalNamedTupleKey crystalSymbol
 hi def link crystalRegex String
 hi def link crystalRegexDelimiter crystalRegex
 hi def link crystalRegexMetacharacter SpecialChar
