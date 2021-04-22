@@ -56,8 +56,7 @@ let s:zero_re = '0' . s:or(
 
 let s:syn_match_template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite'
 
-const g:crystal#syntax#nonzero = printf(s:syn_match_template, s:nonzero_re)
-const g:crystal#syntax#zero = printf(s:syn_match_template, s:zero_re)
+const g:crystal#syntax#numbers = printf(s:syn_match_template, s:nonzero_re) .. " | " .. printf(s:syn_match_template, s:zero_re)
 
 delfunction s:or
 delfunction s:optional

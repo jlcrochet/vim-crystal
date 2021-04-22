@@ -13,10 +13,8 @@ endif
 
 " Syntax {{{1
 if get(b:, "is_ecrystal")
-  echoerr "foo"
   syn cluster crystalTop contains=@crystal
 else
-  echoerr "bar"
   syn cluster crystalTop contains=TOP
 endif
 
@@ -89,8 +87,7 @@ syn keyword crystalBoolean true false nextgroup=crystalOperator,crystalRangeOper
 syn keyword crystalSelf self nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
 " Numbers {{{3
-execute g:crystal#syntax#nonzero
-execute g:crystal#syntax#zero
+execute g:crystal#syntax#numbers
 
 " Characters {{{3
 syn match crystalCharacter /\%#=1'\%(\\\%(u\%(\x\{4}\|{\x\{1,6}}\)\|['\\abefnrtv0]\)\|.\)'/ contains=crystalCharacterEscape nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
