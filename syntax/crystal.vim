@@ -131,8 +131,8 @@ let s:zero_re = '0' . s:or(
       \ 'b[01_]*' . s:optional(s:integer_suffix).'\>',
       \ 'o[0-7_]*' . s:optional(s:integer_suffix).'\>',
       \ 'x[[:xdigit:]_]*' . s:optional(s:integer_suffix).'\>',
-      \ '_*' . s:or(s:integer_suffix, s:float_suffix, s:fraction),
-      \ '_\+' . s:optional(s:or(s:exponent_suffix, s:nonzero_re))
+      \ '_*' . s:or(s:integer_suffix, s:float_suffix, s:exponent_suffix, s:fraction),
+      \ '_\+' . s:optional(s:nonzero_re)
       \ ) . '\='
 
 let s:syn_match_template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite'
@@ -226,6 +226,7 @@ syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1\// end=/\%
 
 " NOTE: These operators are defined here in order to take precedence
 " over /-style regexes
+syn match crystalOperator /\%#=1\/\ze\s\+/ contained
 syn match crystalOperator /\%#=1\/[/=]/ contained
 
 syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r(/  end=/\%#=1)[imx]*/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
