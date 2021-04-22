@@ -44,9 +44,7 @@ The default indentation style used by this plugin is the one most commonly found
          .bar
          .baz
 
-This style is popular, but it can cause indentation to be slower in some cases, since many previous lines may have to be examined in order to determine the indentation for a given line.
-
-For those who prefer a more traditional indentation style or who desire faster indentation, set `g:crystal_simple_indent` to `1`. The above examples will now be indented thus:
+For those who prefer a more traditional indentation style or who desire slightly faster indentation, set `g:crystal_simple_indent` to `1`. The above examples will now be indented thus:
 
     x = if y
       5
@@ -101,15 +99,15 @@ For those who prefer a more traditional indentation style or who desire faster i
       .bar
       .baz
 
-#### `g:crystal_fold`
-
-If `1`, definition blocks for methods, classes, etc. will be folded.
-
 #### `g:crystal_highlight_definitions`
 
 If `1`, definition keywords &mdash; `def`, `macro`, `class`, `module`, `struct`, `lib`, `enum`, and `annotation` &mdash; will be highlighted differently than other keywords like `if` and `while`.
 
 NOTE: Setting this will have no effect unless `g:crystal_simple_indent` has been set, since definition keywords need to be matched in order to efficiently indent floating blocks. Additionally, setting this will have no effect if `g:crystal_fold` has been set, since definition keywords have to be matched for folding to work.
+
+#### `g:crystal_fold`
+
+If `1`, definition blocks for methods, classes, etc. will be folded.
 
 #### `g:ecrystal_extensions`
 
