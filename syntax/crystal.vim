@@ -226,7 +226,7 @@ syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1\// end=/\%
 
 " NOTE: These operators are defined here in order to take precedence
 " over /-style regexes
-syn match crystalOperator /\%#=1\/\ze\s\+/ contained
+syn match crystalOperator /\%#=1\/\ze\s/ contained
 syn match crystalOperator /\%#=1\/[/=]/ contained
 
 syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1%r(/  end=/\%#=1)[imx]*/ contains=crystalStringInterpolation,crystalStringEscape,@crystalPCRE nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
@@ -323,7 +323,7 @@ syn keyword crystalKeyword type alias nextgroup=crystalTypeAlias skipwhite
 syn match crystalTypeAlias /\%#=1\u\w*/ contained nextgroup=crystalOperator skipwhite
 
 syn keyword crystalKeyword include extend nextgroup=crystalConstant skipwhite
-syn keyword crystalKeyword return next break yield raise nextgroup=crystalPostfixKeyword skipwhite
+syn keyword crystalKeyword return next break yield nextgroup=crystalPostfixKeyword skipwhite
 syn keyword crystalKeyword require nextgroup=crystalString skipwhite
 
 syn keyword crystalPostfixKeyword if unless contained
