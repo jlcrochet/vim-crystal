@@ -44,7 +44,7 @@ The default indentation style used by this plugin is the one most commonly found
          .bar
          .baz
 
-For those who prefer a more traditional indentation style or who desire slightly faster indentation, set `g:crystal_simple_indent` to `1`. The above examples will now be indented thus:
+For those who prefer a more traditional indentation style or who desire slightly faster highlighting or indentation, set `g:crystal_simple_indent` to `1`. The above examples will now be indented thus:
 
     x = if y
       5
@@ -101,9 +101,11 @@ For those who prefer a more traditional indentation style or who desire slightly
 
 #### `g:crystal_highlight_definitions`
 
+NOTE: Setting this variable manually has no effect unless `g:crystal_simple_indent` is set.
+
 If `1`, definition keywords &mdash; `def`, `macro`, `class`, `module`, `struct`, `lib`, `enum`, and `annotation` &mdash; will be highlighted differently than other keywords like `if` and `while`.
 
-NOTE: Setting this will have no effect unless `g:crystal_simple_indent` has been set, since definition keywords need to be matched in order to efficiently indent floating blocks. Additionally, setting this will have no effect if `g:crystal_fold` has been set, since definition keywords have to be matched for folding to work.
+This variable is set automatically unless `g:crystal_simple_indent` is set, as definition keywords need to be matched separately from other keywords in order to allow for efficient indentation for floating blocks. You can set this if you want to enable `g:crystal_simple_indent` but still want to have separate highlighted for definition keywords.
 
 #### `g:crystal_fold`
 
@@ -111,7 +113,7 @@ If `1`, definition blocks for methods, classes, etc. will be folded.
 
 #### `g:ecrystal_extensions`
 
-This plugin uses a dictionary of filetype extensions to determine which filetype to use when loading ECR files. For example, opening a file named `foo.html.ecr` will load HTML as the filetype.
+This plugin uses a dictionary of filetype extensions to determine which filetype to use when loading ECR files. For example, opening a file named `foo.html.ecr` will load HTML as the filetype with ECR syntax added on top.
 
 The default recognized filetype extensions are as follows:
 
@@ -124,7 +126,7 @@ The default recognized filetype extensions are as follows:
 
 Each extension maps to the name of the filetype that you want to load for that extension.
 
-To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize XML files and would cause `*.js` files to be recognized as JSX:
+To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize XML files and would cause `*.js` files to be recognized as JSX instead of JavaScript:
 
     let g:ecrystal_extensions = { "xml": "xml", "js": "javascriptreact" }
 

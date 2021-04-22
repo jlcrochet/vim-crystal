@@ -12,28 +12,11 @@ if get(g:, "crystal_fold")
 endif
 
 " Syntax {{{1
-" This pattern helps to match all overloadable operators; these are also
-" the only operators that can be referenced as symbols or used as
-" methods.
-"
-" NOTE: There is one exception: `!` cannot be overloaded; however, it
-" isn't worth it to separate it from the rest.
-let s:overloadable_operators = [
-      \ '[+\-|^~%]',
-      \ '\*\*\=',
-      \ '\/\/\=',
-      \ '=\%(==\=\|\~\)',
-      \ '![=~]\=',
-      \ '<\%(=>\=\|<\)\=',
-      \ '>[>=]\=',
-      \ '&\%([+-]\|\*\*\=\)\=',
-      \ '\[][=?]\='
-      \ ]
-let s:overloadable_operators = '\%('.join(s:overloadable_operators, '\|').'\)'
-
 if get(b:, "is_ecrystal")
+  echoerr "foo"
   syn cluster crystalTop contains=@crystal
 else
+  echoerr "bar"
   syn cluster crystalTop contains=TOP
 endif
 
@@ -68,7 +51,7 @@ syn match crystalOperator /\%#=1||\==\=/ contained
 syn match crystalOperator /\%#=1\^=\=/ contained
 
 syn match crystalOperator /\%#=1\./ nextgroup=crystalVariableOrMethod,crystalOperatorMethod skipwhite
-execute 'syn match crystalOperatorMethod /\%#=1'.s:overloadable_operators.'/ contained nextgroup=crystalOperator,crystalRangeOperator,crystalString,crystalFreshVariable,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey,crystalPostfixKeyword skipwhite'
+execute 'syn match crystalOperatorMethod /\%#=1'.g:crystal#syntax#overloadable_operators.'/ contained nextgroup=crystalOperator,crystalRangeOperator,crystalString,crystalFreshVariable,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey,crystalPostfixKeyword skipwhite'
 
 syn match crystalRangeOperator /\%#=1\.\.\.\=/ nextgroup=crystalOperator,crystalPostfixKeyword skipwhite
 
@@ -106,47 +89,8 @@ syn keyword crystalBoolean true false nextgroup=crystalOperator,crystalRangeOper
 syn keyword crystalSelf self nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
 " Numbers {{{3
-function s:or(...)
-  return '\%('.join(a:000, '\|').'\)'
-endfunction
-
-function s:optional(re)
-  return '\%('.a:re.'\)\='
-endfunction
-
-let s:integer_suffix = '[ui]\%(8\|16\|32\|64\|128\)'
-let s:float_suffix = 'f\%(32\|64\)'
-let s:exponent_suffix = '[eE][+-]\=[[:digit:]_]*'
-
-let s:fraction = '\.\d[[:digit:]_]*' . s:optional(s:exponent_suffix) . s:optional(s:float_suffix)
-
-let s:nonzero_re = '[1-9][[:digit:]_]*' . s:or(
-      \ s:integer_suffix,
-      \ s:float_suffix,
-      \ s:exponent_suffix . s:optional(s:float_suffix),
-      \ s:fraction
-      \ ) . '\='
-
-let s:zero_re = '0' . s:or(
-      \ 'b[01_]*' . s:optional(s:integer_suffix).'\>',
-      \ 'o[0-7_]*' . s:optional(s:integer_suffix).'\>',
-      \ 'x[[:xdigit:]_]*' . s:optional(s:integer_suffix).'\>',
-      \ '_*' . s:or(s:integer_suffix, s:float_suffix, s:exponent_suffix, s:fraction),
-      \ '_\+' . s:optional(s:nonzero_re)
-      \ ) . '\='
-
-let s:syn_match_template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite'
-
-execute printf(s:syn_match_template, s:nonzero_re)
-execute printf(s:syn_match_template, s:zero_re)
-
-delfunction s:or
-delfunction s:optional
-
-unlet
-      \ s:integer_suffix s:float_suffix s:exponent_suffix
-      \ s:fraction s:nonzero_re s:zero_re
-      \ s:syn_match_template
+execute g:crystal#syntax#nonzero
+execute g:crystal#syntax#zero
 
 " Characters {{{3
 syn match crystalCharacter /\%#=1'\%(\\\%(u\%(\x\{4}\|{\x\{1,6}}\)\|['\\abefnrtv0]\)\|.\)'/ contains=crystalCharacterEscape nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
@@ -209,7 +153,7 @@ syn region crystalHeredocSkip matchgroup=crystalHeredocStart start=/\%#=1<<-\('\
 
 " Symbols {{{3
 syn match crystalSymbol /\%#=1:\h\w*[=?!]\=/ contains=crystalSymbolDelimiter nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-execute 'syn match crystalSymbol /\%#=1:'.s:overloadable_operators.'/ contains=crystalSymbolDelimiter nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite'
+execute 'syn match crystalSymbol /\%#=1:'.g:crystal#syntax#overloadable_operators.'/ contains=crystalSymbolDelimiter nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite'
 
 syn match crystalSymbolDelimiter /\%#=1:/ contained
 
@@ -314,7 +258,7 @@ syn match crystalTypeNamespace /\%#=1::/ contained nextgroup=crystalTypeDefiniti
 syn match crystalInheritanceOperator /\%#=1</ contained nextgroup=crystalConstant skipwhite
 
 syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ contained nextgroup=crystalMethodParameters,crystalOperator skipwhite
-execute 'syn match crystalMethodDefinition /\%#=1'.s:overloadable_operators.'/ contained nextgroup=crystalMethodParameters,crystalOperator skipwhite'
+execute 'syn match crystalMethodDefinition /\%#=1'.g:crystal#syntax#overloadable_operators.'/ contained nextgroup=crystalMethodParameters,crystalOperator skipwhite'
 syn region crystalMethodParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=TOP,crystalKeyword,crystalDefine,crystalBlock,crystalDefineBlock nextgroup=crystalOperator skipwhite
 syn match crystalMethodReceiver /\%#=1\u\w*/ contained nextgroup=crystalMethodDot
 syn keyword crystalMethodSelf self contained nextgroup=crystalMethodDot
@@ -347,8 +291,6 @@ syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline contained containedin=crystalString,crystalComment contains=@crystalTop,crystalNestedBraces
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ oneline containedin=ALLBUT,crystalComment,crystalString contains=TOP
 " }}}2
-
-unlet s:overloadable_operators
 
 " Highlighting {{{1
 hi def link crystalComment Comment
