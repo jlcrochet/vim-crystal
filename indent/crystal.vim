@@ -29,12 +29,12 @@ let s:kw_start_re = '\<\%(def\|macro\|class\|struct\|module\|enum\|annotation\|l
 let s:kw_middle_re = '\<\%(else\|elsif\|when\|in\|rescue\|ensure\):\@!\>'
 let s:kw_end_re = '\<end:\@!\>'
 
-let s:start_pair_re = s:kw_start_re . '\|[(\[{]'
+let s:start_pair_re = s:kw_start_re . '\|[([{]'
 let s:end_pair_re = s:kw_end_re . '\|[)\]}]'
 
 let s:kw_dedent_re = '^\%(end\|else\|elsif\|when\|in\|rescue\|ensure\):\@!\>'
 
-let s:floating_re = '\<\%(\(if\|unless\|begin\)\|\(case\|until\|while\)\|\(else\|elsif\|ensure\|in\|rescue\|when\)\|\(annotation\|class\|def\|enum\|lib\|macro\|module\|struct\|union\)\|\(do\)\|\(end\)\):\@!\>\|\([(\[{]\)\|\([)\]}]\)\|\(|\)'
+let s:floating_re = '\<\%(\(if\|unless\|begin\)\|\(case\|until\|while\)\|\(else\|elsif\|ensure\|in\|rescue\|when\)\|\(annotation\|class\|def\|enum\|lib\|macro\|module\|struct\|union\)\|\(do\)\|\(end\)\):\@!\>\|\([([{]\)\|\([)\]}]\)\|\(|\)'
 
 if get(g:, "crystal_highlight_definitions")
   function s:skip_keyword()
@@ -340,7 +340,7 @@ if get(g:, "crystal_simple_indent")
               let continuation = 1
             elseif char ==# ","
               let continuation = 2
-            elseif char =~# '[(\[{]'
+            elseif char =~# '[([{]'
               let continuation = 3
             elseif s:is_operator(char, idx + 1, line, lnum)
               let continuation = 1
@@ -429,7 +429,7 @@ if get(g:, "crystal_simple_indent")
       return first_idx
     endif
 
-    if (last_char =~# '[\\(\[{]')
+    if (last_char =~# '[\\([{]')
           \ || (last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#indent#delimiter)
           \ || s:is_operator(last_char, last_idx + 1, prev_line, prev_lnum)
       if continuation == 1
@@ -566,7 +566,7 @@ else
         let prev_prev_line = getline(prev_prev_lnum)
         let [prev_last_char, prev_last_idx] = s:get_last_char(prev_prev_lnum, prev_prev_line)
 
-        if prev_last_char =~# '[,(\[{]'
+        if prev_last_char =~# '[,([{]'
           " If the next previous line also ended with a comma or an
           " opening bracket, align with the MSL, unless the current line
           " begins with a closing bracket.
@@ -588,7 +588,7 @@ else
       else
         return first_idx + shiftwidth()
       endif
-    elseif last_char =~# '[(\[{]' || last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#indent#delimiter
+    elseif last_char =~# '[([{]' || last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#indent#delimiter
       " If the previous line ends with an opening bracket, align with
       " the starting column and add a shift unless the current line
       " begins with a closing bracket or `end`.
