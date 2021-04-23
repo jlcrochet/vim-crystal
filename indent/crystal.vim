@@ -360,8 +360,6 @@ if get(g:, "crystal_simple_indent")
 
     let [char, idx, _] = matchstrpos(line, '\S')
 
-    let keyword_dedent = 0
-
     if char ==# "."
       " If the current line begins with a leading dot, add a shift unless
       " the previous line was a line continuation.
@@ -414,13 +412,7 @@ if get(g:, "crystal_simple_indent")
       endif
 
       return first_idx - shift * shiftwidth()
-    elseif match(line, '^\\\={%\s*\%(end\|else\|elsif\)\>', idx) != -1
-      let keyword_dedent = 1
-    elseif match(line, s:kw_dedent_re, idx) != -1
-      let keyword_dedent = 1
-    endif
-
-    if keyword_dedent
+    elseif match(line, s:kw_dedent_re, idx) != -1 || match(line, '^\\\={%\s*\%(end\|else\|elsif\)\>', idx) != -1
       call cursor(prev_lnum, last_idx)
 
       if searchpair(s:kw_start_re, s:kw_middle_re, s:kw_end_re, "b", s:skip_keyword_expr, start_lnum)
@@ -611,8 +603,6 @@ else
     let line = getline(v:lnum)
     let [char, idx, _] = matchstrpos(line, '\S')
 
-    let keyword_dedent = 0
-
     if char ==# "."
       " If the current line starts with a leading dot:
       "
@@ -642,13 +632,7 @@ else
         let [_, ind, _] = s:find_msl(1, v:null)
         return ind - shiftwidth()
       endif
-    elseif match(line, '^\\\={%\s*\%(end\|else\|elsif\)\>', idx) != -1
-      let keyword_dedent = 1
-    elseif match(line, s:kw_dedent_re, idx) != -1
-      let keyword_dedent = 1
-    endif
-
-    if keyword_dedent
+    elseif match(line, s:kw_dedent_re, idx) != -1 || match(line, '^\\\={%\s*\%(end\|else\|elsif\)\>', idx) != -1
       if floating_idx != -1
         return floating_idx
       else
