@@ -12,11 +12,11 @@ let b:did_indent = 1
 setlocal indentkeys=0),0],0},.,o,O,!^F
 setlocal indentkeys+==end,=else,=elsif,0=when,0=in,0=rescue,0=ensure
 
-if has("nvim-0.5")
-  lua get_crystal_indent = require("get_crystal_indent")
-  setlocal indentexpr=v:lua.get_crystal_indent()
-  finish
-endif
+" if has("nvim-0.5")
+"   lua get_crystal_indent = require("get_crystal_indent")
+"   setlocal indentexpr=v:lua.get_crystal_indent()
+"   finish
+" endif
 
 setlocal indentexpr=GetCrystalIndent()
 
@@ -34,7 +34,7 @@ let s:end_pair_re = s:kw_end_re . '\|[)\]}]'
 
 let s:kw_dedent_re = '^\%(end\|else\|elsif\|when\|in\|rescue\|ensure\):\@!\>'
 
-let s:floating_re = '\<\%(\(\%(begin\|case\|if\|unless\|until\|while\)\)\|\(else\|elsif\|ensure\|in\|rescue\|when\)\|\(annotation\|class\|def\|enum\|lib\|macro\|module\|struct\|union\)\|\(do\)\|\(end\)\):\@!\>\|\([(\[{]\)\|\([)\]}]\)\|\(|\)'
+let s:floating_re = '\<\%(\(if\|unless\|begin\)\|\(case\|until\|while\)\|\(else\|elsif\|ensure\|in\|rescue\|when\)\|\(annotation\|class\|def\|enum\|lib\|macro\|module\|struct\|union\)\|\(do\)\|\(end\)\):\@!\>\|\([(\[{]\)\|\([)\]}]\)\|\(|\)'
 
 if get(g:, "crystal_highlight_definitions")
   function s:skip_keyword()
@@ -116,7 +116,7 @@ function s:find_floating_index(lnum, i, j)
   let [_, col, p] = searchpos(s:floating_re, "bcp", a:lnum)
 
   while col >= a:i + 1
-    if p == 2  " begin case if unless until while
+    if p == 2  " if unless begin
       if synID(a:lnum, col, 0) == g:crystal#indent#keyword
         if pairs == 0
           " If this is a macro tag keyword, return the index for the macro
@@ -132,7 +132,15 @@ function s:find_floating_index(lnum, i, j)
           let pairs += 1
         endif
       endif
-    elseif p == 3  " else elsif ensure in rescue when
+    elseif p == 3  " case while until
+      if synID(a:lnum, col, 0) == g:crystal#indent#keyword
+        if pairs == 0
+          return col - 1
+        else
+          let pairs += 1
+        endif
+      endif
+    elseif p == 4  " else elsif ensure in rescue when
       if pairs == 0
         let synid = synID(a:lnum, col, 0)
 
@@ -140,7 +148,7 @@ function s:find_floating_index(lnum, i, j)
           return a:i
         endif
       endif
-    elseif p == 4  " annotation class def enum lib macro module struct union
+    elseif p == 5  " annotation class def enum lib macro module struct union
       if synID(a:lnum, col, 0) == g:crystal#indent#define
         if pairs == 0
           return a:i
@@ -148,7 +156,7 @@ function s:find_floating_index(lnum, i, j)
           let pairs += 1
         endif
       endif
-    elseif p == 5  " do
+    elseif p == 6  " do
       if synID(a:lnum, col, 0) == g:crystal#indent#keyword
         if pairs == 0
           return a:i
@@ -156,13 +164,13 @@ function s:find_floating_index(lnum, i, j)
           let pairs += 1
         endif
       endif
-    elseif p == 6  " end
+    elseif p == 7  " end
       let synid = synID(a:lnum, col, 0)
 
       if synid == g:crystal#indent#keyword || synid == g:crystal#indent#define
         let pairs -= 1
       endif
-    elseif p == 7  " ( [ {
+    elseif p == 8  " ( [ {
       if synID(a:lnum, col, 0) == g:crystal#indent#delimiter
         if pairs == 0
           let [_, col2] = searchpos('\S', "z", a:lnum)
@@ -176,11 +184,11 @@ function s:find_floating_index(lnum, i, j)
           let pairs += 1
         endif
       endif
-    elseif p == 8  " ) ] }
+    elseif p == 9  " ) ] }
       if synID(a:lnum, col, 0) == g:crystal#indent#delimiter
         let pairs -= 1
       endif
-    elseif p == 9  " |
+    elseif p == 10  " |
       if synID(a:lnum, col, 0) == g:crystal#indent#delimiter
         if pairs == 0
           return a:i
