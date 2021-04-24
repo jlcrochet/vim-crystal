@@ -105,7 +105,7 @@ NOTE: Setting this variable manually has no effect unless `g:crystal_simple_inde
 
 If `1`, definition keywords &mdash; `def`, `macro`, `class`, `module`, `struct`, `lib`, `enum`, and `annotation` &mdash; will be highlighted differently than other keywords like `if` and `while`.
 
-This variable is set automatically unless `g:crystal_simple_indent` is set, as definition keywords need to be matched separately from other keywords in order to allow for efficient indentation for floating blocks. You can set this if you want to enable `g:crystal_simple_indent` but still want to have separate highlighted for definition keywords.
+This variable is set automatically unless `g:crystal_simple_indent` is set, as definition keywords need to be matched separately from other keywords in order to allow for efficient indentation for floating blocks. You can set this if you want to enable `g:crystal_simple_indent` but still want to have separate highlights for definition keywords.
 
 #### `g:crystal_fold`
 

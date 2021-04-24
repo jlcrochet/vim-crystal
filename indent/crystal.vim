@@ -606,11 +606,7 @@ else
     if char ==# "."
       " If the current line starts with a leading dot:
       "
-      " If the previous line also started with a leading dot, align with
-      " the previous line.
-      "
-      " Else, align with the first leading dot in the previous line, if
-      " any.
+      " Align with the first leading dot in the previous line, if any.
       "
       " Else, add a shift.
       if line[idx + 1] !=# "."
