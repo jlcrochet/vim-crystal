@@ -44,7 +44,7 @@ The default indentation style used by this plugin is the one most commonly found
          .bar
          .baz
 
-For those who prefer a more traditional indentation style or who desire slightly faster highlighting or indentation, set `g:crystal_simple_indent` to `1`. The above examples will now be indented thus:
+For those who prefer a more traditional indentation style or who desire slightly faster highlighting and indentation, set `g:crystal_simple_indent` to `1`. The above examples will now be indented thus:
 
     x = if y
       5
@@ -99,17 +99,11 @@ For those who prefer a more traditional indentation style or who desire slightly
       .bar
       .baz
 
-#### `g:crystal_highlight_definitions`
-
-NOTE: Setting this variable manually has no effect unless `g:crystal_simple_indent` is set.
-
-If `1`, definition keywords &mdash; `def`, `macro`, `class`, `module`, `struct`, `lib`, `enum`, and `annotation` &mdash; will be highlighted differently than other keywords like `if` and `while`.
-
-This variable is set automatically unless `g:crystal_simple_indent` is set, as definition keywords need to be matched separately from other keywords in order to allow for efficient indentation for floating blocks. You can set this if you want to enable `g:crystal_simple_indent` but still want to have separate highlights for definition keywords.
-
 #### `g:crystal_fold`
 
 If `1`, definition blocks for methods, classes, etc. will be folded.
+
+NOTE: Setting this will disable `g:crystal_simple_indent`, since floating blocks have to be matched in order for folding to work properly.
 
 #### `g:ecrystal_extensions`
 
@@ -132,7 +126,7 @@ To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a 
 
 ## Performance Comparison with [vim-crystal](https://github.com/vim-crystal/vim-crystal)
 
-Comparisons made between the respective HEAD's of each plugin as of this writing (2021-4-10), using [this test file](https://gist.github.com/jlcrochet/720c5a83aa15eef2d2eda2c05bc5b2f1). The test file is comprised of snippets taken from the official documentation along with some random edge cases I came up with myself. The benchmarks were run with NeoVim 0.5.0.
+Comparisons made between the respective HEAD's of each plugin as of this writing (2021-4-28), using [this test file](https://gist.github.com/jlcrochet/720c5a83aa15eef2d2eda2c05bc5b2f1). The test file is comprised of snippets taken from the official documentation along with some random edge cases I came up with myself. The benchmarks were run with NeoVim 0.5.0.
 
 ### Syntax
 
@@ -159,21 +153,21 @@ Results:
 
     vim-crystal/vim-crystal:
 
-    6.03s
-    5.34s  (g:crystal_no_expensive == 1)
+    5.08s
 
     jlcrochet/vim-crystal:
 
-    0.35s
-    0.48s  (g:crystal_highlight_definitions == 1)
+    0.51s
+    0.36s  (g:crystal_simple_indent == 1)
 
 ### Indentation
 
 Benchmark:
 
     command! IndentBenchmark
+          \ goto |
           \ let start = reltime() |
-          \ call feedkeys("ggVG=", "x") |
+          \ call feedkeys("=G", "x") |
           \ echo reltimestr(reltime(start)) |
           \ unlet start
 
@@ -183,15 +177,14 @@ Results:
 
     vim-crystal/vim-crystal:
 
-    11.43s
-    14.54s  (g:crystal_no_expensive == 1)
+    10.29s
 
     jlcrochet/vim-crystal (VimL):
 
-    1.17s
-    0.53s  (g:crystal_simple_indent == 1)
+    1.14s
+    0.54s  (g:crystal_simple_indent == 1)
 
     jlcrochet/vim-crystal (Lua):
 
-    0.24s
-    0.08s  (g:crystal_simple_indent == 1)
+    0.25s
+    0.13s  (g:crystal_simple_indent == 1)

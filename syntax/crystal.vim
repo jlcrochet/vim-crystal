@@ -20,14 +20,14 @@ endif
 
 " Comments {{{2
 if get(b:, "is_ecrystal")
-  syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1\%(\_$\|\ze-\=%>\)/ oneline contains=crystalTodo
+  syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1\%($\|\ze-\=%>\)/ oneline contains=crystalTodo
 else
-  syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1\_$/ oneline contains=crystalTodo
+  syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1$/ oneline contains=crystalTodo
 endif
 
 syn keyword crystalTodo BUG DEPRECATED FIXME NOTE OPTIMIZE TODO contained
 
-syn region crystalShebang start=/\%#=1\%^#!/ end=/\%#=1\_$/ oneline
+syn region crystalShebang start=/\%#=1\%^#!/ end=/\%#=1$/ oneline
 
 " Operators {{{2
 syn match crystalUnaryOperator /\%#=1[+*!~&?]/
@@ -140,11 +140,13 @@ syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%w|/ end=
 syn match crystalStringPipeEscape /\%#=1\\[|[:space:]]/ contained
 
 " Here Documents {{{3
-syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-\z(\w\+\)/ matchgroup=crystalHeredocEnd end=/\%#=1\_^\s*\z1\>/ transparent contains=@crystalTop,crystalHeredocLine
-syn region crystalHeredocLine start=/\%#=1\_^/ end=/\%#=1\_$/ oneline contained contains=crystalStringInterpolation,crystalStringEscape nextgroup=crystalHeredocLine skipnl
+syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-\z(\w\+\)/ matchgroup=crystalHeredocEnd end=/\%#=1^\s*\z1\ze\s*$/ transparent keepend extend contains=crystalHeredocStartLine,crystalHeredocLine
+syn region crystalHeredocStartLine start=/\%#=1/ end=/\%#=1$/ contained oneline transparent keepend contains=TOP nextgroup=crystalHeredocLine skipnl
+syn region crystalHeredocLine start=/\%#=1^/ end=/\%#=1$/ contained oneline contains=crystalStringInterpolation,crystalStringEscape nextgroup=crystalHeredocLine skipnl
 
-syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-'\z(\w\+\)'/ matchgroup=crystalHeredocEnd end=/\%#=1\_^\s*\z1\>/ transparent contains=@crystalTop,crystalHeredocLineRaw
-syn region crystalHeredocLineRaw start=/\%#=1\_^/ end=/\%#=1\_$/ oneline contained nextgroup=crystalHeredocLineRaw skipnl
+syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-'\z(\w\+\)'/ matchgroup=crystalHeredocEnd end=/\%#=1^\s*\z1\ze\s*$/ transparent keepend extend contains=crystalHeredocStartLineRaw,crystalHeredocLineRaw
+syn region crystalHeredocStartLineRaw start=/\%#=1/ end=/\%#=1$/ contained oneline transparent keepend contains=TOP nextgroup=crystalHeredocLineRaw skipnl
+syn region crystalHeredocLineRaw start=/\%#=1^/ end=/\%#=1$/ oneline contained nextgroup=crystalHeredocLineRaw skipnl
 
 syn region crystalHeredocSkip matchgroup=crystalHeredocStart start=/\%#=1<<-\('\=\)\w\+\1/ end=/\%#=1\ze<<-'\=\w/ transparent oneline nextgroup=crystalHeredoc,crystalHeredocSkip
 
@@ -202,7 +204,23 @@ syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%x</  e
 syn region crystalCommand matchgroup=crystalCommandDelimiter start=/\%#=1%r|/  end=/\%#=1|/ contains=crystalStringInterpolation,crystalStringEscape nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
 " Blocks {{{2
-if get(g:, "crystal_highlight_definitions") && !get(b:, "is_ecrystal")
+if get(g:, "crystal_simple_indent") || get(b:, "is_ecrystal")
+  syn keyword crystalKeyword if unless case while until begin for else ensure
+  syn keyword crystalKeyword rescue nextgroup=crystalConstant skipwhite
+  syn keyword crystalKeyword end nextgroup=crystalPostfixKeyword skipwhite
+  syn keyword crystalKeyword do nextgroup=crystalBlockParameters skipwhite
+
+  syn keyword crystalKeyword def macro fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
+  syn keyword crystalKeyword class struct lib annotation enum module union nextgroup=crystalTypeDefinition skipwhite
+
+  syn keyword crystalKeyword abstract nextgroup=crystalKeywordNoBlock skipwhite
+  syn keyword crystalKeyword private protected nextgroup=crystalConstant skipwhite
+
+  syn keyword crystalKeyword type alias nextgroup=crystalTypeAlias skipwhite
+
+  syn keyword crystalKeywordNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
+  syn keyword crystalKeywordNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
+else
   " NOTE: When definition blocks are highlighted, the following keywords
   " have to be matched with :syn-match instead of :syn-keyword to
   " prevent the block regions from being clobbered.
@@ -230,24 +248,6 @@ if get(g:, "crystal_highlight_definitions") && !get(b:, "is_ecrystal")
   syn keyword crystalDefineNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
 
   syn keyword crystalKeyword if unless else begin for do end contained containedin=crystalMacro
-
-  syn sync fromstart
-else
-  syn keyword crystalKeyword if unless case while until begin for else ensure
-  syn keyword crystalKeyword rescue nextgroup=crystalConstant skipwhite
-  syn keyword crystalKeyword end nextgroup=crystalPostfixKeyword skipwhite
-  syn keyword crystalKeyword do nextgroup=crystalBlockParameters skipwhite
-
-  syn keyword crystalKeyword def macro fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
-  syn keyword crystalKeyword class struct lib annotation enum module union nextgroup=crystalTypeDefinition skipwhite
-
-  syn keyword crystalKeyword abstract nextgroup=crystalKeywordNoBlock skipwhite
-  syn keyword crystalKeyword private protected nextgroup=crystalConstant skipwhite
-
-  syn keyword crystalKeyword type alias nextgroup=crystalTypeAlias skipwhite
-
-  syn keyword crystalKeywordNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
-  syn keyword crystalKeywordNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
 endif
 
 syn match crystalTypeDefinition /\%#=1\u\w*/ contained nextgroup=crystalTypeNamespace,crystalInheritanceOperator skipwhite
@@ -288,6 +288,9 @@ syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline contained containedin=crystalString,crystalComment contains=@crystalTop,crystalNestedBraces
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ oneline containedin=ALLBUT,crystalComment,crystalString contains=TOP
 " }}}2
+
+" Synchronization {{{1
+syn sync fromstart
 
 " Highlighting {{{1
 hi def link crystalComment Comment
