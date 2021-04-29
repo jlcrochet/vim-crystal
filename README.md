@@ -157,7 +157,7 @@ Results:
 
     jlcrochet/vim-crystal:
 
-    0.51s
+    0.46s
     0.36s  (g:crystal_simple_indent == 1)
 
 ### Indentation
@@ -181,10 +181,10 @@ Results:
 
     jlcrochet/vim-crystal (VimL):
 
-    1.14s
-    0.54s  (g:crystal_simple_indent == 1)
+    1.12s
+    0.52s  (g:crystal_simple_indent == 1)
 
     jlcrochet/vim-crystal (Lua):
 
-    0.25s
-    0.13s  (g:crystal_simple_indent == 1)
+    0.24s
+    0.12s  (g:crystal_simple_indent == 1)
