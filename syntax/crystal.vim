@@ -65,9 +65,8 @@ syn match crystalDelimiter /\%#=1]?\=/ nextgroup=crystalOperator,crystalRangeOpe
 syn match crystalDelimiter /\%#=1{/ nextgroup=crystalNamedTupleKey,crystalBlockParameters skipwhite skipnl
 syn match crystalDelimiter /\%#=1}/ nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
-syn match crystalDelimiter /\%#=1,/ nextgroup=crystalNamedTupleKey skipwhite skipnl
-
-syn match crystalDelimiter /\%#=1\\/
+syn match crystalComma /\%#=1,/ nextgroup=crystalNamedTupleKey skipwhite skipnl
+syn match crystalBackslash /\%#=1\\/
 
 " Identifiers {{{2
 syn match crystalInstanceVariable /\%#=1@\h\w*/ nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
