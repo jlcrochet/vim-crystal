@@ -14,15 +14,6 @@ setlocal comments=:#
 setlocal commentstring=#\ %s
 setlocal suffixesadd=.cr
 
-" vim-endwise
-if get(g:, "loaded_endwise")
-  let b:endwise_addition = "end"
-  let b:endwise_words = "def,macro,class,struct,module,enum,annotation,lib,union,if,unless,case,while,until,for,begin,do"
-  let b:endwise_syngroups = "crystalKeyword,crystalDefine"
-endif
-
 " matchit.vim
-if get(g:, "loaded_matchit")
-  let b:match_words = g:crystal#ftplugin#match_words
-  let b:match_skip = 'S:^crystal\%(Keyword\|Define\|BlockControl\|DefineBlockControl\)$'
-endif
+let b:match_words = g:crystal#ftplugin#match_words
+let b:match_skip = 'S:^crystal\%(Keyword\|Define\|BlockControl\|DefineBlockControl\)$'
