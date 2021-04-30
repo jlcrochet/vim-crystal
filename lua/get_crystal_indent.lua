@@ -1756,7 +1756,7 @@ end
 
 if vim.g.crystal_simple_indent == 1 then
   -- Simple {{{
-  return function()
+  function get_crystal_indent()
     local lnum = v.lnum
 
     -- If the current line is inside of a multiline region, do nothing.
@@ -2198,7 +2198,7 @@ if vim.g.crystal_simple_indent == 1 then
   -- }}}
 else
   -- Default {{{
-  return function()
+  function get_crystal_indent()
     local lnum = v.lnum
 
     -- If the current line is inside of a multiline region, do nothing.

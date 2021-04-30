@@ -13,7 +13,7 @@ setlocal indentkeys=0),0],0},.,o,O,!^F
 setlocal indentkeys+==end,=else,=elsif,0=when,0=in,0=rescue,0=ensure
 
 if has("nvim-0.5")
-  lua get_crystal_indent = require("get_crystal_indent")
+  lua require "get_crystal_indent"
   setlocal indentexpr=v:lua.get_crystal_indent()
   finish
 endif
