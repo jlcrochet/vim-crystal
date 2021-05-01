@@ -224,17 +224,17 @@ else
   " have to be matched with :syn-match instead of :syn-keyword to
   " prevent the block regions from being clobbered.
 
-  syn region crystalBlock matchgroup=crystalKeyword start=/\%#=1\<\%(if\|unless\|case\|while\|until\|begin\)\>/ end=/\%#=1\<end:\@!\>/ contains=@crystalTop,crystalBlockControl nextgroup=crystalPostfixKeyword skipwhite
+  syn region crystalBlock matchgroup=crystalKeyword start=/\%#=1\<\%(if\|unless\|case\|while\|until\|begin\)\>/ end=/\%#=1\<\.\@1<!end:\@!\>/ contains=@crystalTop,crystalBlockControl nextgroup=crystalPostfixKeyword skipwhite
   syn keyword crystalBlockControl else ensure contained
   syn keyword crystalBlockControl rescue contained nextgroup=crystalConstant skipwhite
 
   syn match crystalKeyword /\%#=1\<do\>/ nextgroup=crystalBlockParameters skipwhite contained containedin=crystalBlock
-  syn region crystalBlock start=/\%#=1\<do\>/ matchgroup=crystalKeyword end=/\%#=1\<end:\@!\>/ contains=@crystalTop,crystalBlockControl nextgroup=crystalPostfixKeyword skipwhite
+  syn region crystalBlock start=/\%#=1\<do\>/ matchgroup=crystalKeyword end=/\%#=1\<\.\@1<!end:\@!\>/ contains=@crystalTop,crystalBlockControl nextgroup=crystalPostfixKeyword skipwhite
 
   syn match crystalDefine /\%#=1\<\%(def\|macro\)\>/ nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite contained containedin=crystalDefineBlock
   syn match crystalDefine /\%#=1\<\%(class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ nextgroup=crystalTypeDefinition skipwhite contained containedin=crystalDefineBlock
 
-  syn region crystalDefineBlock start=/\%#=1\<\%(def\|macro\|class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ matchgroup=crystalDefine end=/\%#=1\<end:\@!\>/ contains=@crystalTop,crystalDefineBlockControl fold
+  syn region crystalDefineBlock start=/\%#=1\<\%(def\|macro\|class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ matchgroup=crystalDefine end=/\%#=1\<\.\@1<!end:\@!\>/ contains=@crystalTop,crystalDefineBlockControl fold
   syn keyword crystalDefineBlockControl else ensure contained
   syn keyword crystalDefineBlockControl rescue contained nextgroup=crystalConstant skipwhite
 
