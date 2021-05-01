@@ -275,11 +275,6 @@ syn region crystalBlockParameters matchgroup=crystalDelimiter start=/\%#=1|/ end
 
 syn region crystalNestedBraces start=/\%#=1{/ matchgroup=crystalDelimiter end=/\%#=1}/ contained contains=@crystalTop,crystalNestedBraces
 
-syn keyword crystalKeyword nextgroup=crystalNilableModifier
-      \ getter setter property class_getter class_setter class_property
-
-syn match crystalNilableModifier /\%#=1?/ contained
-
 syn region crystalAnnotation matchgroup=crystalAnnotationDelimiter start=/\%#=1@\[/ end=/\%#=1]/ oneline transparent
 
 " Macros {{{2
@@ -339,7 +334,6 @@ hi def link crystalCommandDelimiter crystalCommand
 hi def link crystalKeyword Keyword
 hi def link crystalKeywordNoBlock crystalKeyword
 hi def link crystalPostfixKeyword crystalKeyword
-hi def link crystalNilableModifier crystalKeyword
 hi def link crystalDefine Define
 hi def link crystalDefineNoBlock crystalDefine
 hi def link crystalBlockControl crystalKeyword
