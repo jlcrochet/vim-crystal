@@ -37,15 +37,15 @@ let s:pair_re = '\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union
 let s:floating_re = '\C\v<%((if|unless|begin)|(case|until|while)|(else|elsif|ensure|in|rescue|when)|(annotation|class|def|enum|lib|macro|module|struct|union)|(do)|(end)):@!>|([([{])|([)\]}])|(\|)'
 
 if get(g:, "crystal_simple_indent")
-  let s:skip_keyword_expr = 'synID(line("."), col("."), 0) != g:crystal#indent#keyword'
+  let s:skip_keyword_expr = 'synID(line("."), col("."), 1) != g:crystal#indent#keyword'
 else
   function s:skip_keyword()
-    let synid = synID(line("."), col("."), 0)
+    let synid = synID(line("."), col("."), 1)
     return synid != g:crystal#indent#keyword && synid != g:crystal#indent#define && synid != g:crystal#indent#block_control && synid != g:crystal#indent#define_block_control
   endfunction
 
   function s:skip_pair()
-    let synid = synID(line("."), col("."), 0)
+    let synid = synID(line("."), col("."), 1)
     return synid != g:crystal#indent#keyword && synid != g:crystal#indent#define && synid != g:crystal#indent#block_control && synid != g:crystal#indent#define_block_control && synid != g:crystal#indent#delimiter
   endfunction
 
@@ -56,7 +56,7 @@ endif
 function s:prev_non_multiline(lnum)
   let lnum = a:lnum
 
-  while get(g:crystal#indent#multiline_regions, synID(lnum, 1, 0))
+  while get(g:crystal#indent#multiline_regions, synID(lnum, 1, 1))
     let lnum -= 1
   endwhile
 
@@ -64,8 +64,11 @@ function s:prev_non_multiline(lnum)
 endfunction
 
 function s:is_operator(char, col, line, lnum)
-  if a:char =~# '[%&+\-/:<=>^|~]'
-    return synID(a:lnum, a:col, 0) == g:crystal#indent#operator
+  if a:char =~# '[%&+\-/:<>^|~]'
+    return synID(a:lnum, a:col, 1) == g:crystal#indent#operator
+  elseif a:char ==# "="
+    let synid = synID(a:lnum, a:col, 1)
+    return synid == g:crystal#indent#operator || synid == g:crystal#indent#assignment_operator
   elseif a:char =~# '[*?]'
     " Find the first character prior to this one that isn't also a * or
     " ?.
@@ -76,7 +79,7 @@ function s:is_operator(char, col, line, lnum)
         if char =~# '[[:alnum:]_)\]}]'
           return 0
         else
-          return synID(a:lnum, a:col, 0) == g:crystal#indent#operator
+          return synID(a:lnum, a:col, 1) == g:crystal#indent#operator
         endif
       endif
     endfor
@@ -100,7 +103,7 @@ function s:get_last_char(lnum, line)
       return ["", -1]
     endif
 
-    if synID(a:lnum, found + 1, 0) == g:crystal#indent#comment_delimiter
+    if synID(a:lnum, found + 1, 1) == g:crystal#indent#comment_delimiter
       break
     endif
   endwhile
@@ -117,7 +120,7 @@ function s:find_floating_index(lnum, i, j)
 
   while col >= a:i + 1
     if p == 2  " if unless begin
-      if synID(a:lnum, col, 0) == g:crystal#indent#keyword
+      if synID(a:lnum, col, 1) == g:crystal#indent#keyword
         if pairs == 0
           " If this is a macro tag keyword, return the index for the macro
           " tag.
@@ -133,7 +136,7 @@ function s:find_floating_index(lnum, i, j)
         endif
       endif
     elseif p == 3  " case while until
-      if synID(a:lnum, col, 0) == g:crystal#indent#keyword
+      if synID(a:lnum, col, 1) == g:crystal#indent#keyword
         if pairs == 0
           return col - 1
         else
@@ -142,14 +145,14 @@ function s:find_floating_index(lnum, i, j)
       endif
     elseif p == 4  " else elsif ensure in rescue when
       if pairs == 0
-        let synid = synID(a:lnum, col, 0)
+        let synid = synID(a:lnum, col, 1)
 
         if synid == g:crystal#indent#keyword || synid == g:crystal#indent#block_control || synid == g:crystal#indent#define_block_control
           return a:i
         endif
       endif
     elseif p == 5  " annotation class def enum lib macro module struct union
-      if synID(a:lnum, col, 0) == g:crystal#indent#define
+      if synID(a:lnum, col, 1) == g:crystal#indent#define
         if pairs == 0
           return a:i
         else
@@ -157,7 +160,7 @@ function s:find_floating_index(lnum, i, j)
         endif
       endif
     elseif p == 6  " do
-      if synID(a:lnum, col, 0) == g:crystal#indent#keyword
+      if synID(a:lnum, col, 1) == g:crystal#indent#keyword
         if pairs == 0
           return a:i
         else
@@ -165,13 +168,13 @@ function s:find_floating_index(lnum, i, j)
         endif
       endif
     elseif p == 7  " end
-      let synid = synID(a:lnum, col, 0)
+      let synid = synID(a:lnum, col, 1)
 
       if synid == g:crystal#indent#keyword || synid == g:crystal#indent#define
         let pairs -= 1
       endif
     elseif p == 8  " ( [ {
-      if synID(a:lnum, col, 0) == g:crystal#indent#delimiter
+      if synID(a:lnum, col, 1) == g:crystal#indent#delimiter
         if pairs == 0
           let [_, col2] = searchpos('\S', "z", a:lnum)
 
@@ -185,12 +188,12 @@ function s:find_floating_index(lnum, i, j)
         endif
       endif
     elseif p == 9  " ) ] }
-      if synID(a:lnum, col, 0) == g:crystal#indent#delimiter
+      if synID(a:lnum, col, 1) == g:crystal#indent#delimiter
         let pairs -= 1
       endif
     elseif p == 10  " |
       if pairs == 0
-        if synID(a:lnum, col, 0) == g:crystal#indent#delimiter
+        if synID(a:lnum, col, 1) == g:crystal#indent#delimiter
           return a:i
         endif
       endif
@@ -213,7 +216,7 @@ function s:find_msl(skip_commas, pairs)
   " This line is *not* the MSL if:
 
   " It is part of a multiline region.
-  if get(g:crystal#indent#multiline_regions, synID(lnum, 1, 0))
+  if get(g:crystal#indent#multiline_regions, synID(lnum, 1, 1))
     call cursor(prev_lnum, 1)
     return s:find_msl(a:skip_commas, v:null)
   endif
@@ -238,7 +241,7 @@ function s:find_msl(skip_commas, pairs)
         return [lnum, col - 1, 0]
       endif
 
-      if synID(lnum, col, 0) == g:crystal#indent#define
+      if synID(lnum, col, 1) == g:crystal#indent#define
         return [lnum, col - 1, 0]
       endif
 
@@ -250,7 +253,7 @@ function s:find_msl(skip_commas, pairs)
     let [_, col2, p] = searchpos(s:pair_re, "czp", lnum)
 
     while p
-      let synid = synID(lnum, col2, 0)
+      let synid = synID(lnum, col2, 1)
 
       if p == 2  " def class module macro struct enum annotation lib union
         if synid == g:crystal#indent#define
@@ -332,7 +335,7 @@ if get(g:, "crystal_simple_indent")
   " Simple {{{
   function GetCrystalIndent() abort
     " If the current line is inside of a multiline region, do nothing.
-    if get(g:crystal#indent#multiline_regions, synID(v:lnum, 1, 0))
+    if get(g:crystal#indent#multiline_regions, synID(v:lnum, 1, 1))
       return -1
     endif
 
@@ -358,7 +361,7 @@ if get(g:, "crystal_simple_indent")
       " If the previous line begins in a multiline region, find the line
       " that began that region.
 
-      if get(g:crystal#indent#multiline_regions, synID(prev_lnum, 1, 0))
+      if get(g:crystal#indent#multiline_regions, synID(prev_lnum, 1, 1))
         let start_lnum = s:prev_non_multiline(prevnonblank(prev_lnum - 1))
         let start_line = getline(start_lnum)
       else
@@ -447,7 +450,7 @@ if get(g:, "crystal_simple_indent")
     elseif char ==# "}"
       let shift = 1
 
-      if last_char ==# "{" || (last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#indent#delimiter)
+      if last_char ==# "{" || (last_char ==# "|" && synID(prev_lnum, last_idx + 1, 1) == g:crystal#indent#delimiter)
         let shift = 0
       endif
 
@@ -501,7 +504,7 @@ if get(g:, "crystal_simple_indent")
         return first_idx + shiftwidth()
       endif
     elseif (last_char =~# '[\\([{]')
-          \ || (last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#indent#delimiter)
+          \ || (last_char ==# "|" && synID(prev_lnum, last_idx + 1, 1) == g:crystal#indent#delimiter)
           \ || s:is_operator(last_char, last_idx + 1, prev_line, prev_lnum)
       if continuation == 1
         return first_idx
@@ -525,7 +528,7 @@ else
   " Default {{{
   function GetCrystalIndent() abort
     " If the current line is inside of a multiline region, do nothing.
-    if get(g:crystal#indent#multiline_regions, synID(v:lnum, 1, 0))
+    if get(g:crystal#indent#multiline_regions, synID(v:lnum, 1, 1))
       return -1
     endif
 
@@ -578,25 +581,48 @@ else
           endif
         endif
 
-        " Else, find the first operator in the previous line.
-        let segment = prev_line[:last_idx - 3]
-        let [char, idx, offset] = matchstrpos(segment, '[%&+\-/:<=>^|~]\|[[:alnum:]_)\]}]\@1<![*?]\+', start_idx + 1)
+        " If the first character in the previous line is part of
+        " a keyword, align with the first non-operator character after
+        " that word.
+        let [_, _, offset] = matchstrpos(prev_line, '\v^%(case|elsif|if|in|unless|until|when|while):@!>', start_idx)
 
-        while idx != -1
-          if synID(prev_lnum, idx + 1, 0) == g:crystal#indent#operator
-            " Find the first non-whitespace column after the operator that
-            " is not also an operator.
-            let [char, idx, _] = matchstrpos(segment, '[^[:space:]%&+\-/:<=>^|~*?]', offset)
+        if offset != -1
+          return match(prev_line, '\S', offset + 1)
+        endif
 
-            if idx == -1
-              break
+        " Otherwise, align with the first character after the first
+        " assignment operator in the line, if one can be found.
+        "
+        " NOTE: Make sure to skip bracketed groups.
+        call cursor(prev_lnum, start_idx + 1)
+
+        let pairs = 0
+        let [_, col, p] = searchpos('\([([{]\)\|\([)\]}]\)\|\([=!]\@1<!=[=>~]\@!\)', "cpz", prev_lnum)
+
+        while p
+          if p == 2
+            if synID(prev_lnum, col, 1) == g:crystal#indent#delimiter
+              let pairs += 1
             endif
+          elseif p == 3
+            if pairs > 0 && synID(prev_lnum, col, 1) == g:crystal#indent#delimiter
+              let pairs -= 1
+            endif
+          elseif p == 4
+            if pairs == 0
+              let synid = synID(prev_lnum, col, 1)
 
-            " If one is found, align with it.
-            return idx
+              if synid == g:crystal#indent#operator || synid == g:crystal#indent#assignment_operator
+                let idx = match(prev_line, '\S', col)
+
+                if idx != -1
+                  return idx
+                endif
+              endif
+            endif
           endif
 
-          let [char, idx, offset] = matchstrpos(segment, '[%&+\-/:<=>^|~]\|[[:alnum:]_)\]}]\@1<![*?]\+', offset)
+          let [_, col, p] = searchpos('\([([{]\)\|\([)\]}]\)\|\([=!]\@1<!=[=>~]\@!\)', "pz", prev_lnum)
         endwhile
 
         " Otherwise, simply align with the starting position and add
@@ -638,7 +664,7 @@ else
         else
           return first_idx + shiftwidth()
         endif
-      elseif last_char =~# '[([{]' || last_char ==# "|" && synID(prev_lnum, last_idx + 1, 0) == g:crystal#indent#delimiter
+      elseif last_char =~# '[([{]' || last_char ==# "|" && synID(prev_lnum, last_idx + 1, 1) == g:crystal#indent#delimiter
         " If the previous line ends with an opening bracket, align with
         " the starting column and add a shift unless the current line
         " begins with a closing bracket or `end`.

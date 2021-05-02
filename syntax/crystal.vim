@@ -40,9 +40,11 @@ syn match crystalOperator /\%#=1>>\==\=/ contained
 syn match crystalOperator /\%#=1+=\=/ contained
 syn match crystalOperator /\%#=1-[=>]\=/ contained
 syn match crystalOperator /\%#=1\*\*\==\=/ contained
-syn match crystalOperator /\%#=1[/?:]/ contained
+syn match crystalOperator /\%#=1[/:]/ contained
 " NOTE: Additional division operators are defined after /-style regexes
 " in order to take precedence
+syn match crystalOperator /\%#=1?/ contained nextgroup=crystalAssignmentOperator skipwhite
+syn match crystalAssignmentOperator /\%#=1=/ contained
 syn match crystalOperator /\%#=1%=\=/ contained
 syn match crystalOperator /\%#=1&\%(&=\=\|=\|+=\=\|-[=>]\=\|\*[*=]\=\|\)\=/ contained
 syn match crystalOperator /\%#=1||\==\=/ contained
@@ -255,7 +257,8 @@ syn match crystalInheritanceOperator /\%#=1</ contained nextgroup=crystalConstan
 
 syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ contained nextgroup=crystalMethodParameters,crystalOperator skipwhite
 execute 'syn match crystalMethodDefinition /\%#=1'.g:crystal#syntax#overloadable_operators.'/ contained nextgroup=crystalMethodParameters,crystalOperator skipwhite'
-syn region crystalMethodParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=TOP,crystalKeyword,crystalDefine,crystalBlock,crystalDefineBlock nextgroup=crystalOperator skipwhite
+syn region crystalMethodParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=TOP,crystalKeyword,crystalDefine,crystalBlock,crystalDefineBlock nextgroup=crystalTypeOperator skipwhite
+syn match crystalTypeOperator /\%#=1:/ contained
 syn match crystalMethodReceiver /\%#=1\u\w*/ contained nextgroup=crystalMethodDot
 syn keyword crystalMethodSelf self contained nextgroup=crystalMethodDot
 syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
@@ -263,7 +266,7 @@ syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
 " Miscellaneous {{{2
 syn keyword crystalKeyword elsif when in then uninitialized out forall of with
 
-syn match crystalTypeAlias /\%#=1\u\w*/ contained nextgroup=crystalOperator skipwhite
+syn match crystalTypeAlias /\%#=1\u\w*/ contained nextgroup=crystalAssignmentOperator skipwhite
 
 syn keyword crystalKeyword include extend nextgroup=crystalConstant skipwhite
 syn keyword crystalKeyword return next break nextgroup=crystalPostfixKeyword skipwhite
@@ -271,15 +274,17 @@ syn keyword crystalKeyword require nextgroup=crystalString skipwhite
 
 syn keyword crystalPostfixKeyword if unless contained
 
-syn region crystalBlockParameters matchgroup=crystalDelimiter start=/\%#=1|/ end=/\%#=1|/ transparent oneline contained
+syn region crystalBlockParameters matchgroup=crystalDelimiter start=/\%#=1|/ end=/\%#=1|/ contained
+syn match crystalBlockParameter /\%#=1[[:lower:]_]\w*/ contained containedin=crystalBlockParameters
+syn region crystalBlockParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained containedin=crystalBlockParameters
 
-syn region crystalNestedBraces start=/\%#=1{/ matchgroup=crystalDelimiter end=/\%#=1}/ contained contains=@crystalTop,crystalNestedBraces
+syn region crystalNestedBraces start=/\%#=1{/ matchgroup=crystalDelimiter end=/\%#=1}/ contained transparent nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
 syn region crystalAnnotation matchgroup=crystalAnnotationDelimiter start=/\%#=1@\[/ end=/\%#=1]/ oneline transparent
 
 " Macros {{{2
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline containedin=ALLBUT,crystalComment,crystalString contains=@crystalTop,crystalNestedBraces nextgroup=crystalOperator,crystalRangeOperator,crystalNamespaceOperator,crystalPostfixKeyword skipwhite
-syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline contained containedin=crystalString,crystalComment contains=@crystalTop,crystalNestedBraces
+syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline contained containedin=crystalString contains=@crystalTop,crystalNestedBraces
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ oneline containedin=ALLBUT,crystalComment,crystalString contains=TOP
 " }}}2
 
@@ -348,7 +353,10 @@ hi def link crystalTypeNamespace crystalNamespaceOperator
 hi def link crystalInheritanceOperator crystalOperator
 hi def link crystalMacroDelimiter PreProc
 hi def link crystalFreshVariable Identifier
-hi def link crystalAnnotationDelimiter Special
+hi def link crystalAnnotationDelimiter PreProc
+hi def link crystalBlockParameter crystalVariableOrMethod
+hi def link crystalAssignmentOperator crystalOperator
+hi def link crystalTypeOperator crystalOperator
 " }}}1
 
 " vim:fdm=marker

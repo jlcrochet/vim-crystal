@@ -126,7 +126,7 @@ To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a 
 
 ## Performance Comparison with [vim-crystal](https://github.com/vim-crystal/vim-crystal)
 
-Comparisons made between the respective HEAD's of each plugin as of this writing (2021-4-28), using [this test file](https://gist.github.com/jlcrochet/720c5a83aa15eef2d2eda2c05bc5b2f1). The test file is comprised of snippets taken from the official documentation along with some random edge cases I came up with myself. The benchmarks were run with NeoVim 0.5.0.
+Comparisons made between the respective HEAD's of each plugin as of this writing (2021-5-1), using [this test file](https://gist.github.com/jlcrochet/720c5a83aa15eef2d2eda2c05bc5b2f1). The test file is comprised of snippets taken from the official documentation along with some random edge cases I came up with myself. The benchmarks were run with NeoVim 0.5.0.
 
 ### Syntax
 
@@ -157,7 +157,7 @@ Results:
 
     jlcrochet/vim-crystal:
 
-    0.48s
+    0.47s
     0.36s  (g:crystal_simple_indent == 1)
 
 ### Indentation

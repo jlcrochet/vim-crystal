@@ -13,6 +13,13 @@ local nvim_buf_get_lines = api.nvim_buf_get_lines
 -- Helpers {{{
 local MULTILINE_REGIONS = {
   crystalString = true,
+  crystalStringEscape = true,
+  crystalStringInterpolationDelimiter = true,
+  crystalStringParenthesisEscape = true,
+  crystalStringSquareBracketEscape = true,
+  crystalStringCurlyBraceEscape = true,
+  crystalStringAngleBracketEscape = true,
+  crystalStringPipeEscape = true,
   crystalSymbol = true,
   crystalRegex = true,
   crystalRegexGroup = true,
@@ -27,7 +34,7 @@ local MULTILINE_REGIONS = {
 local SYNGROUPS = {}
 
 local function syngroup_at(lnum, col)
-  local synid = synID(lnum, col, false)
+  local synid = synID(lnum, col, true)
   local syngroup = SYNGROUPS[synid]
 
   if not syngroup then
@@ -69,12 +76,14 @@ local function is_operator(byte, col, line, lnum)
     byte == 47 or  -- /
     byte == 58 or  -- :
     byte == 60 or  -- <
-    byte == 61 or  -- =
     byte == 62 or  -- >
     byte == 94 or  -- ^
     byte == 124 or  -- |
     byte == 126 then  -- ~
     return syngroup_at(lnum, col) == "crystalOperator"
+  elseif byte == 61 then  -- =
+    local syngroup = syngroup_at(lnum, col)
+    return syngroup == "crystalOperator" or syngroup == "crystalAssignmentOperator"
   elseif byte == 42 or byte == 63 then  -- * ?
     -- Find the first character prior to this one that isn't also a * or
     -- ?.
@@ -88,6 +97,20 @@ local function is_operator(byte, col, line, lnum)
           return syngroup_at(lnum, col) == "crystalOperator"
         end
       end
+    end
+  end
+
+  return false
+end
+
+local function is_assignment_operator(byte, col, line, lnum)
+  if byte == 61 then  -- =
+    local x = line:byte(col + 1)
+    local y = line:byte(col - 1)
+
+    if x ~= 61 and x ~= 62 and x ~= 126 and y ~= 61 and y ~= 33 then  -- = > ~ = !
+      local syngroup = syngroup_at(lnum, col)
+      return syngroup == "crystalOperator" or syngroup == "crystalAssignmentOperator"
     end
   end
 
@@ -2263,22 +2286,111 @@ else
           -- backslash...
           if prev_last_byte == 92 or is_operator(prev_last_byte, prev_last_col, prev_prev_line, prev_prev_lnum) then  -- \
             -- Align with the starting column.
-            return start_col - 1
+            return first_col - 1
           end
 
           ::exit::
         end
 
-        -- Else, find the first operator in the previous line.
-        for i = start_col, last_col - 3 do
-          if is_operator(prev_line:byte(i), i, prev_line, prev_lnum) then
-            -- Find the first non-whitespace column after the operator.
-            for j = i + 1, last_col - 3 do
-              local b = prev_line:byte(j)
+        do
+          local b = prev_line:byte(start_col)
+          local offset
 
-              if b > 32 then
-                -- If one is found, align with it.
-                return j - 1
+          -- If the first character of the previous line is part of
+          -- a keyword, align with the first character after that word.
+          if b == 99 then  -- c
+            if prev_line:byte(start_col + 1) == 97 and prev_line:byte(start_col + 2) == 115 and prev_line:byte(start_col + 3) == 101 then  -- a s e
+              offset = 4
+              goto found
+            end
+          elseif b == 101 then  -- e
+            if prev_line:byte(start_col + 1) == 108 and prev_line:byte(start_col + 2) == 115 and prev_line:byte(start_col + 3) == 105 and prev_line:byte(start_col + 4) == 102 then  -- l s i f
+              offset = 5
+              goto found
+            end
+          elseif b == 105 then  -- i
+            b = prev_line:byte(start_col + 1)
+
+            if b == 102 or b == 110 then  -- f n
+              offset = 2
+              goto found
+            end
+          elseif b == 117 then  -- u
+            if prev_line:byte(start_col + 1) == 110 then  -- n
+              b = prev_line:byte(start_col + 2)
+
+              if b == 108 then  -- l
+                if prev_line:byte(start_col + 3) == 101 and prev_line:byte(start_col + 4) == 115 and prev_line:byte(start_col + 5) == 115 then  -- e s s
+                  offset = 6
+                  goto found
+                end
+              elseif b == 116 then  -- t
+                if prev_line:byte(start_col + 3) == 105 and prev_line:byte(start_col + 4) == 108 then  -- i l
+                  offset = 5
+                  goto found
+                end
+              end
+            end
+          elseif b == 119 then  -- w
+            if prev_line:byte(start_col + 1) == 104 then  -- h
+              b = prev_line:byte(start_col + 2)
+
+              if b == 101 then  -- e
+                if prev_line:byte(start_col + 3) == 110 then  -- n
+                  offset = 4
+                  goto found
+                end
+              elseif b == 105 then  -- i
+                if prev_line:byte(start_col + 3) == 108 and prev_line:byte(start_col + 4) == 101 then  -- l e
+                  offset = 5
+                  goto found
+                end
+              end
+            end
+          end
+
+          goto exit
+
+          ::found::
+
+          b = prev_line:byte(start_col + offset)
+
+          if b ~= 58 and is_boundary(b) then  -- :
+            -- Find the first non-whitespace character after the
+            -- keyword.
+            for i = start_col + offset + 1, last_col - 1 do
+              if prev_line:byte(i) > 32 then
+                return i - 1
+              end
+            end
+          end
+
+          ::exit::
+        end
+
+        -- Otherwise, align with the first character after the first
+        -- assignment operator in the line, if one can be found.
+        --
+        -- NOTE: Make sure to skip bracketed groups.
+        local pairs = 0
+
+        for i = start_col, last_col - 1 do
+          local b = prev_line:byte(i)
+
+          if b > 32 then
+            if b == 40 or b == 91 or b == 123 then  -- ( [ {
+              if syngroup_at(prev_lnum, i) == "crystalDelimiter" then
+                pairs = pairs + 1
+              end
+            elseif b == 41 or b == 93 or b == 125 then  -- ) ] }
+              if pairs > 0 and syngroup_at(prev_lnum, i) == "crystalDelimiter" then
+                pairs = pairs - 1
+              end
+            elseif pairs == 0 and is_assignment_operator(b, i, prev_line, prev_lnum) then
+              for j = i + 1, last_col - 1 do
+                if prev_line:byte(j) > 32 then
+                  return j - 1
+                end
               end
             end
           end
