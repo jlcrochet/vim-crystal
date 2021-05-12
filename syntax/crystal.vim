@@ -91,10 +91,15 @@ syn keyword crystalSelf self nextgroup=crystalOperator,crystalRangeOperator,crys
 execute g:crystal#syntax#numbers
 
 " Characters {{{3
-syn region crystalCharacterError start=/\%#=1'/ end=/\%#=1'/ oneline nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn match crystalCharacter /\%#=1'\%(\\\%(u\%(\x\{4}\|{\x\{1,6}}\)\|.\)\|.\)'/ contains=crystalCharacterEscape,crystalCharacterEscapeError nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
-syn match crystalCharacterEscapeError /\%#=1\\./ contained
-syn match crystalCharacterEscape /\%#=1\\\%(u\%(\x\{4}\|{\x\{1,6}}\)\|['\\abefnrtv0]\)/ contained
+syn match crystalCharacterStart /\%#=1'/ nextgroup=crystalCharacter,crystalCharacterEscape,crystalCharacterEscapeError
+syn match crystalCharacterEnd /\%#=1'/ contained nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
+
+syn match crystalCharacter /\%#=1./ contained nextgroup=crystalCharacterEnd,crystalCharacterExtraError
+syn match crystalCharacterExtraError /\%#=1[^']\+/ contained nextgroup=crystalCharacterEnd
+syn match crystalCharacterEscapeError /\%#=1\\./ contained nextgroup=crystalCharacterEnd,crystalCharacterExtraError
+syn match crystalCharacterEscape /\%#=1\\\%(u\%(\x\{4}\|{\x\{1,6}}\)\|['\\abefnrtv0]\)/ contained nextgroup=crystalCharacterEnd,crystalCharacterExtraError
+
+syn match crystalCharacterError /\%#=1''/ nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 
 " Strings {{{3
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1"/ end=/\%#=1"/ contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
@@ -116,9 +121,9 @@ syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%Q\=|/ en
 syn region crystalStringInterpolation matchgroup=crystalStringInterpolationDelimiter start=/\%#=1#{/ end=/\%#=1}/ contained contains=@crystalTop,crystalNestedBraces
 
 syn match crystalStringEscape /\%#=1\\\_./ contained
-syn match crystalStringEscapeError /\%#=1\\\%(x\x\{,1}\|u\x\{,3}\)/ contained
+syn match crystalStringEscapeError /\%#=1\\\%(x\x\=\|u\x\{,3}\)/ contained
 syn match crystalStringEscape /\%#=1\\\%(\o\{1,3}\|x\x\x\|u\%(\x\{4}\|{\x\{1,6}\%(\s\x\{1,6}\)*}\)\)/ contained
-syn match crystalStringEscapeError /\%#=1\\\%(\o\{4,}\|u\x\{5,}\)/ contained
+syn match crystalStringEscapeError /\%#=1\\\%(\o\{4,}\)/ contained
 
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%q(/  end=/\%#=1)/ skip=/\%#=1(.\{-})/  nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
 syn region crystalString matchgroup=crystalStringDelimiter start=/\%#=1%q\[/ end=/\%#=1]/ skip=/\%#=1\[.\{-}]/ nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite
@@ -315,12 +320,15 @@ hi def link crystalBoolean Boolean
 hi def link crystalSelf Constant
 hi def link crystalNumber Number
 hi def link crystalCharacter Character
+hi def link crystalCharacterStart crystalCharacter
+hi def link crystalCharacterEnd crystalCharacterStart
 hi def link crystalCharacterError Error
-hi def link crystalCharacterEscape PreProc
+hi def link crystalCharacterExtraError crystalCharacterError
+hi def link crystalCharacterEscape SpecialChar
 hi def link crystalCharacterEscapeError crystalCharacterError
 hi def link crystalString String
 hi def link crystalStringDelimiter crystalString
-hi def link crystalStringEscape PreProc
+hi def link crystalStringEscape SpecialChar
 hi def link crystalStringEscapeError Error
 hi def link crystalStringInterpolationDelimiter PreProc
 hi def link crystalStringParenthesisEscape crystalStringEscape
@@ -339,7 +347,7 @@ hi def link crystalRegexDelimiter crystalRegex
 hi def link crystalRegexMetacharacter SpecialChar
 hi def link crystalRegexPOSIXClass crystalRegexMetacharacter
 hi def link crystalRegexComment Comment
-hi def link crystalRegexEscape PreProc
+hi def link crystalRegexEscape SpecialChar
 hi def link crystalRegexCapturedGroup crystalRegexMetacharacter
 hi def link crystalRegexQuantifier crystalRegexMetacharacter
 hi def link crystalCommand String
