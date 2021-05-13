@@ -47,11 +47,11 @@ let s:nonzero_re = '[1-9][[:digit:]_]*' . s:or(
       \ ) . '\='
 
 let s:zero_re = '0' . s:or(
-      \ 'b[01_]*' . s:optional(s:integer_suffix).'\>',
-      \ 'o[0-7_]*' . s:optional(s:integer_suffix).'\>',
-      \ 'x[[:xdigit:]_]*' . s:optional(s:integer_suffix).'\>',
+      \ 'b[01_]*' . s:optional(s:integer_suffix),
+      \ 'o[0-7_]*' . s:optional(s:integer_suffix),
+      \ 'x[[:xdigit:]_]*' . s:optional(s:integer_suffix),
       \ '_*' . s:or(s:integer_suffix, s:float_suffix, s:exponent_suffix, s:fraction),
-      \ '_\+' . s:optional(s:nonzero_re)
+      \ '_[[:digit:]_]*' . s:or(s:integer_suffix, s:float_suffix, s:exponent_suffix, s:fraction) . '\=',
       \ ) . '\='
 
 let s:syn_match_template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=crystalOperator,crystalRangeOperator,crystalPostfixKeyword skipwhite'
