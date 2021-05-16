@@ -268,13 +268,14 @@ syn match crystalInheritanceOperator /\%#=1</ contained nextgroup=crystalConstan
 syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ contained nextgroup=crystalMethodParameters,crystalTypeOperator skipwhite
 execute 'syn match crystalMethodDefinition /\%#=1'.g:crystal#syntax#overloadable_operators.'/ contained nextgroup=crystalMethodParameters,crystalTypeOperator skipwhite'
 syn region crystalMethodParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=TOP,crystalKeyword,crystalDefine,crystalBlock,crystalDefineBlock nextgroup=crystalTypeOperator skipwhite
+syn keyword crystalKeyword out contained containedin=crystalMethodParameters
 syn match crystalTypeOperator /\%#=1:/ contained
 syn match crystalMethodReceiver /\%#=1\u\w*/ contained nextgroup=crystalMethodDot
 syn keyword crystalMethodSelf self contained nextgroup=crystalMethodDot
 syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
 
 " Miscellaneous {{{2
-syn keyword crystalKeyword elsif when in then uninitialized out forall of with
+syn keyword crystalKeyword elsif when in then uninitialized forall of with
 
 syn match crystalTypeAlias /\%#=1\u\w*/ contained nextgroup=crystalAssignmentOperator skipwhite
 
