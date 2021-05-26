@@ -28,7 +28,7 @@ else
   syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1$/ oneline contains=crystalTodo
 endif
 
-syn keyword crystalTodo BUG DEPRECATED FIXME NOTE OPTIMIZE TODO contained
+syn keyword crystalTodo BUG DEPRECATED FIXME NOTE WARNING OPTIMIZE TODO XXX TBD contained
 
 syn region crystalShebang start=/\%#=1\%^#!/ end=/\%#=1$/ oneline
 
