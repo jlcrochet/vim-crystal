@@ -12,6 +12,10 @@ let b:did_indent = 1
 setlocal indentkeys=0),0],0},0.,0..,o,O,!^F
 setlocal indentkeys+==end,=else,=elsif,0=when,0=in,0=rescue,0=ensure
 
+" There are a lot of common words that begin with `in`, so we don't
+" always want to dedent when the line begins with it.
+setlocal indentkeys+=0=ina,0=inb,0=inc,0=ind,0=ine,0=inf,0=ing,0=inh,0=ini,0=inj,0=ink,0=inl,0=inm,0=inn,0=ino,0=inp,0=inq,0=inr,0=ins,0=int,0=inu,0=inv,0=inw,0=inx,0=iny,0=inz,0=in0,0=in1,0=in2,0=in3,0=in4,0=in5,0=in6,0=in7,0=in8,0=in9
+
 if has("nvim-0.5")
   lua require "get_crystal_indent"
   setlocal indentexpr=v:lua.get_crystal_indent()
