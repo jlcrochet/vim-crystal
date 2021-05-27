@@ -54,7 +54,7 @@ let s:zero_re = '0' . s:or(
       \ '_[[:digit:]_]*' . s:or(s:integer_suffix, s:float_suffix, s:exponent_suffix, s:fraction) . '\=',
       \ ) . '\='
 
-let s:syn_match_template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix skipwhite display'
+let s:syn_match_template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix skipwhite'
 
 const g:crystal#syntax#numbers = printf(s:syn_match_template, s:nonzero_re) .. " | " .. printf(s:syn_match_template, s:zero_re)
 
