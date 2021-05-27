@@ -19,7 +19,7 @@ else
 endif
 
 syn cluster crystalPostfix contains=crystalOperator,crystalRangeOperator,crystalPostfixKeyword,crystalComma
-syn cluster crystalArguments contains=crystalNumber,crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey
+syn cluster crystalArguments contains=crystalFreshVariable,crystalNumber,crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey
 
 " Comments {{{2
 if get(b:, "is_ecrystal")
@@ -82,9 +82,6 @@ syn match crystalExternalVariable /\%#=1\$\%([~?]\|\d\+?\=\|[[:lower:]_]\w*\)/ n
 
 syn match crystalConstant /\%#=1\u\w*/ nextgroup=@crystalPostfix,crystalNamespaceOperator skipwhite
 syn match crystalVariableOrMethod /\%#=1[[:lower:]_]\w*[=?!]\=/ nextgroup=@crystalPostfix,@crystalArguments skipwhite
-
-syn match crystalNamedTupleKey /\%#=1[[:lower:]_]\w*[?!]\=:/he=e-1 contained
-syn match crystalNamedTupleKey /\%#=1\u\w*::\@!/he=e-1 contained
 
 " Literals {{{2
 syn keyword crystalNil nil nextgroup=@crystalPostfix skipwhite
@@ -174,6 +171,9 @@ syn region crystalSymbol matchgroup=crystalSymbolDelimiter start=/\%#=1%i\[/ end
 syn region crystalSymbol matchgroup=crystalSymbolDelimiter start=/\%#=1%i{/  end=/\%#=1}/ contains=crystalStringCurlyBraces,crystalStringCurlyBraceEscape nextgroup=@crystalPostfix skipwhite
 syn region crystalSymbol matchgroup=crystalSymbolDelimiter start=/\%#=1%i</  end=/\%#=1>/ contains=crystalStringAngleBrackets,crystalStringAngleBracketEscape nextgroup=@crystalPostfix skipwhite
 syn region crystalSymbol matchgroup=crystalSymbolDelimiter start=/\%#=1%i|/  end=/\%#=1|/ contains=crystalStringPipeEscape nextgroup=@crystalPostfix skipwhite
+
+syn match crystalNamedTupleKey /\%#=1[[:lower:]_]\w*[?!]\=:/he=e-1 contained contains=crystalSymbolDelimiter
+syn match crystalNamedTupleKey /\%#=1\u\w*::\@!/he=e-1 contained contains=crystalSymbolDelimiter
 
 " Regular Expressions {{{3
 syn region crystalRegex matchgroup=crystalRegexDelimiter start=/\%#=1\// end=/\%#=1\/[imx]*/ skip=/\%#=1\\\\\|\\\// oneline keepend contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError,@crystalPCRE nextgroup=@crystalPostfix skipwhite
@@ -346,6 +346,7 @@ hi def link crystalHeredocStart crystalStringDelimiter
 hi def link crystalHeredocEnd crystalHeredocStart
 hi def link crystalSymbol String
 hi def link crystalSymbolDelimiter crystalSymbol
+hi def link crystalNamedTupleKey crystalSymbol
 hi def link crystalRegex String
 hi def link crystalRegexDelimiter crystalRegex
 hi def link crystalRegexMetacharacter SpecialChar
