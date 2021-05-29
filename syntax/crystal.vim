@@ -32,6 +32,8 @@ syn keyword crystalTodo BUG DEPRECATED FIXME NOTE WARNING OPTIMIZE TODO XXX TBD 
 
 syn region crystalShebang start=/\%#=1\%^#!/ end=/\%#=1$/ oneline
 
+syn region crystalPragma start=/\%#=1#</ end=/\%#=1>/ oneline
+
 " Operators {{{2
 syn match crystalUnaryOperator /\%#=1[+*!~&?]/
 syn match crystalUnaryOperator /\%#=1->\=/
@@ -309,7 +311,8 @@ syn sync fromstart
 hi def link crystalComment Comment
 hi def link crystalCommentDelimiter crystalComment
 hi def link crystalTodo Todo
-hi def link crystalShebang Special
+hi def link crystalShebang PreProc
+hi def link crystalPragma PreProc
 hi def link crystalOperator Operator
 hi def link crystalUnaryOperator crystalOperator
 hi def link crystalRangeOperator crystalOperator
