@@ -60,7 +60,7 @@ execute 'syn match crystalOperatorMethod /\%#=1'.g:crystal#syntax#overloadable_o
 
 syn match crystalRangeOperator /\%#=1\.\.\.\=/ nextgroup=crystalOperator,crystalPostfixKeyword skipwhite
 
-syn match crystalNamespaceOperator /\%#=1::/ nextgroup=crystalConstant
+syn match crystalNamespaceOperator /\%#=1::/ nextgroup=crystalConstant,crystalVariableOrMethod
 
 " Delimiters {{{2
 syn match crystalDelimiter /\%#=1(/ nextgroup=crystalNamedTupleKey skipwhite skipnl
