@@ -224,7 +224,7 @@ if get(g:, "crystal_simple_indent") || get(b:, "is_ecrystal")
   syn keyword crystalKeyword end nextgroup=@crystalPostfix skipwhite
   syn keyword crystalKeyword do nextgroup=crystalBlockParameters skipwhite
 
-  syn keyword crystalKeyword def macro fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
+  syn keyword crystalKeyword def macro nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalKeyword class struct lib annotation enum module union nextgroup=crystalTypeDefinition skipwhite
 
   syn keyword crystalKeyword abstract nextgroup=crystalKeywordNoBlock skipwhite
@@ -233,7 +233,7 @@ if get(g:, "crystal_simple_indent") || get(b:, "is_ecrystal")
   syn keyword crystalKeyword type alias nextgroup=crystalTypeAlias skipwhite
 
   syn keyword crystalKeywordNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
-  syn keyword crystalKeywordNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
+  syn keyword crystalKeywordNoBlock fun nextgroup=crystalLibMethodDefinition skipwhite
 else
   " NOTE: When definition blocks are highlighted, the following keywords
   " have to be matched with :syn-match instead of :syn-keyword to
@@ -268,14 +268,20 @@ syn match crystalTypeDefinition /\%#=1\u\w*/ contained nextgroup=crystalTypeName
 syn match crystalTypeNamespace /\%#=1::/ contained nextgroup=crystalTypeDefinition
 syn match crystalInheritanceOperator /\%#=1</ contained nextgroup=crystalConstant skipwhite
 
-syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ contained nextgroup=crystalMethodParameters,crystalTypeOperator skipwhite
-execute 'syn match crystalMethodDefinition /\%#=1'.g:crystal#syntax#overloadable_operators.'/ contained nextgroup=crystalMethodParameters,crystalTypeOperator skipwhite'
-syn region crystalMethodParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=TOP,crystalKeyword,crystalDefine,crystalBlock,crystalDefineBlock nextgroup=crystalTypeOperator skipwhite
+syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ contained nextgroup=crystalMethodParameters,crystalMethodTypeOperator skipwhite
+execute 'syn match crystalMethodDefinition /\%#=1'.g:crystal#syntax#overloadable_operators.'/ contained nextgroup=crystalMethodParameters,crystalMethodTypeOperator skipwhite'
+syn region crystalMethodParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=TOP,crystalKeyword,crystalDefine,crystalBlock,crystalDefineBlock nextgroup=crystalMethodTypeOperator skipwhite
 syn keyword crystalKeyword out
-syn match crystalTypeOperator /\%#=1:/ contained
+syn match crystalMethodTypeOperator /\%#=1:/ contained
 syn match crystalMethodReceiver /\%#=1\u\w*/ contained nextgroup=crystalMethodDot
 syn keyword crystalMethodSelf self contained nextgroup=crystalMethodDot
 syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
+
+syn match crystalLibMethodDefinition /\%#=1[[:lower:]_]\w*[?!]\=/ contained nextgroup=crystalMethodParameters,crystalMethodTypeOperator,crystalMethodAssignmentOperator skipwhite
+syn match crystalLibMethodDefinition /\%#=1\u\w*/ contained nextgroup=crystalMethodParameters,crystalMethodTypeOperator,crystalMethodAssignmentOperator skipwhite
+syn match crystalMethodAssignmentOperator /\%#=1=/ contained nextgroup=crystalCFunctionName,crystalCFunctionStringName skipwhite
+syn match crystalCFunctionName /\%#=1\h\w*/ contained nextgroup=crystalMethodParameters skipwhite
+syn region crystalCFunctionStringName matchgroup=crystalStringDelimiter start=/\%#=1"/ end=/\%#=1"/ contained oneline nextgroup=crystalMethodParameters skipwhite
 
 " Miscellaneous {{{2
 syn keyword crystalKeyword elsif when in then uninitialized forall of with
@@ -369,6 +375,7 @@ hi def link crystalDefineNoBlock crystalDefine
 hi def link crystalBlockControl crystalKeyword
 hi def link crystalDefineBlockControl crystalDefine
 hi def link crystalMethodDefinition Typedef
+hi def link crystalLibMethodDefinition crystalMethodDefinition
 hi def link crystalMethodReceiver crystalConstant
 hi def link crystalMethodSelf crystalSelf
 hi def link crystalMethodDot crystalOperator
@@ -381,7 +388,9 @@ hi def link crystalFreshVariable Identifier
 hi def link crystalAnnotationDelimiter PreProc
 hi def link crystalBlockParameter crystalVariableOrMethod
 hi def link crystalAssignmentOperator crystalOperator
-hi def link crystalTypeOperator crystalOperator
+hi def link crystalMethodTypeOperator crystalOperator
+hi def link crystalMethodAssignmentOperator crystalAssignmentOperator
+hi def link crystalCFunctionStringName crystalString
 " }}}1
 
 " vim:fdm=marker
