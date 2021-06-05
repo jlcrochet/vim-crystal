@@ -12,7 +12,7 @@ if get(g:, "crystal_fold")
 endif
 
 " Syntax {{{1
-syn iskeyword @,48-57,_,?,!,=
+syn iskeyword @,48-57,_,?,!
 
 if get(b:, "is_ecrystal")
   syn cluster crystalTop contains=@crystal
