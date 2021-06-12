@@ -85,7 +85,7 @@ syn match crystalFreshVariable /\%#=1%\h\w*/ nextgroup=@crystalPostfix skipwhite
 syn match crystalExternalVariable /\%#=1\$\%([~?]\|\d\+?\=\|[[:lower:]_]\w*\)/ nextgroup=@crystalPostfix skipwhite
 
 syn match crystalConstant /\%#=1\u\w*/ nextgroup=@crystalPostfix,crystalNamespaceOperator skipwhite
-syn match crystalVariableOrMethod /\%#=1[[:lower:]_]\w*[=?!]\=/ nextgroup=@crystalPostfix,@crystalArguments skipwhite
+syn match crystalVariableOrMethod /\%#=1[[:lower:]_]\w*[?!]\=/ nextgroup=@crystalPostfix,@crystalArguments skipwhite
 
 " Literals {{{2
 syn keyword crystalNil nil nextgroup=@crystalPostfix skipwhite
