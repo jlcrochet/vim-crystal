@@ -93,7 +93,7 @@ syn keyword crystalBoolean true false nextgroup=@crystalPostfix skipwhite
 syn keyword crystalSelf self nextgroup=@crystalPostfix skipwhite
 
 " Numbers {{{3
-execute g:crystal#syntax#numbers
+execute g:crystal#syntax#number
 
 " Characters {{{3
 syn match crystalCharacterStart /\%#=1'/ nextgroup=crystalCharacter,crystalCharacterEscape,crystalCharacterEscapeError

@@ -6,9 +6,6 @@
 " This pattern helps to match all overloadable operators; these are also
 " the only operators that can be referenced as symbols or used as
 " methods.
-"
-" NOTE: There is one exception: `!` cannot be overloaded; however, it
-" isn't worth it to separate it from the rest.
 let s:overloadable_operators = [
       \ '[+\-|^~%]',
       \ '\*\*\=',
@@ -25,7 +22,7 @@ const g:crystal#syntax#overloadable_operators = '\%('.join(s:overloadable_operat
 unlet s:overloadable_operators
 
 " Number patterns:
-function s:or(...)
+function s:choice(...)
   return '\%('.join(a:000, '\|').'\)'
 endfunction
 
@@ -39,29 +36,29 @@ let s:exponent_suffix = '[eE][+-]\=[[:digit:]_]*'
 
 let s:fraction = '\.\d[[:digit:]_]*' . s:optional(s:exponent_suffix) . s:optional(s:float_suffix)
 
-let s:nonzero_re = '[1-9][[:digit:]_]*' . s:or(
+let s:nonzero_re = '[1-9][[:digit:]_]*' . s:choice(
       \ s:integer_suffix,
       \ s:float_suffix,
       \ s:exponent_suffix . s:optional(s:float_suffix),
       \ s:fraction
       \ ) . '\='
 
-let s:zero_re = '0' . s:or(
+let s:zero_re = '0' . s:choice(
       \ 'b[01_]*' . s:optional(s:integer_suffix),
       \ 'o[0-7_]*' . s:optional(s:integer_suffix),
       \ 'x[[:xdigit:]_]*' . s:optional(s:integer_suffix),
-      \ '_*' . s:or(s:integer_suffix, s:float_suffix, s:exponent_suffix, s:fraction),
-      \ '_[[:digit:]_]*' . s:or(s:integer_suffix, s:float_suffix, s:exponent_suffix, s:fraction) . '\=',
+      \ '_*' . s:choice(s:integer_suffix, s:float_suffix, s:exponent_suffix, s:fraction),
+      \ '_[[:digit:]_]*' . s:choice(s:integer_suffix, s:float_suffix, s:exponent_suffix, s:fraction) . '\=',
       \ ) . '\='
 
-let s:syn_match_template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix skipwhite'
+let s:template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix skipwhite'
 
-const g:crystal#syntax#numbers = printf(s:syn_match_template, s:nonzero_re) .. " | " .. printf(s:syn_match_template, s:zero_re)
+const g:crystal#syntax#number = printf(s:template, s:nonzero_re) .. " | " .. printf(s:template, s:zero_re)
 
-delfunction s:or
+delfunction s:choice
 delfunction s:optional
 
 unlet
       \ s:integer_suffix s:float_suffix s:exponent_suffix
       \ s:fraction s:nonzero_re s:zero_re
-      \ s:syn_match_template
+      \ s:template
