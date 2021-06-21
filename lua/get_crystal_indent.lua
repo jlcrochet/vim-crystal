@@ -137,7 +137,7 @@ local function get_last_byte(lnum, line)
     elseif found == 1 then
       return nil, 1
     end
-  until syngroup_at(lnum, found) == "crystalCommentDelimiter"
+  until syngroup_at(lnum, found) == "crystalComment"
 
   for i = found - 1, 1, -1 do
     local b = line:byte(i)

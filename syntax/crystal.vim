@@ -25,16 +25,16 @@ syn cluster crystalArguments contains=crystalFreshVariable,crystalNumber,crystal
 
 " Comments {{{2
 if get(b:, "is_ecrystal")
-  syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1\%($\|\ze-\=%>\)/ oneline contains=crystalTodo
+  syn region crystalComment start=/\%#=1#/ end=/\%#=1\%($\|\ze-\=%>\)/ contains=crystalTodo
 else
-  syn region crystalComment matchgroup=crystalCommentDelimiter start=/\%#=1#/ end=/\%#=1$/ oneline contains=crystalTodo
+  syn match crystalComment /\%#=1#.*/ contains=crystalTodo
 endif
 
 syn keyword crystalTodo BUG DEPRECATED FIXME NOTE WARNING OPTIMIZE TODO XXX TBD contained
 
-syn region crystalShebang start=/\%#=1\%^#!/ end=/\%#=1$/ oneline
-
-syn region crystalPragma start=/\%#=1#<loc:/ end=/\%#=1>/ oneline
+syn match crystalShebang /\%#=1\%^#!.*/
+syn match crystalPragmaError /\%#=1#<loc:.*/
+syn match crystalPragma /\%#=1#<loc:\%(push\|pop\|".\{-}"\)>/
 
 " Operators {{{2
 syn match crystalUnaryOperator /\%#=1[+*!~&?]/
@@ -316,10 +316,10 @@ syn sync fromstart
 
 " Highlighting {{{1
 hi def link crystalComment Comment
-hi def link crystalCommentDelimiter crystalComment
 hi def link crystalTodo Todo
 hi def link crystalShebang PreProc
 hi def link crystalPragma PreProc
+hi def link crystalPragmaError Error
 hi def link crystalOperator Operator
 hi def link crystalUnaryOperator crystalOperator
 hi def link crystalRangeOperator crystalOperator
