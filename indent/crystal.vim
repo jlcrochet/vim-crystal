@@ -9,7 +9,7 @@ endif
 
 let b:did_indent = 1
 
-setlocal indentkeys=0),0],0},0.,0..,o,O,!^F
+setlocal indentkeys=0),0],0},0.,0=..,o,O,!^F
 setlocal indentkeys+==end,=else,=elsif,0=when,0=in,0=rescue,0=ensure
 
 " There are a lot of common words that begin with `in`, so we don't
