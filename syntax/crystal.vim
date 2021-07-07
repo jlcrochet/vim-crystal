@@ -96,14 +96,11 @@ syn keyword crystalSelf self nextgroup=@crystalPostfix skipwhite
 execute g:crystal#syntax#number
 
 " Characters {{{3
-syn match crystalCharacterStart /\%#=1'/ nextgroup=crystalCharacter,crystalCharacterEscape,crystalCharacterEscapeError
-syn match crystalCharacterEnd /\%#=1'/ contained nextgroup=@crystalPostfix skipwhite
-
-syn match crystalCharacter /\%#=1./ contained nextgroup=crystalCharacterEnd,crystalCharacterExtraError
-syn match crystalCharacterExtraError /\%#=1[^']\+/ contained nextgroup=crystalCharacterEnd
-syn match crystalCharacterEscapeError /\%#=1\\./ contained nextgroup=crystalCharacterEnd,crystalCharacterExtraError
-syn match crystalCharacterEscape /\%#=1\\\%(u\%(\x\{4}\|{\x\{1,6}}\)\|['\\abefnrtv0]\)/ contained nextgroup=crystalCharacterEnd,crystalCharacterExtraError
-
+syn region crystalCharacter matchgroup=crystalCharacterDelimiter start=/\%#=1'/ end=/\%#=1'/ contains=crystalCharacterContent,crystalCharacterEscape,crystalCharacterEscapeError nextgroup=@crystalPostfix skipwhite
+syn match crystalCharacterContent /\%#=1./ transparent contained nextgroup=crystalCharacterExtraError
+syn match crystalCharacterEscapeError /\%#=1\\./ contained nextgroup=crystalCharacterExtraError
+syn match crystalCharacterEscape /\%#=1\\\%(u\%(\x\{4}\|{\x\{1,6}}\)\|['\\abefnrtv0]\)/ contained nextgroup=crystalCharacterExtraError
+syn match crystalCharacterExtraError /\%#=1[^']\+/ contained
 syn match crystalCharacterError /\%#=1''/ nextgroup=@crystalPostfix skipwhite
 
 " Strings {{{3
@@ -334,8 +331,7 @@ hi def link crystalBoolean Boolean
 hi def link crystalSelf Constant
 hi def link crystalNumber Number
 hi def link crystalCharacter Character
-hi def link crystalCharacterStart crystalCharacter
-hi def link crystalCharacterEnd crystalCharacterStart
+hi def link crystalCharacterDelimiter crystalCharacter
 hi def link crystalCharacterError Error
 hi def link crystalCharacterExtraError crystalCharacterError
 hi def link crystalCharacterEscape SpecialChar
