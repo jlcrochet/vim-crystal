@@ -30,7 +30,7 @@ else
   syn match crystalComment /\%#=1#.*/ contains=crystalTodo
 endif
 
-syn keyword crystalTodo BUG DEPRECATED FIXME NOTE WARNING OPTIMIZE TODO XXX TBD contained
+syn keyword crystalTodo BUG DEPRECATED WARNING EXPERIMENTAL FIXME NOTE OPTIMIZE TODO contained
 
 syn match crystalShebang /\%#=1\%^#!.*/
 syn match crystalPragmaError /\%#=1#<loc:.*/
