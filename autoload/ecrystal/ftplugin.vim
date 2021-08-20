@@ -7,6 +7,7 @@ let g:ecrystal#ftplugin#extensions = {
       \ "html": "html",
       \ "js": "javascript",
       \ "json": "json",
+      \ "xml": "xml",
       \ "yml": "yaml",
       \ "txt": "text",
       \ "md": "markdown"
@@ -17,3 +18,5 @@ if exists("g:ecrystal_extensions")
 endif
 
 lockvar g:ecrystal#ftplugin#extensions
+
+let g:ecrystal#ftplugin#default_subtype = get(g:, "ecrystal_default_subtype", "html")

@@ -6,8 +6,6 @@ This plugin includes support for [embedded crystal (ECR)](https://crystal-lang.o
 
 ## Configuration
 
-NOTE: The following variables are read only when this plugin is first loaded, so in order for any changes to take effect, you must place them in `.vimrc` or some other file loaded on startup and then restart Vim.
-
 #### `g:crystal_simple_indent`
 
 The default indentation style used by this plugin is the one most commonly found in the Crystal community, which allows for "hanging" or "floating" indentation. Some examples:
@@ -113,6 +111,7 @@ The default recognized filetype extensions are as follows:
 .html => html
 .js => javascript
 .json => json
+.xml => xml
 .yml => yaml
 .txt => text
 .md => markdown
@@ -120,11 +119,19 @@ The default recognized filetype extensions are as follows:
 
 Each extension maps to the name of the filetype that you want to load for that extension.
 
-To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize XML files and would cause `*.js` files to be recognized as JSX instead of JavaScript:
+To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize `*.js` files as JSX instead of JavaScript:
 
 ``` vim
-let g:ecrystal_extensions = { "xml": "xml", "js": "javascriptreact" }
+let g:ecrystal_extensions = { "js": "javascriptreact" }
 ```
+
+If no subtype is specified in the file name itself (e.g., `foo.ecr`), the value of `g:ecrystal_default_subtype` is used as the subtype.
+
+#### `g:ecrystal_default_subtype`
+
+Determines the default subtype to use for ECR files when no subtype is specified in the file name itself (e.g., `foo.ecr`).
+
+The default value is `html`. Setting this to nothing (`let g:ecrystal_default_subtype = ""`) will cause no subtype to be used.
 
 ## Performance Comparison with [vim-crystal](https://github.com/vim-crystal/vim-crystal)
 

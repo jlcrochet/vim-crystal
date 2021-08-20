@@ -20,7 +20,7 @@ if len(s:parts) > 2
     let b:ecrystal_subtype = g:ecrystal#ftplugin#extensions[s:sub_extension]
   endif
 else
-  let b:ecrystal_subtype = g:ecrystal_default_subtype
+  let b:ecrystal_subtype = g:ecrystal#ftplugin#default_subtype
 endif
 
 unlet! s:parts s:sub_extension

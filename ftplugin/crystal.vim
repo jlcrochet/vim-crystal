@@ -14,6 +14,10 @@ setlocal comments=:#
 setlocal commentstring=#\ %s
 setlocal suffixesadd=.cr
 
+if get(g:, "crystal_fold")
+  let g:crystal_simple_indent = 0
+endif
+
 " matchit.vim
 let b:match_words = g:crystal#ftplugin#match_words
 let b:match_skip = 'S:^crystal\%(Keyword\|Define\|BlockControl\|DefineBlockControl\)$'
