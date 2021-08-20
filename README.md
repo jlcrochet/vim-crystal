@@ -72,9 +72,7 @@ end
 
 x = [:foo, :bar,
   :baz, :qux]
-
 # OR
-
 x = [
   :foo, :bar,
   :baz, :qux
@@ -83,9 +81,7 @@ x = [
 x = 5 + 10 +
   15 + 20 -
   5 * 3
-
 # OR
-
 x =
   5 + 10 +
   15 + 20 -
@@ -94,9 +90,7 @@ x =
 x = y.foo
   .bar
   .baz
-
 # OR
-
 x = y
   .foo
   .bar
