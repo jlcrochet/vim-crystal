@@ -12,53 +12,20 @@ NOTE: The following variables are read only when this plugin is first loaded, so
 
 The default indentation style used by this plugin is the one most commonly found in the Crystal community, which allows for "hanging" or "floating" indentation. Some examples:
 
-    x = if y
-          5
-        else
-          10
-        end
-
-    x = begin
-          h["foo"]
-        rescue KeyError
-          "Not found"
-        end
-
-    x = case y
-        when :foo
-          5
-        when :bar
-          10
-        else
-          1
-        end
-
-    x = [:foo, :bar,
-         :baz, :qux]
-
-    x = 5 + 10 +
-        15 + 20 -
-        5 * 3
-
-    x = y.foo
-         .bar
-         .baz
-
-For those who prefer a more traditional indentation style or who desire slightly faster highlighting and indentation, set `g:crystal_simple_indent` to `1`. The above examples will now be indented thus:
-
-    x = if y
+``` crystal
+x = if y
       5
     else
       10
     end
 
-    x = begin
+x = begin
       h["foo"]
     rescue KeyError
-      "Not Found"
+      "Not found"
     end
 
-    x = case y
+x = case y
     when :foo
       5
     when :bar
@@ -67,37 +34,74 @@ For those who prefer a more traditional indentation style or who desire slightly
       1
     end
 
-    x = [:foo, :bar,
-      :baz, :qux]
+x = [:foo, :bar,
+     :baz, :qux]
 
-    # OR
+x = 5 + 10 +
+    15 + 20 -
+    5 * 3
 
-    x = [
-      :foo, :bar,
-      :baz, :qux
-    ]
+x = y.foo
+     .bar
+     .baz
+```
 
-    x = 5 + 10 +
-      15 + 20 -
-      5 * 3
+For those who prefer a more traditional indentation style or who desire slightly faster highlighting and indentation, set `g:crystal_simple_indent` to `1`. The above examples will now be indented thus:
 
-    # OR
+``` crystal
+x = if y
+  5
+else
+  10
+end
 
-    x =
-      5 + 10 +
-      15 + 20 -
-      5 * 3
+x = begin
+  h["foo"]
+rescue KeyError
+  "Not Found"
+end
 
-    x = y.foo
-      .bar
-      .baz
+x = case y
+when :foo
+  5
+when :bar
+  10
+else
+  1
+end
 
-    # OR
+x = [:foo, :bar,
+  :baz, :qux]
 
-    x = y
-      .foo
-      .bar
-      .baz
+# OR
+
+x = [
+  :foo, :bar,
+  :baz, :qux
+]
+
+x = 5 + 10 +
+  15 + 20 -
+  5 * 3
+
+# OR
+
+x =
+  5 + 10 +
+  15 + 20 -
+  5 * 3
+
+x = y.foo
+  .bar
+  .baz
+
+# OR
+
+x = y
+  .foo
+  .bar
+  .baz
+```
 
 #### `g:crystal_fold`
 
@@ -111,18 +115,22 @@ This plugin uses a dictionary of filetype extensions to determine which filetype
 
 The default recognized filetype extensions are as follows:
 
-    .html => html
-    .js => javascript
-    .json => json
-    .yml => yaml
-    .txt => text
-    .md => markdown
+```
+.html => html
+.js => javascript
+.json => json
+.yml => yaml
+.txt => text
+.md => markdown
+```
 
 Each extension maps to the name of the filetype that you want to load for that extension.
 
 To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize XML files and would cause `*.js` files to be recognized as JSX instead of JavaScript:
 
-    let g:ecrystal_extensions = { "xml": "xml", "js": "javascriptreact" }
+``` vim
+let g:ecrystal_extensions = { "xml": "xml", "js": "javascriptreact" }
+```
 
 ## Performance Comparison with [vim-crystal](https://github.com/vim-crystal/vim-crystal)
 
@@ -132,59 +140,67 @@ Comparisons made between the respective HEAD's of each plugin as of this writing
 
 Benchmark:
 
-    command! SyntaxBenchmark
-          \ syntime clear |
-          \ syntime on |
-          \ let last_lnum = line("$") |
-          \ for _ in range(15) |
-          \ goto |
-          \ while line(".") < last_lnum |
-          \ redraw |
-          \ execute "normal! \<c-d>" |
-          \ endwhile |
-          \ endfor |
-          \ syntime off |
-          \ syntime report |
-          \ unlet last_lnum
+``` vim
+command! SyntaxBenchmark
+      \ syntime clear |
+      \ syntime on |
+      \ let last_lnum = line("$") |
+      \ for _ in range(15) |
+      \ goto |
+      \ while line(".") < last_lnum |
+      \ redraw |
+      \ execute "normal! \<c-d>" |
+      \ endwhile |
+      \ endfor |
+      \ syntime off |
+      \ syntime report |
+      \ unlet last_lnum
+```
 
 The general idea is to go to the top of the file, redraw the viewport, page down (<kbd>Ctrl</kbd>+<kbd>D</kbd>), and repeat until the end of the file has been reached. This is done fifteen times, after which we get the cumulative results from `syntime report`. It's kinda rough, but it works.
 
 Results:
 
-    vim-crystal/vim-crystal:
+```
+vim-crystal/vim-crystal:
 
-    5.08s
+5.08s
 
-    jlcrochet/vim-crystal:
+jlcrochet/vim-crystal:
 
-    0.47s
-    0.36s  (g:crystal_simple_indent == 1)
+0.47s
+0.36s  (g:crystal_simple_indent == 1)
+```
 
 ### Indentation
 
 Benchmark:
 
-    command! IndentBenchmark
-          \ goto |
-          \ let start = reltime() |
-          \ call feedkeys("=G", "x") |
-          \ echo reltimestr(reltime(start)) |
-          \ unlet start
+``` vim
+command! IndentBenchmark
+      \ goto |
+      \ let start = reltime() |
+      \ call feedkeys("=G", "x") |
+      \ echo reltimestr(reltime(start)) |
+      \ unlet start
+```
 
 Again, a pretty rough test, but it gets the job done. We simply re-indent the entire file once.
 
+```
 Results:
 
-    vim-crystal/vim-crystal:
+vim-crystal/vim-crystal:
 
-    10.29s
+10.29s
 
-    jlcrochet/vim-crystal (VimL):
+jlcrochet/vim-crystal (VimL):
 
-    1.12s
-    0.52s  (g:crystal_simple_indent == 1)
+1.12s
+0.52s  (g:crystal_simple_indent == 1)
 
-    jlcrochet/vim-crystal (Lua):
+jlcrochet/vim-crystal (Lua):
 
-    0.24s
-    0.12s  (g:crystal_simple_indent == 1)
+0.24s
+0.12s  (g:crystal_simple_indent == 1)
+```
