@@ -20,7 +20,7 @@ else
   syn cluster crystalTop contains=TOP
 endif
 
-syn cluster crystalPostfix contains=crystalOperator,crystalRangeOperator,crystalPostfixKeyword,crystalComma
+syn cluster crystalPostfix contains=crystalOperator,crystalRangeOperator,crystalNamespaceOperator,crystalPostfixKeyword,crystalComma
 syn cluster crystalArguments contains=crystalFreshVariable,crystalNumber,crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey
 
 " Comments {{{2
