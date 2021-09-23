@@ -20,4 +20,4 @@ endif
 
 " matchit.vim
 let b:match_words = g:crystal#ftplugin#match_words
-let b:match_skip = 'S:^crystal\%(Keyword\|Define\|BlockControl\|DefineBlockControl\)$'
+let b:match_skip = 's:^crystal\%(String\|Symbol\|Regex\|Comment\|PostfixKeyword\|MethodDefinition\|VariableOrMethod\)$'
