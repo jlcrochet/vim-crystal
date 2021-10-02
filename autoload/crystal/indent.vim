@@ -3,41 +3,34 @@
 " Author: Jeffrey Crochet <jlcrochet@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-" Caching important syntax ID's for use in indentation logic
-let s:names = [
-      \ "crystalString",
-      \ "crystalStringEscape",
-      \ "crystalStringInterpolationDelimiter",
-      \ "crystalStringParenthesisEscape",
-      \ "crystalStringSquareBracketEscape",
-      \ "crystalStringCurlyBraceEscape",
-      \ "crystalStringAngleBracketEscape",
-      \ "crystalStringPipeEscape",
-      \ "crystalSymbol",
-      \ "crystalRegex",
-      \ "crystalRegexGroup",
-      \ "crystalRegexComment",
-      \ "crystalRegexEscape",
-      \ "crystalCommand",
-      \ "crystalHeredocLine",
-      \ "crystalHeredocLineRaw",
-      \ "crystalHeredocEnd"
-      \ ]
+" There are certain keywords that cause a dedent, but a dedent should
+" only occur if the word is not succeeded by a keyword character, in
+" order to avoid dedenting when a line has a variable named "end_col" or
+" something like that.
+let s:dedent_words = []
 
-let g:crystal#indent#multiline_regions = {}
+let s:chars = map(str2list("abcdefghijklmnopqrstuvwxyz0123456789_:"), "nr2char(v:val)")
 
-for s:name in s:names
-  let g:crystal#indent#multiline_regions[hlID(s:name)] = 1
+for s:word in ["end", "else", "elsif"]
+  let str = "=" .. s:word
+
+  call add(s:dedent_words, str)
+
+  for char in s:chars
+    call add(s:dedent_words, str .. char)
+  endfor
 endfor
 
-lockvar g:crystal#multiline_regions
+for s:word in ["when", "in", "rescue", "ensure"]
+  let str = "0=" .. s:word
 
-unlet s:name s:names
+  call add(s:dedent_words, str)
 
-const g:crystal#indent#keyword = hlID("crystalKeyword")
-const g:crystal#indent#define = hlID("crystalDefine")
-const g:crystal#indent#block_control = hlID("crystalBlockControl")
-const g:crystal#indent#define_block_control = hlID("crystalDefineBlockControl")
-const g:crystal#indent#operator = hlID("crystalOperator")
-const g:crystal#indent#assignment_operator = hlID("crystalAssignmentOperator")
-const g:crystal#indent#delimiter = hlID("crystalDelimiter")
+  for char in s:chars
+    call add(s:dedent_words, str .. char)
+  endfor
+endfor
+
+const g:crystal#indent#dedent_words = join(s:dedent_words, ",")
+
+unlet s:word s:chars s:dedent_words
