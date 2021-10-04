@@ -197,8 +197,8 @@ vim-crystal/vim-crystal:
 
 jlcrochet/vim-crystal (VimL):
 
-1.09
-0.48  (g:crystal_simple_indent == 1)
+1.09s
+0.48s  (g:crystal_simple_indent == 1)
 
 jlcrochet/vim-crystal (Lua):
 
