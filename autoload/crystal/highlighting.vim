@@ -39,6 +39,6 @@ const g:crystal#highlighting#define_block_control = hlID("crystalDefineBlockCont
 const g:crystal#highlighting#operator = hlID("crystalOperator")
 const g:crystal#highlighting#assignment_operator = hlID("crystalAssignmentOperator")
 const g:crystal#highlighting#delimiter = hlID("crystalDelimiter")
-const g:crystal#highlighting#comment = hlID("crystalComment")
+const g:crystal#highlighting#comment_delimiter = hlID("crystalCommentDelimiter")
 
 unlet s:name s:names s:regions
