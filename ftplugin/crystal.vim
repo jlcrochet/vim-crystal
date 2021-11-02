@@ -15,6 +15,7 @@ setlocal commentstring=#\ %s
 setlocal suffixesadd=.cr
 
 if get(g:, "crystal_fold")
+  setlocal foldmethod=syntax
   let g:crystal_simple_indent = 0
 endif
 

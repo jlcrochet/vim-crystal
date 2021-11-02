@@ -103,7 +103,7 @@ function s:get_last_char(lnum, line)
       return ["", -1]
     endif
 
-    if synID(a:lnum, found + 1, 1) == g:crystal#highlighting#comment_delimiter
+    if synID(a:lnum, found + 1, 1) == g:crystal#highlighting#comment_start
       break
     endif
   endwhile

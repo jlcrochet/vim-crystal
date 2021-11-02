@@ -19,10 +19,11 @@ syn include @crystal syntax/crystal.vim
 let b:current_syntax = "ecrystal"
 
 syn region ecrystalTag matchgroup=ecrystalDelimiter start=/\%#=1<%-\==\=/ end=/\%#=1-\=%>/ contains=@crystal containedin=ALLBUT,ecrystalTag,ecrystalComment,ecrystalTagEscape,@crystal
-syn region ecrystalComment matchgroup=ecrystalCommentDelimiter start=/\%#=1<%#/ end=/\%#=1%>/ containedin=ALLBUT,ecrystalTag,ecrystalComment,ecrystalTagEscape,@crystal
+syn region ecrystalComment matchgroup=ecrystalCommentStart start=/\%#=1<%#/ matchgroup=ecrystalCommentEnd end=/\%#=1%>/ containedin=ALLBUT,ecrystalTag,ecrystalComment,ecrystalTagEscape,@crystal
 syn match ecrystalTagEscape /\%#=1<%%/ containedin=ALLBUT,ecrystalTag,ecrystalComment,ecrystalTagEscape,@crystal
 
 hi def link ecrystalDelimiter PreProc
 hi def link ecrystalComment Comment
-hi def link ecrystalCommentDelimiter ecrystalComment
+hi def link ecrystalCommentStart ecrystalComment
+hi def link ecrystalCommentEnd ecrystalCommentStart
 hi def link ecrystalTagEscape ecrystalDelimiter
