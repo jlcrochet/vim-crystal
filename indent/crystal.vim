@@ -56,7 +56,7 @@ endif
 function s:prev_non_multiline(lnum)
   let lnum = a:lnum
 
-  while get(g:crystal#highlighting#multiline_regions, synID(lnum, 1, 1))
+  while get(g:crystal#highlighting#multiline_regions, synID(lnum, 1, 0))
     let lnum -= 1
   endwhile
 
@@ -216,7 +216,7 @@ function s:find_msl(skip_commas, pairs)
   " This line is *not* the MSL if:
 
   " It is part of a multiline region.
-  if get(g:crystal#highlighting#multiline_regions, synID(lnum, 1, 1))
+  if get(g:crystal#highlighting#multiline_regions, synID(lnum, 1, 0))
     call cursor(prev_lnum, 1)
     return s:find_msl(a:skip_commas, v:null)
   endif
@@ -335,7 +335,7 @@ if get(g:, "crystal_simple_indent")
   " Simple {{{
   function GetCrystalIndent() abort
     " If the current line is inside of a multiline region, do nothing.
-    if get(g:crystal#highlighting#multiline_regions, synID(v:lnum, 1, 1))
+    if get(g:crystal#highlighting#multiline_regions, synID(v:lnum, 1, 0))
       return -1
     endif
 
@@ -361,7 +361,7 @@ if get(g:, "crystal_simple_indent")
       " If the previous line begins in a multiline region, find the line
       " that began that region.
 
-      if get(g:crystal#highlighting#multiline_regions, synID(prev_lnum, 1, 1))
+      if get(g:crystal#highlighting#multiline_regions, synID(prev_lnum, 1, 0))
         let start_lnum = s:prev_non_multiline(prevnonblank(prev_lnum - 1))
         let start_line = getline(start_lnum)
       else
@@ -528,7 +528,7 @@ else
   " Default {{{
   function GetCrystalIndent() abort
     " If the current line is inside of a multiline region, do nothing.
-    if get(g:crystal#highlighting#multiline_regions, synID(v:lnum, 1, 1))
+    if get(g:crystal#highlighting#multiline_regions, synID(v:lnum, 1, 0))
       return -1
     endif
 

@@ -38,7 +38,7 @@ local MULTILINE_REGIONS = {
 local SYNGROUPS = {}
 
 local function syngroup_at(lnum, col)
-  local synid = synID(lnum, col, true)
+  local synid = synID(lnum, col, false)
   local syngroup = SYNGROUPS[synid]
 
   if not syngroup then
