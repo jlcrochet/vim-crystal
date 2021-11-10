@@ -4,6 +4,12 @@ This was originally a fork of [vim-crystal](https://github.com/vim-crystal/vim-c
 
 This plugin includes support for [embedded crystal (ECR)](https://crystal-lang.org/api/latest/ECR.html).
 
+## Installation
+
+This is a standard Vim plugin which can be installed using your plugin manager of choice. If you do not already have a plugin manager, I recommend [vim-plug](https://github.com/junegunn/vim-plug).
+
+Alternatively, if you are using Vim 8 or NeoVim, you can install this plugin as a package; see `:h packages` for instructions.
+
 ## Configuration
 
 #### `g:crystal_simple_indent`
