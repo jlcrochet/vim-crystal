@@ -20,10 +20,16 @@ syn cluster crystalPostfix contains=crystalOperator,crystalRangeOperator,crystal
 syn cluster crystalArguments contains=crystalFreshVariable,crystalNumber,crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey
 
 " Comments {{{2
+syn cluster crystalNoComments contains=
+      \ crystalComment,crystalShebang,crystalPragma,crystalPragmaError,
+      \ @crystalLiteralRegions
+
+syn match crystalCommentStart /\%#=1#/ nextgroup=crystalComment containedin=ALLBUT,@crystalNoComments
+
 if get(b:, "is_ecrystal")
-  syn region crystalComment matchgroup=crystalCommentStart start=/\%#=1#/ end=/\%#=1\%($\|\ze-\=%>\)/ contains=crystalTodo containedin=ALLBUT,@crystalLiteralRegions
+  syn match crystalComment /\%#=1.\{-}\%($\|\ze-\=%>\)/ contained contains=crystalTodo
 else
-  syn region crystalComment matchgroup=crystalCommentStart start=/\%#=1#/ end=/\%#=1$/ contains=crystalTodo containedin=ALLBUT,@crystalLiteralRegions
+  syn match crystalComment /\%#=1.*/ contained contains=crystalTodo
 endif
 
 syn keyword crystalTodo BUG DEPRECATED WARNING EXPERIMENTAL FIXME NOTE OPTIMIZE TODO contained
@@ -85,7 +91,6 @@ syn match crystalVariableOrMethod /\%#=1[[:lower:]_]\w*[?!]\=/ nextgroup=@crysta
 
 " Literals {{{2
 syn cluster crystalLiteralRegions contains=
-      \ crystalComment,crystalShebang,crystalPragmaError,crystalPragmaError,
       \ crystalCharacter,
       \ crystalString,crystalStringParentheses,crystalStringSquareBrackets,crystalStringCurlyBraces,crystalStringAngleBrackets,
       \ crystalHeredocLine,crystalHeredocLineRaw,
@@ -308,9 +313,11 @@ syn region crystalAnnotation matchgroup=crystalAnnotationDelimiter start=/\%#=1@
 syn region crystalNestedBrackets matchgroup=crystalDelimiter start=/\%#=1\[/ end=/\%#=1]?\=/ contained oneline transparent nextgroup=@crystalPostfix
 
 " Macros {{{2
-syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline containedin=ALLBUT,@crystalLiteralRegions contains=@crystalTop,crystalNestedBraces nextgroup=@crystalPostfix skipwhite
+syn cluster crystalNoMacros contains=@crystalNoComments
+
+syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline containedin=ALLBUT,@crystalNoMacros contains=@crystalTop,crystalNestedBraces nextgroup=@crystalPostfix skipwhite
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline contained containedin=@crystalLiteralRegions contains=@crystalTop,crystalNestedBraces
-syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ oneline containedin=ALLBUT,@crystalLiteralRegions contains=TOP
+syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ oneline containedin=ALLBUT,@crystalNoMacros contains=TOP
 " }}}2
 
 " Synchronization {{{1
