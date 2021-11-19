@@ -128,7 +128,7 @@ syn region crystalString matchgroup=crystalStringStart start=/\%#=1%Q\=|/ matchg
 
 syn region crystalStringInterpolation matchgroup=crystalStringInterpolationDelimiter start=/\%#=1#{/ end=/\%#=1}/ contained contains=@crystalTop,crystalNestedBraces
 
-syn match crystalStringEscape /\%#=1\\./ contained
+syn match crystalStringEscape /\%#=1\\\_./ contained
 syn match crystalStringEscapeError /\%#=1\\\%(x\x\=\|u\x\{,3}\)/ contained
 syn match crystalStringEscape /\%#=1\\\%(\o\{1,3}\|x\x\x\|u\%(\x\{4}\|{\x\{1,6}\%(\s\x\{1,6}\)*}\)\)/ contained
 syn match crystalStringEscapeError /\%#=1\\\o\{4,}/ contained
