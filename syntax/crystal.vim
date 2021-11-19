@@ -8,6 +8,7 @@ if exists("b:current_syntax")
 endif
 
 " Syntax {{{1
+syn sync fromstart
 syn iskeyword @,48-57,_,?,!,:
 
 if get(b:, "is_ecrystal")
@@ -319,9 +320,6 @@ syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline contained containedin=@crystalLiteralRegions contains=@crystalTop,crystalNestedBraces
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ oneline containedin=ALLBUT,@crystalNoMacros contains=TOP
 " }}}2
-
-" Synchronization {{{1
-syn sync fromstart
 
 " Highlighting {{{1
 hi def link crystalComment Comment
