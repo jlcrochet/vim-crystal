@@ -3,25 +3,6 @@
 " Author: Jeffrey Crochet <jlcrochet@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-" This pattern helps to match all overloadable operators; these are also
-" the only operators that can be referenced as symbols or used as
-" methods.
-let s:overloadable_operators = [
-      \ '[+\-|^~%]',
-      \ '\*\*\=',
-      \ '\/\/\=',
-      \ '=\%(==\=\|\~\)',
-      \ '![=~]\=',
-      \ '<\%(=>\=\|<\)\=',
-      \ '>[>=]\=',
-      \ '&\%([+-]\|\*\*\=\)\=',
-      \ '\[][=?]\='
-      \ ]
-const g:crystal#syntax#overloadable_operators = '\%('.join(s:overloadable_operators, '\|').'\)'
-
-unlet s:overloadable_operators
-
-" Number patterns:
 function s:choice(...)
   return '\%('.join(a:000, '\|').'\)'
 endfunction
@@ -30,6 +11,7 @@ function s:optional(re)
   return '\%('.a:re.'\)\='
 endfunction
 
+" Number patterns:
 let s:integer_suffix = '[ui]\%(8\|16\|32\|64\|128\)'
 let s:float_suffix = 'f\%(32\|64\)'
 let s:exponent_suffix = '[eE][+-]\=[[:digit:]_]*'
@@ -55,10 +37,25 @@ let s:template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix s
 
 const g:crystal#syntax#number = printf(s:template, s:nonzero_re) .. " | " .. printf(s:template, s:zero_re)
 
-delfunction s:choice
-delfunction s:optional
-
 unlet
       \ s:integer_suffix s:float_suffix s:exponent_suffix
       \ s:fraction s:nonzero_re s:zero_re
       \ s:template
+
+" This pattern helps to match all overloadable operators; these are also
+" the only operators that can be referenced as symbols or used as
+" methods.
+const g:crystal#syntax#overloadable_operators = s:choice(
+      \ '[+\-|^~%]',
+      \ '\*\*\=',
+      \ '\/\/\=',
+      \ '=\%(==\=\|\~\)',
+      \ '![=~]\=',
+      \ '<\%(=>\=\|<\)\=',
+      \ '>[>=]\=',
+      \ '&\%([+-]\|\*\*\=\)\=',
+      \ '\[][=?]\='
+      \ )
+
+delfunction s:choice
+delfunction s:optional

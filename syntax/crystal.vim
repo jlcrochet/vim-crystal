@@ -52,7 +52,7 @@ syn match crystalOperator /\%#=1[/:]/ contained
 syn match crystalOperator /\%#=1?/ contained nextgroup=crystalAssignmentOperator skipwhite
 syn match crystalAssignmentOperator /\%#=1=/ contained
 syn match crystalOperator /\%#=1%=\=/ contained
-syn match crystalOperator /\%#=1&\%(&=\=\|=\|+=\=\|-[=>]\=\|\*[*=]\=\|\)\=/ contained
+syn match crystalOperator /\%#=1&\%(&=\=\|=\|+=\=\|-[=>]\=\|\*[*=]\=\)\=/ contained
 syn match crystalOperator /\%#=1||\==\=/ contained
 syn match crystalOperator /\%#=1\^=\=/ contained
 
