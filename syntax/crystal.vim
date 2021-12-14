@@ -206,7 +206,7 @@ syn match crystalRegexQuantifier /\%#=1{\d*,\=\d*}/ contained
 syn region crystalRegexClass matchgroup=crystalRegexMetacharacter start=/\%#=1\[\^\=/ end=/\%#=1]/ oneline transparent contained contains=crystalRegexEscape,crystalRegexPOSIXClass
 syn match crystalRegexPOSIXClass /\%#=1\[\^\=:\%(alnum\|alpha\|ascii\|blank\|cntrl\|digit\|graph\|lower\|print\|punct\|space\|upper\|word\|xdigit\):]/ contained
 syn region crystalRegexGroup matchgroup=crystalRegexMetacharacter start=/\%#=1(\%(?\%([:>|=!]\|<\%([=!]\|\h\w*>\)\|[imx]\+\)\)\=/ end=/\%#=1)/ transparent contained
-syn region crystalRegexComment start=/\%#=1(#/ end=/\%#=1)/ contained
+syn region crystalRegexComment start=/\%#=1(?#/ end=/\%#=1)/ contained
 syn region crystalRegexEscape matchgroup=crystalRegexMetacharacter start=/\%#=1\\Q/ end=/\%#=1\\E/ transparent contained contains=crystalRegexSlashEscape
 syn match crystalRegexSlashEscape /\%#=1\\\// contained
 syn match crystalRegexEscape /\%#=1\\[pP]{\h\w*}/ contained
