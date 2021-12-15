@@ -37,11 +37,6 @@ let s:template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix s
 
 const g:crystal#syntax#number = printf(s:template, s:nonzero_re) .. " | " .. printf(s:template, s:zero_re)
 
-unlet
-      \ s:integer_suffix s:float_suffix s:exponent_suffix
-      \ s:fraction s:nonzero_re s:zero_re
-      \ s:template
-
 " This pattern helps to match all overloadable operators; these are also
 " the only operators that can be referenced as symbols or used as
 " methods.
@@ -56,6 +51,42 @@ const g:crystal#syntax#overloadable_operators = s:choice(
       \ '&\%([+-]\|\*\*\=\)\=',
       \ '\[][=?]\='
       \ )
+
+" The syntax for PCRE groups and references is pretty complicated, so
+" we're building it here:
+let s:pcre_group_modifier = "?" . s:choice(
+      \ '<\h\w*>',
+      \ '''\h\w*''',
+      \ "P" . s:choice('<\h\w*>', '[>=]\h\w*'),
+      \ '[:|>=!]',
+      \ '-\=[iJmsUx]\+',
+      \ '<[=!]',
+      \ '&\h\w*',
+      \ "(" . s:choice('[+-]\=\d\+', '<\h\w*>', '''\h\w*''', 'R\%(\d\+\|&\h\w*\)', '\h\w*') . ")",
+      \ 'C\d*'
+      \ )
+
+const g:crystal#syntax#pcre_group = printf(
+      \ 'syn region crystalPCREGroup matchgroup=crystalPCREMetaCharacter start=/\%%#=1(\%%(%s\)\=/ end=/\%%#=1)/ contained transparent',
+      \ s:pcre_group_modifier
+      \ )
+
+let s:pcre_reference = '\\' . s:choice(
+      \ '\d\+',
+      \ "g" . s:choice('\d\+', '{\%(-\=\d\+\|\h\w*\)}', '<\%(-\=\d\+\|\h\w*\)>', '''\%(-\=\d\+\|\h\w*\)'''),
+      \ "k" . s:choice('<\h\w*>', '''\h\w*''', '{\h\w*}')
+      \ )
+
+const g:crystal#syntax#pcre_reference = printf(
+      \ 'syn match crystalPCREReference /\%%#=1%s/ contained',
+      \ s:pcre_reference
+      \ )
+
+unlet
+      \ s:integer_suffix s:float_suffix s:exponent_suffix
+      \ s:fraction s:nonzero_re s:zero_re
+      \ s:template
+      \ s:pcre_group_modifier s:pcre_reference
 
 delfunction s:choice
 delfunction s:optional

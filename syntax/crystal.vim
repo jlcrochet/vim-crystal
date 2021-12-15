@@ -183,34 +183,45 @@ syn match crystalNamedTupleKey /\%#=1[[:lower:]_]\w*[?!]\=:/he=e-1 contained con
 syn match crystalNamedTupleKey /\%#=1\u\w*::\@!/he=e-1 contained contains=crystalSymbolStart
 
 " Regular Expressions {{{3
-syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1\/\s\@!/ matchgroup=crystalRegexEnd end=/\%#=1\/[imx]*/ skip=/\%#=1\\\\\|\\\// oneline keepend contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError,@crystalPCRE nextgroup=@crystalPostfix skipwhite
+syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1\/\s\@!/ matchgroup=crystalRegexEnd end=/\%#=1\/[imx]*/ skip=/\%#=1\\\\\|\\\// oneline keepend contains=crystalStringInterpolation,@crystalPCRE nextgroup=@crystalPostfix skipwhite
 
 " NOTE: These operators are defined here in order to take precedence
 " over /-style regexes
 syn match crystalOperator /\%#=1\/[/=]/ contained
 
-syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1%r(/  matchgroup=crystalRegexEnd end=/\%#=1)[imx]*/ contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError,@crystalPCRE nextgroup=@crystalPostfix skipwhite
-syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1%r\[/ matchgroup=crystalRegexEnd end=/\%#=1][imx]*/ contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError,@crystalPCRE nextgroup=@crystalPostfix skipwhite
-syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1%r{/  matchgroup=crystalRegexEnd end=/\%#=1}[imx]*/ skip=/\%#=1{.\{-}}/ contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError,@crystalPCRE nextgroup=@crystalPostfix skipwhite
-syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1%r</  matchgroup=crystalRegexEnd end=/\%#=1>[imx]*/ skip=/\%#=1<.\{-}>/ contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError,@crystalPCRE nextgroup=@crystalPostfix skipwhite
-syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1%r|/  matchgroup=crystalRegexEnd end=/\%#=1|[imx]*/ contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError,@crystalPCRE nextgroup=@crystalPostfix skipwhite
+syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1%r(/  matchgroup=crystalRegexEnd end=/\%#=1)[imx]*/ contains=crystalStringInterpolation,@crystalPCRE nextgroup=@crystalPostfix skipwhite
+syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1%r\[/ matchgroup=crystalRegexEnd end=/\%#=1][imx]*/ contains=crystalStringInterpolation,@crystalPCRE nextgroup=@crystalPostfix skipwhite
+syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1%r{/  matchgroup=crystalRegexEnd end=/\%#=1}[imx]*/ skip=/\%#=1{.\{-}}/ contains=crystalStringInterpolation,@crystalPCRE nextgroup=@crystalPostfix skipwhite
+syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1%r</  matchgroup=crystalRegexEnd end=/\%#=1>[imx]*/ skip=/\%#=1<.\{-}>/ contains=crystalStringInterpolation,@crystalPCRE nextgroup=@crystalPostfix skipwhite
+syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1%r|/  matchgroup=crystalRegexEnd end=/\%#=1|[imx]*/ contains=crystalStringInterpolation,@crystalPCRE nextgroup=@crystalPostfix skipwhite
 
 " PCRE {{{4
 syn cluster crystalPCRE contains=
-      \ crystalRegexMetacharacter,crystalRegexClass,crystalRegexGroup,crystalRegexComment,
-      \ crystalRegexEscape,crystalRegexCapturedGroup,crystalRegexQuantifier
+      \ crystalPCREEscape,crystalPCRELiteral,crystalPCREMetaCharacter,crystalPCREClass,crystalPCREQuantifier,
+      \ crystalPCREGroup,crystalPCREReference,crystalPCREComment,crystalPCREControl
 
-syn match crystalRegexMetacharacter /\%#=1[.^$|]/ contained
-syn match crystalRegexQuantifier /\%#=1[*+?]/ contained
-syn match crystalRegexQuantifier /\%#=1{\d*,\=\d*}/ contained
-syn region crystalRegexClass matchgroup=crystalRegexMetacharacter start=/\%#=1\[\^\=/ end=/\%#=1]/ oneline transparent contained contains=crystalRegexEscape,crystalRegexPOSIXClass
-syn match crystalRegexPOSIXClass /\%#=1\[\^\=:\%(alnum\|alpha\|ascii\|blank\|cntrl\|digit\|graph\|lower\|print\|punct\|space\|upper\|word\|xdigit\):]/ contained
-syn region crystalRegexGroup matchgroup=crystalRegexMetacharacter start=/\%#=1(\%(?\%([:>|=!]\|<\%([=!]\|\h\w*>\)\|[imx]\+\)\)\=/ end=/\%#=1)/ transparent contained
-syn region crystalRegexComment start=/\%#=1(?#/ end=/\%#=1)/ contained
-syn region crystalRegexEscape matchgroup=crystalRegexMetacharacter start=/\%#=1\\Q/ end=/\%#=1\\E/ transparent contained contains=crystalRegexSlashEscape
+execute g:crystal#syntax#pcre_group
+execute g:crystal#syntax#pcre_reference
+
+syn match crystalPCREEscape /\%#=1\\\%([aefnrtCdDhHNRsSvVwWXbBAZzGK_]\|c.\|0\o\o\|o{\o\+}\|x\%(\x\x\|{\x\+}\)\|[pP]{\h\w*}\|\W\)/ contained
+
+syn region crystalPCRELiteral matchgroup=crystalPCREEscape start=/\%#=1\\Q/ end=/\%#=1\\E/ contained transparent contains=crystalRegexSlashEscape
+
+syn match crystalPCREMetaCharacter /\%#=1[.^$|]/ contained
+
+syn region crystalPCREClass matchgroup=crystalPCREMetaCharacter start=/\%#=1\[\^\=/ end=/\%#=1\]/ contained transparent contains=crystalPCREEscape,crystalPCREPOSIXClass
+syn match crystalPCREPOSIXClass /\%#=1\[:\^\=\h\w*:\]/ contained
+
+syn match crystalPCREQuantifier /\%#=1?[+?]\=/ contained
+syn match crystalPCREQuantifier /\%#=1\*[+?]\=/ contained
+syn match crystalPCREQuantifier /\%#=1+[+?]\=/ contained
+syn match crystalPCREQuantifier /\%#=1{\d\+,\=\d*}[+?]\=/ contained
+
+syn region crystalPCREComment start=/\%#=1(?#/ end=/\%#=1)/ contained contains=crystalRegexSlashEscape
+
+syn match crystalPCREControl /\%#=1(\*.\{-})/ contained
+
 syn match crystalRegexSlashEscape /\%#=1\\\// contained
-syn match crystalRegexEscape /\%#=1\\[pP]{\h\w*}/ contained
-syn match crystalRegexCapturedGroup /\%#=1\\\%(\d\+\|g\%({\w\+}\|<\w\+>\)\)/ contained
 
 " Commands {{{3
 syn region crystalCommand matchgroup=crystalCommandStart start=/\%#=1`/ matchgroup=crystalCommandEnd end=/\%#=1`/ contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError nextgroup=@crystalPostfix skipwhite
@@ -360,13 +371,14 @@ hi def link crystalNamedTupleKey crystalSymbol
 hi def link crystalRegex String
 hi def link crystalRegexStart crystalRegex
 hi def link crystalRegexEnd crystalRegexStart
-hi def link crystalRegexMetacharacter SpecialChar
-hi def link crystalRegexPOSIXClass crystalRegexMetacharacter
-hi def link crystalRegexComment Comment
-hi def link crystalRegexEscape SpecialChar
-hi def link crystalRegexSlashEscape crystalRegexEscape
-hi def link crystalRegexCapturedGroup crystalRegexMetacharacter
-hi def link crystalRegexQuantifier crystalRegexMetacharacter
+hi def link crystalRegexSlashEscape crystalStringEscape
+hi def link crystalPCREMetaCharacter SpecialChar
+hi def link crystalPCREEscape crystalPCREMetaCharacter
+hi def link crystalPCREQuantifier crystalPCREMetaCharacter
+hi def link crystalPCREReference crystalPCREMetaCharacter
+hi def link crystalPCREPOSIXClass crystalPCREMetaCharacter
+hi def link crystalPCREComment crystalComment
+hi def link crystalPCREControl crystalPCREMetaCharacter
 hi def link crystalCommand String
 hi def link crystalCommandStart crystalCommand
 hi def link crystalCommandEnd crystalCommandStart
