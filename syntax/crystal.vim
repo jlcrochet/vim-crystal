@@ -92,7 +92,7 @@ syn cluster crystalLiteralRegions contains=
       \ crystalString,crystalStringParentheses,crystalStringSquareBrackets,crystalStringCurlyBraces,crystalStringAngleBrackets,
       \ crystalHeredocLine,crystalHeredocLineRaw,
       \ crystalSymbol,
-      \ crystalRegex,crystalRegexClass,crystalRegexGroup,crystalRegexComment,crystalRegexEscape,
+      \ crystalRegex,crystalPCREGroup,crystalPCREClass,crystalPCREControl,
       \ crystalCommand
 
 syn keyword crystalNil nil nextgroup=@crystalPostfix skipwhite
