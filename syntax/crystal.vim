@@ -212,9 +212,7 @@ syn match crystalPCREMetaCharacter /\%#=1[.^$|]/ contained
 syn region crystalPCREClass matchgroup=crystalPCREMetaCharacter start=/\%#=1\[\^\=/ end=/\%#=1\]/ contained transparent contains=crystalPCREEscape,crystalPCREPOSIXClass
 syn match crystalPCREPOSIXClass /\%#=1\[:\^\=\h\w*:\]/ contained
 
-syn match crystalPCREQuantifier /\%#=1?[+?]\=/ contained
-syn match crystalPCREQuantifier /\%#=1\*[+?]\=/ contained
-syn match crystalPCREQuantifier /\%#=1+[+?]\=/ contained
+syn match crystalPCREQuantifier /\%#=1[?*+][+?]\=/
 syn match crystalPCREQuantifier /\%#=1{\d\+,\=\d*}[+?]\=/ contained
 
 syn region crystalPCREComment start=/\%#=1(?#/ end=/\%#=1)/ contained contains=crystalRegexSlashEscape
