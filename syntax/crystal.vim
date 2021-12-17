@@ -198,12 +198,10 @@ syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1%r|/  matchgrou
 " PCRE {{{4
 syn cluster crystalPCRE contains=
       \ crystalPCREEscape,crystalPCRELiteral,crystalPCREMetaCharacter,crystalPCREClass,crystalPCREQuantifier,
-      \ crystalPCREGroup,crystalPCREReference,crystalPCREComment,crystalPCREControl
+      \ crystalPCREGroup,crystalPCREComment,crystalPCREControl
 
+execute g:crystal#syntax#pcre_escape
 execute g:crystal#syntax#pcre_group
-execute g:crystal#syntax#pcre_reference
-
-syn match crystalPCREEscape /\%#=1\\\%([aefnrtCdDhHNRsSvVwWXbBAZzGK_]\|c.\|0\o\o\|o{\o\+}\|x\%(\x\x\|{\x\+}\)\|[pP]{\h\w*}\|\W\)/ contained
 
 syn region crystalPCRELiteral matchgroup=crystalPCREEscape start=/\%#=1\\Q/ end=/\%#=1\\E/ contained transparent contains=crystalRegexSlashEscape
 
@@ -373,7 +371,6 @@ hi def link crystalRegexSlashEscape crystalStringEscape
 hi def link crystalPCREMetaCharacter SpecialChar
 hi def link crystalPCREEscape crystalPCREMetaCharacter
 hi def link crystalPCREQuantifier crystalPCREMetaCharacter
-hi def link crystalPCREReference crystalPCREMetaCharacter
 hi def link crystalPCREPOSIXClass crystalPCREMetaCharacter
 hi def link crystalPCREComment crystalComment
 hi def link crystalPCREControl crystalPCREMetaCharacter

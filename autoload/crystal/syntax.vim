@@ -52,8 +52,24 @@ const g:crystal#syntax#overloadable_operators = s:choice(
       \ '\[][=?]\='
       \ )
 
-" The syntax for PCRE groups and references is pretty complicated, so
-" we're building it here:
+" The syntax for PCRE escapes and groups is pretty complicated, so we're
+" building it here:
+let s:pcre_escape = '\\' . s:choice(
+      \ 'c.',
+      \ '\d\+',
+      \ 'o{\o\+}',
+      \ 'x\%(\x\x\|{\x\+}\)',
+      \ '[pP]{\h\w*}',
+      \ "g" . s:choice('\d\+', '{\%(-\=\d\+\|\h\w*\)}', '<\%(-\=\d\+\|\h\w*\)>', '''\%(-\=\d\+\|\h\w*\)'''),
+      \ "k" . s:choice('<\h\w*>', '''\h\w*''', '{\h\w*}'),
+      \ '.'
+      \ )
+
+const g:crystal#syntax#pcre_escape = printf(
+      \ 'syn match crystalPCREescape /\%%#=1%s/ contained',
+      \ s:pcre_escape
+      \ )
+
 let s:pcre_group_modifier = "?" . s:choice(
       \ '<\h\w*>',
       \ '''\h\w*''',
@@ -73,22 +89,11 @@ const g:crystal#syntax#pcre_group = printf(
       \ s:pcre_group_modifier
       \ )
 
-let s:pcre_reference = '\\' . s:choice(
-      \ '\d\+',
-      \ "g" . s:choice('\d\+', '{\%(-\=\d\+\|\h\w*\)}', '<\%(-\=\d\+\|\h\w*\)>', '''\%(-\=\d\+\|\h\w*\)'''),
-      \ "k" . s:choice('<\h\w*>', '''\h\w*''', '{\h\w*}')
-      \ )
-
-const g:crystal#syntax#pcre_reference = printf(
-      \ 'syn match crystalPCREReference /\%%#=1%s/ contained',
-      \ s:pcre_reference
-      \ )
-
 unlet
       \ s:integer_suffix s:float_suffix s:exponent_suffix
       \ s:fraction s:nonzero_re s:zero_re
       \ s:template
-      \ s:pcre_group_modifier s:pcre_reference
+      \ s:pcre_escape s:pcre_group_modifier
 
 delfunction s:choice
 delfunction s:optional
