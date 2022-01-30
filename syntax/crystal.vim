@@ -17,7 +17,7 @@ else
   syn cluster crystalTop contains=TOP
 endif
 
-syn cluster crystalPostfix contains=crystalOperator,crystalRangeOperator,crystalNamespaceOperator,crystalPostfixKeyword,crystalComma
+syn cluster crystalPostfix contains=crystalOperator,crystalMethodOperator,crystalRangeOperator,crystalNamespaceOperator,crystalPostfixKeyword,crystalComma
 syn cluster crystalArguments contains=crystalFreshVariable,crystalNumber,crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey
 
 " Comments {{{2
@@ -56,7 +56,7 @@ syn match crystalOperator /\%#=1&\%(&=\=\|=\|+=\=\|-[=>]\=\|\*[*=]\=\)\=/ contai
 syn match crystalOperator /\%#=1||\==\=/ contained
 syn match crystalOperator /\%#=1\^=\=/ contained
 
-syn match crystalOperator /\%#=1\./ nextgroup=crystalVariableOrMethod,crystalOperatorMethod skipwhite
+syn match crystalMethodOperator /\%#=1\./ nextgroup=crystalVariableOrMethod,crystalOperatorMethod skipwhite
 execute 'syn match crystalOperatorMethod /\%#=1'.g:crystal#syntax#overloadable_operators.'/ contained nextgroup=@crystalPostfix,@crystalArguments skipwhite'
 
 syn match crystalRangeOperator /\%#=1\.\.\.\=/ nextgroup=crystalOperator,crystalPostfixKeyword skipwhite
@@ -330,6 +330,7 @@ hi def link crystalPragma PreProc
 hi def link crystalPragmaError Error
 hi def link crystalOperator Operator
 hi def link crystalUnaryOperator crystalOperator
+hi def link crystalMethodOperator crystalOperator
 hi def link crystalRangeOperator crystalOperator
 hi def link crystalNamespaceOperator crystalOperator
 hi def link crystalDelimiter Delimiter
