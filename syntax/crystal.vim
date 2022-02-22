@@ -158,10 +158,8 @@ syn region crystalHeredocLineRaw start=/\%#=1^/ end=/\%#=1$/ oneline contained n
 syn region crystalHeredocSkip matchgroup=crystalHeredocStart start=/\%#=1<<-\('\=\)\w\+\1/ end=/\%#=1\ze<<-'\=\w/ transparent oneline nextgroup=crystalHeredoc,crystalHeredocSkip
 
 " Symbols {{{3
-syn match crystalSymbol /\%#=1:\h\w*[=?!]\=/ contains=crystalSymbolStart nextgroup=@crystalPostfix skipwhite
-execute 'syn match crystalSymbol /\%#=1:'.g:crystal#syntax#overloadable_operators.'/ contains=crystalSymbolStart nextgroup=@crystalPostfix skipwhite'
-
-syn match crystalSymbolStart /\%#=1:/ contained
+syn match crystalSymbol /\%#=1:\h\w*[=?!]\=/ nextgroup=@crystalPostfix skipwhite
+execute 'syn match crystalSymbol /\%#=1:'.g:crystal#syntax#overloadable_operators.'/ nextgroup=@crystalPostfix skipwhite'
 
 syn region crystalSymbol matchgroup=crystalSymbolStart start=/\%#=1:"/ matchgroup=crystalSymbolEnd end=/\%#=1"/ contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError nextgroup=@crystalPostfix skipwhite
 
@@ -171,8 +169,8 @@ syn region crystalSymbol matchgroup=crystalSymbolStart start=/\%#=1%i{/  matchgr
 syn region crystalSymbol matchgroup=crystalSymbolStart start=/\%#=1%i</  matchgroup=crystalSymbolEnd end=/\%#=1>/ contains=crystalStringAngleBrackets,crystalStringAngleBracketEscape nextgroup=@crystalPostfix skipwhite
 syn region crystalSymbol matchgroup=crystalSymbolStart start=/\%#=1%i|/  matchgroup=crystalSymbolEnd end=/\%#=1|/ contains=crystalStringPipeEscape nextgroup=@crystalPostfix skipwhite
 
-syn match crystalNamedTupleKey /\%#=1[[:lower:]_]\w*[?!]\=:/he=e-1 contained contains=crystalSymbolStart
-syn match crystalNamedTupleKey /\%#=1\u\w*::\@!/he=e-1 contained contains=crystalSymbolStart
+syn match crystalNamedTupleKey /\%#=1[[:lower:]_]\w*[?!]\=:/ contained
+syn match crystalNamedTupleKey /\%#=1\u\w*::\@!/ contained
 
 " Regular Expressions {{{3
 syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1\/\s\@!/ matchgroup=crystalRegexEnd end=/\%#=1\/[imx]*/ skip=/\%#=1\\\\\|\\\// oneline keepend contains=crystalStringInterpolation,@crystalPCRE nextgroup=@crystalPostfix skipwhite
