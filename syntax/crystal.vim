@@ -87,14 +87,6 @@ syn match crystalConstant /\%#=1\u\w*/ nextgroup=@crystalPostfix skipwhite
 syn match crystalVariableOrMethod /\%#=1[[:lower:]_]\w*[?!]\=/ nextgroup=@crystalPostfix,@crystalArguments skipwhite
 
 " Literals {{{2
-syn cluster crystalLiteralRegions contains=
-      \ crystalCharacter,
-      \ crystalString,crystalStringParentheses,crystalStringSquareBrackets,crystalStringCurlyBraces,crystalStringAngleBrackets,
-      \ crystalHeredocLine,crystalHeredocLineRaw,
-      \ crystalSymbol,
-      \ crystalRegex,crystalPCREGroup,crystalPCREClass,crystalPCREControl,
-      \ crystalCommand
-
 syn keyword crystalNil nil nextgroup=@crystalPostfix skipwhite
 syn keyword crystalBoolean true false nextgroup=@crystalPostfix skipwhite
 syn keyword crystalSelf self nextgroup=@crystalPostfix skipwhite
@@ -317,7 +309,6 @@ syn region crystalNestedBrackets matchgroup=crystalDelimiter start=/\%#=1\[/ end
 
 " Macros {{{2
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline contains=@crystalTop,crystalNestedBraces nextgroup=@crystalPostfix skipwhite
-syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline contained containedin=@crystalLiteralRegions contains=@crystalTop,crystalNestedBraces
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ oneline contains=TOP
 " }}}2
 
