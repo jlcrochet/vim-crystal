@@ -14,23 +14,30 @@ endfunction
 " Number patterns:
 let s:integer_suffix = '[ui]\%(8\|16\|32\|64\|128\)'
 let s:float_suffix = 'f\%(32\|64\)'
-let s:exponent_suffix = '[eE][+-]\=[[:digit:]_]*'
+let s:exponent_suffix = '[eE][+-]\=\d\+\%(_\d\+\)*' . s:optional('_\=' . s:float_suffix)
 
-let s:fraction = '\.\d[[:digit:]_]*' . s:optional(s:exponent_suffix) . s:optional(s:float_suffix)
+let s:fraction = '\.\d\+\%(_\d\+\)*' . s:choice(
+      \ s:float_suffix,
+      \ s:exponent_suffix,
+      \ '_' . s:choice(s:float_suffix, s:exponent_suffix)
+      \ ) . '\='
 
-let s:nonzero_re = '[1-9][[:digit:]_]*' . s:choice(
+let s:nonzero_re = '[1-9]\d*\%(_\d\+\)*' . s:choice(
       \ s:integer_suffix,
       \ s:float_suffix,
-      \ s:exponent_suffix . s:optional(s:float_suffix),
+      \ s:exponent_suffix,
+      \ '_' . s:choice(s:integer_suffix, s:float_suffix, s:exponent_suffix),
       \ s:fraction
       \ ) . '\='
 
 let s:zero_re = '0' . s:choice(
-      \ 'b[01_]*' . s:optional(s:integer_suffix),
-      \ 'o[0-7_]*' . s:optional(s:integer_suffix),
-      \ 'x[[:xdigit:]_]*' . s:optional(s:integer_suffix),
-      \ '_*' . s:choice(s:integer_suffix, s:float_suffix, s:exponent_suffix, s:fraction),
-      \ '_[[:digit:]_]*' . s:choice(s:integer_suffix, s:float_suffix, s:exponent_suffix, s:fraction) . '\=',
+      \ s:integer_suffix,
+      \ s:float_suffix,
+      \ '_' . s:choice(s:integer_suffix, s:float_suffix, s:exponent_suffix),
+      \ s:fraction,
+      \ 'b[01]\+\%(_[01]\+\)*' . s:optional(s:integer_suffix),
+      \ 'o\o\+\%(_\o\+\)*' . s:optional(s:integer_suffix),
+      \ 'x\x\+\%(_\x\+\)*' . s:optional(s:integer_suffix)
       \ ) . '\='
 
 let s:template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix skipwhite'
