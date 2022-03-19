@@ -64,16 +64,16 @@ syn match crystalRangeOperator /\%#=1\.\.\.\=/ nextgroup=crystalOperator,crystal
 syn match crystalNamespaceOperator /\%#=1::/ nextgroup=crystalConstant,crystalVariableOrMethod
 
 " Delimiters {{{2
-syn match crystalDelimiter /\%#=1(/ nextgroup=crystalNamedTupleKey skipwhite skipnl
+syn match crystalDelimiter /\%#=1(/ nextgroup=crystalNamedTupleKey skipwhite skipempty
 syn match crystalDelimiter /\%#=1)/ nextgroup=@crystalPostfix skipwhite
 
 syn match crystalDelimiter /\%#=1\[/
 syn match crystalDelimiter /\%#=1]?\=/ nextgroup=@crystalPostfix skipwhite
 
-syn match crystalDelimiter /\%#=1{/ nextgroup=crystalNamedTupleKey,crystalBlockParameters skipwhite skipnl
+syn match crystalDelimiter /\%#=1{/ nextgroup=crystalNamedTupleKey,crystalBlockParameters skipwhite skipempty
 syn match crystalDelimiter /\%#=1}/ nextgroup=@crystalPostfix skipwhite
 
-syn match crystalComma /\%#=1,/ contained nextgroup=crystalNamedTupleKey skipwhite skipnl
+syn match crystalComma /\%#=1,/ contained nextgroup=crystalNamedTupleKey skipwhite skipempty
 
 syn match crystalBackslash /\%#=1\\/
 
@@ -148,12 +148,12 @@ syn match crystalStringPipeEscape /\%#=1\\[|[:space:]]/ contained
 
 " Here Documents {{{3
 syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-\z(\w\+\)/ matchgroup=crystalHeredocEnd end=/\%#=1^\s*\z1$/ transparent contains=crystalHeredocStartLine,crystalHeredocLine
-syn region crystalHeredocStartLine start=/\%#=1/ end=/\%#=1$/ contained oneline transparent keepend contains=TOP nextgroup=crystalHeredocLine skipnl
-syn region crystalHeredocLine start=/\%#=1^/ end=/\%#=1$/ contained oneline contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError nextgroup=crystalHeredocLine skipnl
+syn region crystalHeredocStartLine start=/\%#=1/ end=/\%#=1$/ contained oneline transparent keepend contains=TOP nextgroup=crystalHeredocLine skipempty
+syn region crystalHeredocLine start=/\%#=1^/ end=/\%#=1$/ contained oneline contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError nextgroup=crystalHeredocLine skipempty
 
 syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-'\z(\w\+\)'/ matchgroup=crystalHeredocEnd end=/\%#=1^\s*\z1$/ transparent contains=crystalHeredocStartLineRaw,crystalHeredocLineRaw
-syn region crystalHeredocStartLineRaw start=/\%#=1/ end=/\%#=1$/ contained oneline transparent keepend contains=TOP nextgroup=crystalHeredocLineRaw skipnl
-syn region crystalHeredocLineRaw start=/\%#=1^/ end=/\%#=1$/ oneline contained nextgroup=crystalHeredocLineRaw skipnl
+syn region crystalHeredocStartLineRaw start=/\%#=1/ end=/\%#=1$/ contained oneline transparent keepend contains=TOP nextgroup=crystalHeredocLineRaw skipempty
+syn region crystalHeredocLineRaw start=/\%#=1^/ end=/\%#=1$/ oneline contained nextgroup=crystalHeredocLineRaw skipempty
 
 syn region crystalHeredocSkip matchgroup=crystalHeredocStart start=/\%#=1<<-\('\=\)\w\+\1/ end=/\%#=1\ze<<-'\=\w/ transparent oneline nextgroup=crystalHeredoc,crystalHeredocSkip
 
