@@ -40,7 +40,7 @@ let s:zero_re = '0' . s:choice(
       \ 'x\x\+\%(_\x\+\)*' . s:optional(s:integer_suffix)
       \ ) . '\='
 
-let s:template = 'syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix skipwhite'
+let s:template = 'syn match crystalNumber /\%%#=1%s\>/ nextgroup=@crystalPostfix skipwhite'
 
 const g:crystal#syntax#number = printf(s:template, s:nonzero_re) .. " | " .. printf(s:template, s:zero_re)
 
