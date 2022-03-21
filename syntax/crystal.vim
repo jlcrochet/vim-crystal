@@ -56,7 +56,7 @@ syn match crystalOperator /\%#=1\^=\=/ contained
 
 syn region crystalTernaryOperator matchgroup=crystalOperator start=/\%#=1?/ end=/\%#=1:/ skip=/\%#=1::/ contained contains=TOP
 
-syn match crystalMethodOperator /\%#=1\./ nextgroup=crystalVariableOrMethod,crystalOperatorMethod skipwhite
+syn match crystalMethodOperator /\%#=1\./ nextgroup=crystalVariableOrMethod,crystalOperatorMethod,crystalPseudoMethod skipwhite
 execute 'syn match crystalOperatorMethod /\%#=1'.g:crystal#syntax#overloadable_operators.'/ contained nextgroup=@crystalPostfix,@crystalArguments skipwhite'
 
 syn match crystalRangeOperator /\%#=1\.\.\.\=/ nextgroup=crystalOperator,crystalPostfixKeyword skipwhite
@@ -107,7 +107,7 @@ syn match crystalDelimiter /\%#=1]?\=/ nextgroup=@crystalPostfix skipwhite
 syn match crystalDelimiter /\%#=1{/ nextgroup=crystalNamedTupleKey,crystalBlockParameters skipwhite skipempty
 syn match crystalDelimiter /\%#=1}/ nextgroup=@crystalPostfix skipwhite
 
-syn match crystalComma /\%#=1,/ contained nextgroup=crystalNamedTupleKey skipwhite skipempty
+syn match crystalComma /\%#=1,/ contained nextgroup=crystalNamedTupleKey,crystalOut skipwhite skipempty
 
 syn match crystalBackslash /\%#=1\\/
 
@@ -119,6 +119,7 @@ syn match crystalExternalVariable /\%#=1\$\%([~?]\|\d\+?\=\|[[:lower:]_]\w*\)/ n
 
 syn match crystalConstant /\%#=1\u\w*/ nextgroup=@crystalPostfix skipwhite
 syn match crystalVariableOrMethod /\%#=1[[:lower:]_]\w*[?!]\=/ nextgroup=@crystalPostfix,@crystalArguments skipwhite
+syn keyword crystalPseudoMethod is_a? as contained nextgroup=@crystalTypes skipwhite
 
 " Literals {{{2
 " Keywords {{{3
@@ -238,7 +239,7 @@ syn match crystalPCREPOSIXClass /\%#=1\[:\^\=\h\w*:\]/ contained
 syn match crystalPCREQuantifier /\%#=1[?*+][+?]\=/ contained
 syn match crystalPCREQuantifier /\%#=1{\d\+,\=\d*}[+?]\=/ contained
 
-syn region crystalPCREComment start=/\%#=1(?#/ end=/\%#=1)/ contained contains=crystalRegexSlashEscape
+syn region crystalPCREComment matchgroup=crystalPCREMetaCharacter start=/\%#=1(?#/ end=/\%#=1)/ contained contains=crystalRegexSlashEscape
 
 syn match crystalPCREControl /\%#=1(\*.\{-})/ contained
 
@@ -295,7 +296,7 @@ else
   syn keyword crystalDefine type alias nextgroup=crystalTypeAlias skipwhite
 
   syn keyword crystalDefineNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
-  syn keyword crystalDefineNoBlock fun nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
+  syn keyword crystalDefineNoBlock fun nextgroup=crystalLibMethodDefinition skipwhite
 
   syn keyword crystalKeyword if unless else begin for do end contained containedin=crystalMacro
 endif
@@ -307,7 +308,7 @@ syn match crystalInheritanceOperator /\%#=1</ contained nextgroup=crystalConstan
 syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ contained nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator skipwhite
 execute 'syn match crystalMethodDefinition /\%#=1'.g:crystal#syntax#overloadable_operators.'/ contained nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator skipwhite'
 syn region crystalMethodParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=TOP,crystalKeyword,crystalDefine,crystalBlock,crystalDefineBlock nextgroup=crystalTypeRestrictionOperator skipwhite
-syn keyword crystalKeyword out contained containedin=crystalMethodParameters
+syn keyword crystalOut out contained containedin=crystalMethodParameters
 syn match crystalMethodReceiver /\%#=1\u\w*/ contained nextgroup=crystalMethodDot
 syn keyword crystalMethodSelf self contained nextgroup=crystalMethodDot
 syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
@@ -436,6 +437,8 @@ hi def link crystalTypeUnionOperator crystalTypeOperator
 hi def link crystalTypeProcOperator crystalTypeOperator
 hi def link crystalTypeSelf crystalSelf
 hi def link crystalTypeTypeof crystalType
+hi def link crystalPseudoMethod crystalVariableOrMethod
+hi def link crystalOut crystalKeyword
 " }}}1
 
 " vim:fdm=marker

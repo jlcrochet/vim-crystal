@@ -64,25 +64,17 @@ function s:prev_non_multiline(lnum)
 endfunction
 
 function s:is_operator(char, col, line, lnum)
-  if a:char =~# '[%&+\-/:<>^|~]'
+  if a:char =~# '[%&*+\-/<>?^~]'
     return synID(a:lnum, a:col, 1) == g:crystal#highlighting#operator
+  elseif a:char ==# ":"
+    let synid = synID(a:lnum, a:col, 1)
+    return synid == g:crystal#highlighting#operator || synid == g:crystal#highlighting#type_restriction_operator
   elseif a:char ==# "="
     let synid = synID(a:lnum, a:col, 1)
-    return synid == g:crystal#highlighting#operator || synid == g:crystal#highlighting#assignment_operator
-  elseif a:char =~# '[*?]'
-    " Find the first character prior to this one that isn't also a * or
-    " ?.
-    for i in range(a:col - 2, 0, -1)
-      let char = a:line[i]
-
-      if char !~# '[*?]'
-        if char =~# '[[:alnum:]_)\]}]'
-          return 0
-        else
-          return synID(a:lnum, a:col, 1) == g:crystal#highlighting#operator
-        endif
-      endif
-    endfor
+    return synid == g:crystal#highlighting#operator || synid == g:crystal#highlighting#assignment_operator || synid == g:crystal#highlighting#method_assignment_operator || synid == g:crystal#highlighting#type_alias_operator
+  elseif a:char ==# "|"
+    let synid = synID(a:lnum, a:col, 1)
+    return synid == g:crystal#highlighting#operator || synid == g:crystal#highlighting#type_union_operator
   endif
 endfunction
 
@@ -612,7 +604,7 @@ else
             if pairs == 0
               let synid = synID(prev_lnum, col, 1)
 
-              if synid == g:crystal#highlighting#operator || synid == g:crystal#highlighting#assignment_operator
+              if synid == g:crystal#highlighting#operator || synid == g:crystal#highlighting#assignment_operator || synid == g:crystal#highlighting#method_assignment_operator || synid == g:crystal#highlighting#type_alias_operator
                 let idx = match(prev_line, '\S', col)
 
                 if idx != -1

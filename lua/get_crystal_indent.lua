@@ -25,9 +25,15 @@ local MULTILINE_REGIONS = {
   crystalSymbolEnd = true,
   crystalRegex = true,
   crystalRegexEnd = true,
-  crystalRegexGroup = true,
-  crystalRegexComment = true,
-  crystalRegexEscape = true,
+  crystalPCREEscape = true,
+  crystalPCREGroup = true,
+  crystalPCRELiteral = true,
+  crystalPCREMetaCharacter = true,
+  crystalPCREClass = true,
+  crystalPCREQuantifier = true,
+  crystalPCREComment = true,
+  crystalPCREControl = true,
+  crystalRegexSlashEscape = true,
   crystalCommand = true,
   crystalCommandEnd = true,
   crystalHeredocLine = true,
@@ -59,33 +65,25 @@ end
 local function is_operator(byte, col, line, lnum)
   if byte == 37 or  -- %
     byte == 38 or  -- &
+    byte == 42 or  -- *
     byte == 43 or  -- +
     byte == 45 or  -- -
     byte == 47 or  -- /
-    byte == 58 or  -- :
     byte == 60 or  -- <
     byte == 62 or  -- >
+    byte == 63 or  -- ?
     byte == 94 or  -- ^
-    byte == 124 or  -- |
     byte == 126 then  -- ~
     return syngroup_at(lnum, col) == "crystalOperator"
+  elseif byte == 58 then  -- :
+    local syngroup = syngroup_at(lnum, col)
+    return syngroup == "crystalOperator" or syngroup == "crystalTypeRestrictionOperator"
   elseif byte == 61 then  -- =
     local syngroup = syngroup_at(lnum, col)
-    return syngroup == "crystalOperator" or syngroup == "crystalAssignmentOperator"
-  elseif byte == 42 or byte == 63 then  -- * ?
-    -- Find the first character prior to this one that isn't also a * or
-    -- ?.
-    for i = col - 1, 1, -1 do
-      local b = line:byte(i)
-
-      if b ~= 42 and b ~= 63 then  -- * ?
-        if b >= 48 and b <= 57 or b >= 65 and b <= 90 or b >= 97 and b <= 122 or b == 41 or b == 93 or b == 95 or b == 125 then  -- %w _ ) ] }
-          return false
-        else
-          return syngroup_at(lnum, col) == "crystalOperator"
-        end
-      end
-    end
+    return syngroup == "crystalOperator" or syngroup == "crystalAssignmentOperator" or syngroup == "crystalMethodAssignmentOperator" or syngroup == "crystalTypeAliasOperator"
+  elseif byte == 124 then  -- |
+    local syngroup = syngroup_at(lnum, col)
+    return syngroup == "crystalOperator" or syngroup == "crystalTypeUnionOperator"
   end
 
   return false
@@ -98,7 +96,7 @@ local function is_assignment_operator(byte, col, line, lnum)
 
     if x ~= 61 and x ~= 62 and x ~= 126 and y ~= 61 and y ~= 33 then  -- = > ~ = !
       local syngroup = syngroup_at(lnum, col)
-      return syngroup == "crystalOperator" or syngroup == "crystalAssignmentOperator"
+      return syngroup == "crystalOperator" or syngroup == "crystalAssignmentOperator" or syngroup == "crystalMethodAssignmentOperator" or syngroup == "crystalTypeAliasOperator"
     end
   end
 
@@ -2497,7 +2495,7 @@ else
         for i = start_col, last_col do
           local b = prev_line:byte(i)
 
-          if b == 46 and prev_line:byte(i + 1) ~= 46 and syngroup_at(prev_lnum, i) == "crystalOperator" then  -- .
+          if b == 46 and prev_line:byte(i + 1) ~= 46 then  -- .
             return i - 1
           end
         end
