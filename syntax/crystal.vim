@@ -102,7 +102,8 @@ syn match crystalDelimiter /\%#=1(/ nextgroup=crystalNamedTupleKey skipwhite ski
 syn match crystalDelimiter /\%#=1)/ nextgroup=@crystalPostfix skipwhite
 
 syn match crystalDelimiter /\%#=1\[/
-syn match crystalDelimiter /\%#=1]?\=/ nextgroup=@crystalPostfix skipwhite
+syn match crystalDelimiter /\%#=1]?\=/ nextgroup=@crystalPostfix,crystalOf skipwhite
+syn keyword crystalOf of contained nextgroup=@crystalTypes skipwhite skipempty
 
 syn match crystalDelimiter /\%#=1{/ nextgroup=crystalNamedTupleKey,crystalBlockParameters skipwhite skipempty
 syn match crystalDelimiter /\%#=1}/ nextgroup=@crystalPostfix skipwhite
@@ -321,7 +322,7 @@ syn region crystalCFunctionStringName matchgroup=crystalStringStart start=/\%#=1
 
 " Miscellaneous {{{2
 syn keyword crystalKeyword elsif when in then forall with
-syn keyword crystalKeyword uninitialized of nextgroup=@crystalTypes skipwhite
+syn keyword crystalKeyword uninitialized nextgroup=@crystalTypes skipwhite
 
 syn match crystalTypeAlias /\%#=1\u\w*/ contained nextgroup=crystalTypeAliasOperator skipwhite
 syn match crystalTypeAliasOperator /\%#=1=/ contained nextgroup=@crystalTypes skipwhite skipempty
@@ -439,6 +440,7 @@ hi def link crystalTypeSelf crystalSelf
 hi def link crystalTypeTypeof crystalType
 hi def link crystalPseudoMethod crystalVariableOrMethod
 hi def link crystalOut crystalKeyword
+hi def link crystalOf crystalKeyword
 " }}}1
 
 " vim:fdm=marker
