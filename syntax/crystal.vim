@@ -121,6 +121,7 @@ syn match crystalExternalVariable /\%#=1\$\%([~?]\|\d\+?\=\|[[:lower:]_]\w*\)/ n
 syn match crystalConstant /\%#=1\u\w*/ nextgroup=@crystalPostfix skipwhite
 syn match crystalVariableOrMethod /\%#=1[[:lower:]_]\w*[?!]\=/ nextgroup=@crystalPostfix,@crystalArguments skipwhite
 syn keyword crystalPseudoMethod is_a? as contained nextgroup=@crystalTypes skipwhite
+syn keyword crystalPseudoMethod sizeof instance_sizeof nextgroup=@crystalTypes skipwhite
 
 " Literals {{{2
 " Keywords {{{3
