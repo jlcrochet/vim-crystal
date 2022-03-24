@@ -46,10 +46,10 @@ local function syngroup_at(lnum, col)
 end
 
 local function is_boundary(b)
-  -- [^_%w]
+  -- [^_:%w]
   return
     b < 48 or
-    b > 57 and b < 65 or
+    b > 57 and b < 65 and b ~= 58 or
     b > 90 and b < 97 and b ~= 95 or
     b > 122
 end
@@ -1716,7 +1716,7 @@ local function get_msl(lnum, line, start, finish, skip_commas, pairs)
 
   pairs = 0
 
-  if first_byte == 101 and line:byte(first_col + 1) == 110 and line:byte(first_col + 2) == 100 and line:byte(first_col + 3) ~= 58 and  -- e n d :
+  if first_byte == 101 and line:byte(first_col + 1) == 110 and line:byte(first_col + 2) == 100 and  -- e n d
     (first_col + 2 == finish or is_boundary(line:byte(first_col + 3))) then
     if first_col == 1 then
       return lnum, first_col - 1, false
@@ -2136,7 +2136,7 @@ if vim.g.crystal_simple_indent == 1 then
     if keyword_dedent then
       b = line:byte(i + 1)
 
-      if i == #line or b ~= 58 and is_boundary(b) then  -- :
+      if i == #line or is_boundary(b) then
         local shift = 1
 
         if continuation == 1 then
@@ -2341,7 +2341,7 @@ else
 
           b = prev_line:byte(start_col + offset)
 
-          if b ~= 58 and is_boundary(b) then  -- :
+          if is_boundary(b) then
             -- Find the first non-whitespace character after the
             -- keyword.
             for i = start_col + offset + 1, last_col - 1 do
@@ -2451,9 +2451,7 @@ else
               return start_col - 1
             elseif b == 101 and line:byte(i + 1) == 110 and line:byte(i + 2) == 100 then  -- e n d
               if (i == 1 or is_boundary(line:byte(i - 1))) and (i + 2 == #line or is_boundary(line:byte(i + 3))) then
-                if line:byte(i + 3) ~= 58 then  -- :
-                  return start_col - 1
-                end
+                return start_col - 1
               end
             end
 
@@ -2734,7 +2732,7 @@ else
     if keyword_dedent then
       b = line:byte(i + 1)
 
-      if i == #line or b ~= 58 and is_boundary(b) then  -- :
+      if i == #line or is_boundary(b) then
         if floating_col then
           return floating_col - 1
         else
