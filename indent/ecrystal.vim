@@ -15,11 +15,11 @@ if exists("*GetEcrystalIndent")
   finish
 endif
 
-let s:start_re = '\<\%(if\|unless\|begin\|do\):\@!\>'
-let s:middle_re = '\<\%(else\|elsif\):\@!\>'
-let s:end_re = '\<end:\@!\>'
+let s:start_re = '\<\%(if\|unless\|begin\|do\)\>'
+let s:middle_re = '\<\%(else\|elsif\)\>'
+let s:end_re = '\<end\>'
 
-let s:skip_expr = "synID(line('.'), col('.'), 1) != g:crystal#highlighting#keyword"
+let s:skip_expr = 'synID(line("."), col("."), 0)->synIDattr("name") !=# "rubyKeyword"'
 
 function GetEcrystalIndent() abort
   call cursor(0, 1)

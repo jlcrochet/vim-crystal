@@ -12,11 +12,11 @@ let b:did_indent = 1
 setlocal indentkeys=0),0],0},0.,0=..,o,O,!^F
 let &indentkeys ..= "," .. g:crystal#indent#dedent_words
 
-if has("nvim-0.5")
-  lua require "get_crystal_indent"
-  setlocal indentexpr=v:lua.get_crystal_indent()
-  finish
-endif
+" if has("nvim-0.5")
+"   lua require "get_crystal_indent"
+"   setlocal indentexpr=v:lua.get_crystal_indent()
+"   finish
+" endif
 
 setlocal indentexpr=GetCrystalIndent()
 
@@ -25,300 +25,206 @@ if exists("*GetCrystalIndent")
 endif
 
 " Helpers {{{
-let s:kw_start_re = '\C\v<%(def|macro|class|struct|module|enum|annotation|lib|union|if|unless|case|while|until|for|begin|do):@!>'
-let s:kw_middle_re = '\C\v<%(else|elsif|when|in|rescue|ensure):@!>'
-let s:kw_end_re = '\C\v<end:@!>'
+let s:multiline_regions = #{
+      \ crystalString: 1,
+      \ crystalStringEscape: 1,
+      \ crystalStringInterpolationDelimiter: 1,
+      \ crystalStringParenthesisEscape: 1,
+      \ crystalStringSquareBracketEscape: 1,
+      \ crystalStringCurlyBraceEscape: 1,
+      \ crystalStringAngleBracketEscape: 1,
+      \ crystalStringPipeEscape: 1,
+      \ crystalStringEnd: 1,
+      \ crystalSymbol: 1,
+      \ crystalSymbolEnd: 1,
+      \ crystalRegex: 1,
+      \ crystalRegexEnd: 1,
+      \ crystalPCREEscape: 1,
+      \ crystalPCREGroup: 1,
+      \ crystalPCRELiteral: 1,
+      \ crystalPCREMetaCharacter: 1,
+      \ crystalPCREClass: 1,
+      \ crystalPCREQuantifier: 1,
+      \ crystalPCREComment: 1,
+      \ crystalPCREControl: 1,
+      \ crystalRegexSlashEscape: 1,
+      \ crystalCommand: 1,
+      \ crystalCommandEnd: 1,
+      \ crystalHeredocLine: 1,
+      \ crystalHeredocLineRaw: 1,
+      \ crystalHeredocEnd: 1
+      \ }
 
-let s:start_pair_re = s:kw_start_re . '|[([{]'
-let s:end_pair_re = s:kw_end_re . '|[)\]}]'
+let s:block_start_re = '\C\v<%(if|unless|case|begin|for|while|until|do)>'
+let s:block_middle_re = '\C\v<%(else|elsif|when|in|ensure|rescue)>'
 
-let s:pair_re = '\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|while|until|for|begin|do)|(else|rescue|ensure)|(elsif|when|in)):@!>|(<end:@!>)|([([{])|([)\]}])'
+let s:define_block_start_re = '\C\v<%(def|macro|class|struct|lib|annotation|enum|module|union)>'
+let s:define_block_middle_re = '\C\v<%(else|ensure|rescue)>'
 
-let s:floating_re = '\C\v<%((if|unless|begin)|(case|until|while)|(else|elsif|ensure|in|rescue|when)|(annotation|class|def|enum|lib|macro|module|struct|union)|(do)|(end)):@!>|([([{])|([)\]}])|(\|)'
+let s:all_start_re = '\C\v<%(if|unless|case|begin|for|while|until|do|def|macro|class|struct|lib|annotation|enum|module|union)>'
 
-if get(g:, "crystal_simple_indent")
-  let s:skip_keyword_expr = 'synID(line("."), col("."), 1) != g:crystal#highlighting#keyword'
-else
-  function s:skip_keyword()
-    let synid = synID(line("."), col("."), 1)
-    return synid != g:crystal#highlighting#keyword && synid != g:crystal#highlighting#define && synid != g:crystal#highlighting#block_control && synid != g:crystal#highlighting#define_block_control
-  endfunction
+let s:skip_bracket = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(StringArray\|SymbolArray\)\=Delimiter$'''
+let s:skip_keyword = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(Macro\)\=Keyword$'''
+let s:skip_define = 'synID(line("."), col("."), 0)->synIDattr("name") !=# "crystalDefine"'
+let s:skip_all = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(Keyword\|MacroKeyword\|Define\)$'''
 
-  function s:skip_pair()
-    let synid = synID(line("."), col("."), 1)
-    return synid != g:crystal#highlighting#keyword && synid != g:crystal#highlighting#define && synid != g:crystal#highlighting#block_control && synid != g:crystal#highlighting#define_block_control && synid != g:crystal#highlighting#delimiter
-  endfunction
-
-  let s:skip_keyword_expr = function("s:skip_keyword")
-  let s:skip_pair_expr = function("s:skip_pair")
-endif
-
-function s:prev_non_multiline(lnum)
-  let lnum = a:lnum
-
-  while get(g:crystal#highlighting#multiline_regions, synID(lnum, 1, 0))
-    let lnum -= 1
-  endwhile
-
-  return lnum
-endfunction
-
-function s:is_operator(char, col, line, lnum)
+function s:is_operator(char, idx, lnum)
   if a:char =~# '[%&*+\-/<>?^~]'
-    return synID(a:lnum, a:col, 1) == g:crystal#highlighting#operator
+    return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") ==# "crystalOperator"
   elseif a:char ==# ":"
-    let synid = synID(a:lnum, a:col, 1)
-    return synid == g:crystal#highlighting#operator || synid == g:crystal#highlighting#type_restriction_operator
+    return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") =~# '^crystal\%(TypeRestriction\)\=Operator$'
   elseif a:char ==# "="
-    let synid = synID(a:lnum, a:col, 1)
-    return synid == g:crystal#highlighting#operator || synid == g:crystal#highlighting#assignment_operator || synid == g:crystal#highlighting#method_assignment_operator || synid == g:crystal#highlighting#type_alias_operator
+    return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") =~# '^crystal\%(Assignment\|MethodAssignment\|TypeAlias\)\=Operator$'
   elseif a:char ==# "|"
-    let synid = synID(a:lnum, a:col, 1)
-    return synid == g:crystal#highlighting#operator || synid == g:crystal#highlighting#type_union_operator
+    return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") =~# '^crystal\%(TypeUnion\)\=Operator$'
   endif
 endfunction
 
-function s:get_last_char(lnum, line)
-  " First, try to find a comment delimiter: if one is found, the
-  " non-whitespace character immediately before it is the last
-  " character; else, simply find the last non-whitespace character in
-  " the line.
-  let found = -1
+" 0 = no continuation
+" 1 = hanging operator or backslash
+" 2 = hanging postfix keyword
+" 3 = comma
+" 4 = opening bracket
+" 5 = named tuple key delimiter
+function s:ends_with_line_continuator(lnum)
+  let line = getline(a:lnum)
+  let [char, idx, next_idx] = line->matchstrpos('\S')
 
-  while 1
-    let found = stridx(a:line, "#", found + 1)
+  let last_idx = idx
 
-    if found == -1
-      let [char, pos, _] = matchstrpos(a:line, '\S\ze\s*$')
-      return [char, pos]
-    elseif found == 0
-      return ["", -1]
+  while idx != -1
+    if char ==# "#"
+      if synID(a:lnum, next_idx, 0)->synIDattr("name") ==# "crystalLineComment"
+        break
+      endif
+    else
+      let [word, _, offset] = line->matchstrpos('^\l\+', idx)
+
+      if offset != -1
+        let next_idx = offset
+      endif
     endif
 
-    if synID(a:lnum, found + 1, 1) == g:crystal#highlighting#comment_start
-      break
-    endif
+    let last_idx = idx
+
+    let [char, idx, next_idx] = line->matchstrpos('\S', next_idx)
   endwhile
 
-  let [char, pos, _] = matchstrpos(a:line[:found - 1], '\S\ze\s*$')
-  return [char, pos]
-endfunction
+  let last_char = line[last_idx]
 
-function s:find_floating_index(lnum, i, j)
-  call cursor(a:lnum, a:j + 1)
+  if last_char ==# '\'
+    return 1
+  elseif last_char ==# ","
+    return 3
+  elseif last_char ==# ":"
+    let syngroup = synID(a:lnum, last_idx + 1, 0)->synIDattr("name")
 
-  let pairs = 0
-  let [_, col, p] = searchpos(s:floating_re, "bcp", a:lnum)
-
-  while col >= a:i + 1
-    if p == 2  " if unless begin
-      if synID(a:lnum, col, 1) == g:crystal#highlighting#keyword
-        if pairs == 0
-          " If this is a macro tag keyword, return the index for the macro
-          " tag.
-          let [_, col2] = searchpos('\\\={%\s*\%#', "b", a:lnum)
-
-          if col2
-            return col2 - 1
-          else
-            return col - 1
-          endif
-        else
-          let pairs += 1
-        endif
-      endif
-    elseif p == 3  " case while until
-      if synID(a:lnum, col, 1) == g:crystal#highlighting#keyword
-        if pairs == 0
-          return col - 1
-        else
-          let pairs += 1
-        endif
-      endif
-    elseif p == 4  " else elsif ensure in rescue when
-      if pairs == 0
-        let synid = synID(a:lnum, col, 1)
-
-        if synid == g:crystal#highlighting#keyword || synid == g:crystal#highlighting#block_control || synid == g:crystal#highlighting#define_block_control
-          return a:i
-        endif
-      endif
-    elseif p == 5  " annotation class def enum lib macro module struct union
-      if synID(a:lnum, col, 1) == g:crystal#highlighting#define
-        if pairs == 0
-          return a:i
-        else
-          let pairs += 1
-        endif
-      endif
-    elseif p == 6  " do
-      if synID(a:lnum, col, 1) == g:crystal#highlighting#keyword
-        if pairs == 0
-          return a:i
-        else
-          let pairs += 1
-        endif
-      endif
-    elseif p == 7  " end
-      let synid = synID(a:lnum, col, 1)
-
-      if synid == g:crystal#highlighting#keyword || synid == g:crystal#highlighting#define
-        let pairs -= 1
-      endif
-    elseif p == 8  " ( [ {
-      if synID(a:lnum, col, 1) == g:crystal#highlighting#delimiter
-        if pairs == 0
-          let [_, col2] = searchpos('\S', "z", a:lnum)
-
-          if col2
-            return col2 - 1
-          else
-            return a:i
-          endif
-        else
-          let pairs += 1
-        endif
-      endif
-    elseif p == 9  " ) ] }
-      if synID(a:lnum, col, 1) == g:crystal#highlighting#delimiter
-        let pairs -= 1
-      endif
-    elseif p == 10  " |
-      if pairs == 0
-        if synID(a:lnum, col, 1) == g:crystal#highlighting#delimiter
-          return a:i
-        endif
-      endif
+    if syngroup ==# "crystalOperator" || syngroup ==# "crystalTypeRestrictionOperator"
+      return 1
+    elseif syngroup ==# "crystalSymbolStart"
+      return 5
     endif
+  elseif last_char ==# "(" || last_char ==# "[" || last_char ==# "{"
+    if synID(a:lnum, last_idx + 1, 0)->synIDattr("name") =~# '^crystal\%(StringArray\|SymbolArray\)\=Delimiter$'
+      return 4
+    endif
+  elseif last_char ==# "|"
+    let syngroup = synID(a:lnum, last_idx + 1, 0)->synIDattr("name")
 
-    let [_, col, p] = searchpos(s:floating_re, "bp", a:lnum)
-  endwhile
-
-  return -1
+    if syngroup ==# "crystalOperator" || syngroup ==# "crystalTypeUnionOperator"
+      return 1
+    elseif syngroup ==# "crystalDelimiter"
+      return 4
+    endif
+  elseif last_char ==# "i"
+    if line->match('\C^if[[:alnum:]_?!:]\@!', last_idx) != -1
+      return 2
+    endif
+  elseif last_char ==# "r"
+    if line->match('\C^rescue[[:alnum:]_?!:]\@!', last_idx) != -1 && synID(a:lnum, last_idx + 1, 0)->synIDattr("name") ==# "crystalPostfixKeyword"
+      return 2
+    endif
+  elseif last_char ==# "u"
+    if line->match('\C^unless[[:alnum:]_?!:]\@!', last_idx) != -1
+      return 2
+    endif
+  elseif s:is_operator(last_char, last_idx, a:lnum)
+    return 1
+  endif
 endfunction
 
-function s:find_msl(skip_commas, pairs)
-  let [lnum, col] = searchpos('\S', "czW")
-  let prev_lnum = prevnonblank(lnum - 1)
+function s:get_msl_indent(lnum)
+  let prev_lnum = prevnonblank(a:lnum - 1)
 
   if prev_lnum == 0
-    return [lnum, col - 1, 0]
+    return indent(a:lnum)
   endif
 
-  " This line is *not* the MSL if:
+  let start_lnum = prev_lnum
 
-  " It is part of a multiline region.
-  if get(g:crystal#highlighting#multiline_regions, synID(lnum, 1, 0))
-    call cursor(prev_lnum, 1)
-    return s:find_msl(a:skip_commas, v:null)
-  endif
+  while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
+    let start_lnum = prevnonblank(start_lnum - 1)
+  endwhile
 
-  " It starts with a leading dot.
-  let line = getline(lnum)
+  let continuation = 0
 
-  if match(line, '^\.\.\@!', col - 1) != -1
-    call cursor(prev_lnum, 1)
-    return s:find_msl(a:skip_commas, v:null)
-  endif
+  let start_line = getline(start_lnum)
+  let [start_first_char, start_first_idx, start_first_col] = start_line->matchstrpos('\S')
 
-  " It contains a positive number of unpaired closing brackets or
-  " keywords; find the corresponding starting line...
-  "
-  " *unless* the line starts with an `end` that is part of a definition.
-  if a:pairs is v:null
-    let pairs = 0
-
-    if match(line, '^end:\@!\>', col - 1) != -1
-      if col == 1
-        return [lnum, col - 1, 0]
-      endif
-
-      if synID(lnum, col, 1) == g:crystal#highlighting#define
-        return [lnum, col - 1, 0]
-      endif
-
-      let pairs = -1
-
-      call cursor(0, col + 3)
+  if start_first_char ==# "."
+    if start_line[start_first_col] !=# "."
+      let continuation = 6
     endif
+  endif
 
-    let [_, col2, p] = searchpos(s:pair_re, "czp", lnum)
+  let prev_lnum = prevnonblank(start_lnum - 1)
 
-    while p
-      let synid = synID(lnum, col2, 1)
+  if prev_lnum == 0
+    return start_first_idx
+  endif
 
-      if p == 2  " def class module macro struct enum annotation lib union
-        if synid == g:crystal#highlighting#define
-          let pairs += 1
-        endif
-      elseif p == 3  " if unless case while until for begin do
-        if synid == g:crystal#highlighting#keyword
-          let pairs += 1
-        endif
-      elseif p == 4  " else rescue ensure
-        if pairs == 0
-          if synid == g:crystal#highlighting#block_control || synid == g:crystal#highlighting#define_block_control
-            let pairs += 1
-          endif
-        endif
-      elseif p == 5  " elsif when in
-        if pairs == 0
-          if synid == g:crystal#highlighting#keyword
-            let pairs += 1
-          endif
-        endif
-      elseif p == 6  " end
-        if synid == g:crystal#highlighting#define || synid == g:crystal#highlighting#keyword
-          let pairs -= 1
-        endif
-      elseif p == 7  " ( [ {
-        if synid == g:crystal#highlighting#delimiter
-          let pairs += 1
-        endif
-      elseif p == 8  " ) ] }
-        if synid == g:crystal#highlighting#delimiter
-          let pairs -= 1
-        endif
-      endif
+  if !continuation
+    let continuation = s:ends_with_line_continuator(prev_lnum)
 
-      let [_, col2, p] = searchpos(s:pair_re, "zp", lnum)
+    if continuation == 4
+      return start_first_idx
+    endif
+  endif
+
+  while continuation
+    let start_lnum = prev_lnum
+
+    while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
+      let start_lnum = prevnonblank(start_lnum - 1)
     endwhile
 
-    if pairs < 0
-      call cursor(0, 1)
+    let continuation = 0
 
-      while pairs < 0
-        let lnum = searchpair(s:start_pair_re, "", s:end_pair_re, "bW", s:skip_pair_expr)
-        let pairs += 1
-      endwhile
+    let start_line = getline(start_lnum)
+    let [start_first_char, start_first_idx, start_first_col] = start_line->matchstrpos('\S')
 
-      let pairs += searchpair(s:start_pair_re, "", s:end_pair_re, "bmr", s:skip_pair_expr, lnum)
-
-      call cursor(0, 1)
-      return s:find_msl(a:skip_commas, pairs)
-    endif
-  else
-    let pairs = a:pairs
-  endif
-
-  " The previous line ends with a comma, backslash, or hanging operator.
-  let prev_line = getline(prev_lnum)
-  let [last_char, last_idx] = s:get_last_char(prev_lnum, prev_line)
-
-  if last_idx != -1
-    if last_char ==# ","
-      if !a:skip_commas
-        call cursor(prev_lnum, 1)
-        return s:find_msl(0, v:null)
+    if start_first_char ==# "."
+      if start_line[start_first_col] !=# "."
+        let continuation = 6
       endif
-    elseif last_char ==# '\' || s:is_operator(last_char, last_idx + 1, prev_line, prev_lnum)
-      call cursor(prev_lnum, 1)
-      return s:find_msl(a:skip_commas, v:null)
     endif
-  endif
 
-  " Else, this line is the MSL.
-  return [lnum, col - 1, pairs > 0]
+    let prev_lnum = prevnonblank(start_lnum - 1)
+
+    if prev_lnum == 0
+      return start_first_idx
+    endif
+
+    if !continuation
+      let continuation = s:ends_with_line_continuator(prev_lnum)
+
+      if continuation == 4
+        return start_first_idx
+      endif
+    endif
+  endwhile
+
+  return start_first_idx
 endfunction
 " }}}
 
@@ -326,8 +232,7 @@ endfunction
 if get(g:, "crystal_simple_indent")
   " Simple {{{
   function GetCrystalIndent() abort
-    " If the current line is inside of a multiline region, do nothing.
-    if get(g:crystal#highlighting#multiline_regions, synID(v:lnum, 1, 0))
+    if s:multiline_regions->get(synID(v:lnum, 1, 0)->synIDattr("name"))
       return -1
     endif
 
@@ -337,190 +242,113 @@ if get(g:, "crystal_simple_indent")
       return 0
     endif
 
-    " Retrieve indentation info for the previous line.
-    let prev_line = getline(prev_lnum)
-    let [last_char, last_idx] = s:get_last_char(prev_lnum, prev_line)
+    " Check the current line for a closing bracket or dedenting keyword:
+    let line = getline(v:lnum)
+    let [first_char, first_idx, first_col] = line->matchstrpos('\S')
 
-    " This variable tells whether or not the previous line is
-    " a continuation of another line.
-    " 0 -> no continuation
-    " 1 -> continuation caused by a backslash or hanging operator
-    " 2 -> continuation caused by a comma (list continuation)
-    " 3 -> continuation caused by an opening bracket
+    let shift = 0
+    let has_dedent = 0
     let continuation = 0
 
-    if last_idx != -1
-      " If the previous line begins in a multiline region, find the line
-      " that began that region.
-
-      if get(g:crystal#highlighting#multiline_regions, synID(prev_lnum, 1, 0))
-        let start_lnum = s:prev_non_multiline(prevnonblank(prev_lnum - 1))
-        let start_line = getline(start_lnum)
-      else
-        let start_lnum = prev_lnum
-        let start_line = prev_line
+    if first_char ==# ")" || first_char ==# "]" || first_char ==# "}"
+      let shift -= 1
+      let has_dedent = 1
+    elseif first_char ==# "."
+      if line[first_col] !=# "."
+        let continuation = 6
       endif
-
-      " Find the first column and first character of the line.
-      let [first_char, first_idx, _] = matchstrpos(start_line, '\S')
-
-      " Determine whether or not the line is a continuation.
-      if first_char ==# "."
-        if start_line[first_idx + 1] !=# "."
-          let continuation = 1
-        endif
-      elseif first_char !~# '[)\]}]'
-        let lnum = prevnonblank(start_lnum - 1)
-
-        if lnum
-          let line = getline(lnum)
-          let [char, idx] = s:get_last_char(lnum, line)
-
-          if idx != -1
-            if char ==# ","
-              let continuation = 2
-            elseif char =~# '[([{]'
-              let continuation = 3
-            elseif char ==# '\' || s:is_operator(char, idx + 1, line, lnum)
-              let continuation = 1
-            endif
-          endif
-        endif
-      endif
-    else
-      " The previous line is a comment line.
-      let first_idx = stridx(prev_line, "#")
-      let start_lnum = prev_lnum
-      let start_line = prev_line
+    elseif line->match('\C^\%(\\\={%\s*\)\=\%(end\|else\|elsif\|when\|in\|rescue\|ensure\)[[:alnum:]_?!:]\@!', first_idx) != -1
+      let shift -= 1
+      let has_dedent = 1
     endif
 
-    " Find the first character in the current line.
-    let line = getline(v:lnum)
+    " Check the previous line:
+    let start_lnum = prev_lnum
 
-    let [char, idx, _] = matchstrpos(line, '\S')
+    while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
+      let start_lnum = prevnonblank(start_lnum - 1)
+    endwhile
 
-    if char ==# "."
-      " If the current line begins with a leading dot, add a shift unless
-      " the previous line was a line continuation.
+    if !continuation
+      let continuation = s:ends_with_line_continuator(prev_lnum)
 
-      if line[idx + 1] !=# "."
-        if continuation == 1
-          return first_idx
-        else
-          return first_idx + shiftwidth()
-        endif
-      endif
-    elseif char ==# ")"
-      " If the current line begins with a closing bracket, subtract
-      " a shift unless the previous character was the corresponding
-      " bracket; subtract an additional shift if the previous line was
-      " a continuation.
-
-      let shift = 1
-
-      if last_char ==# "("
-        let shift = 0
-      endif
-
-      if continuation == 1
+      if continuation == 4
         let shift += 1
+        return indent(start_lnum) + shift * shiftwidth()
       endif
+    endif
 
-      return first_idx - shift * shiftwidth()
-    elseif char ==# "]"
-      let shift = 1
+    call cursor(0, 1)
 
-      if last_char ==# "["
-        let shift = 0
+    if searchpair(s:all_start_re, s:block_middle_re, '\C\<end\>', "b", s:skip_keyword, start_lnum)
+      let shift += 1
+      return indent(start_lnum) + shift * shiftwidth()
+    endif
+
+    " Check for line continuations:
+    let prev_continuation = 0
+
+    let start_line = getline(start_lnum)
+    let [start_first_char, start_first_idx, start_first_col] = start_line->matchstrpos('\S')
+
+    if start_first_char ==# "."
+      if start_line[start_first_col] !=# "."
+        let prev_continuation = 6
       endif
+    endif
 
-      if continuation == 1
-        let shift += 1
+    if !prev_continuation
+      let prev_lnum = prevnonblank(start_lnum - 1)
+
+      if prev_lnum != 0
+        let prev_continuation = s:ends_with_line_continuator(prev_lnum)
       endif
+    endif
 
-      return first_idx - shift * shiftwidth()
-    elseif char ==# "}"
-      let shift = 1
-
-      if last_char ==# "{" || (last_char ==# "|" && synID(prev_lnum, last_idx + 1, 1) == g:crystal#highlighting#delimiter)
-        let shift = 0
-      endif
-
-      if continuation == 1
-        let shift += 1
-      endif
-
-      return first_idx - shift * shiftwidth()
-    elseif match(line, '\C^\%(end\|else\|elsif\|when\|in\|rescue\|ensure\):\@!\>\|^\\\={%\s*\%(end\|else\|elsif\)\>', idx) != -1
-      let shift = 1
-
-      if continuation == 1
-        let shift += 1
-      endif
-
-      if searchpair(s:kw_start_re, s:kw_middle_re, s:kw_end_re, "b", s:skip_keyword_expr, start_lnum)
+    if continuation == 0
+      if prev_continuation == 1 || prev_continuation == 2 || prev_continuation == 6
         let shift -= 1
-      endif
-
-      return first_idx - shift * shiftwidth()
-    endif
-
-    " If we can't determine the indent from the current line, examine the
-    " previous line.
-
-    if last_idx == -1
-      return first_idx
-    endif
-
-    if last_char ==# ","
-      " If the last character was a comma, add a shift unless:
-      "
-      " The previous line begins with a closing bracket or `end`.
-      "
-      " The line before the starting line ends with a comma or a hanging
-      " bracket.
-
-      if prev_lnum == start_lnum
-        if first_char =~# '[)\]}]'
-          return first_idx
-        elseif match(start_line, '^end:\@!\>', first_idx) != -1
-          return first_idx
+      elseif prev_continuation == 3
+        if !has_dedent && start_line->match('\C^\%([)\]}]\|end[[:alnum:]_?!:]\@!\)', start_first_idx) == -1
+          let shift -= 1
         endif
       endif
-
-      if continuation == 1
-        return first_idx - shiftwidth()
-      elseif continuation == 2 || continuation == 3
-        return first_idx
+    elseif continuation == 1 || continuation == 2 || continuation == 6
+      if prev_continuation == 1 || prev_continuation == 2 || prev_continuation == 5 || prev_continuation == 6
+        return start_first_idx
       else
-        return first_idx + shiftwidth()
+        return start_first_idx + shiftwidth()
       endif
-    elseif (last_char =~# '[\\([{]')
-          \ || (last_char ==# "|" && synID(prev_lnum, last_idx + 1, 1) == g:crystal#highlighting#delimiter)
-          \ || s:is_operator(last_char, last_idx + 1, prev_line, prev_lnum)
-      if continuation == 1
-        return first_idx
+    elseif continuation == 3
+      if prev_continuation == 1 || prev_continuation == 2
+        let shift -= 1
+      elseif prev_continuation == 3
+        if has_dedent
+          return start_first_idx - shiftwidth()
+        else
+          return start_first_idx
+        endif
+      elseif prev_continuation == 4
+        return start_first_idx
+      elseif prev_continuation == 5
+        return start_first_idx - shiftwidth()
       else
-        return first_idx + shiftwidth()
+        if start_line->match('\C^\%([)\]}]\|end[[:alnum:]_?!:]\@!\)', start_first_idx) == -1
+          return start_first_idx + shiftwidth()
+        endif
       endif
+    elseif continuation == 5
+      return start_first_idx + shiftwidth()
     endif
 
-    if searchpair(s:kw_start_re, s:kw_middle_re, s:kw_end_re, "b", s:skip_keyword_expr, start_lnum)
-      let shift = 1
-    elseif continuation == 1 || continuation == 2
-      let shift = -1
-    else
-      let shift = 0
-    endif
-
-    return first_idx + shift * shiftwidth()
+    " Default:
+    return start_first_idx + shift * shiftwidth()
   endfunction
   " }}}
 else
   " Default {{{
   function GetCrystalIndent() abort
-    " If the current line is inside of a multiline region, do nothing.
-    if get(g:crystal#highlighting#multiline_regions, synID(v:lnum, 1, 0))
+    if s:multiline_regions->get(synID(v:lnum, 1, 0)->synIDattr("name"))
       return -1
     endif
 
@@ -530,195 +358,246 @@ else
       return 0
     endif
 
-    " Retrieve indentation info for the previous line.
-    let prev_line = getline(prev_lnum)
-    let [last_char, last_idx] = s:get_last_char(prev_lnum, prev_line)
+    " Check the current line for a closing bracket or dedenting keyword:
+    let line = getline(v:lnum)
+    let [first_char, first_idx, first_col] = line->matchstrpos('\S')
 
-    " Before we proceed, we need to determine which column we will use
-    " as the starting position.
-    "
-    " If there is a floating column somehwere in the previous line, that
-    " is the starting column.
-    "
-    " Else, the first column of the previous line is the starting
-    " position.
+    call cursor(0, 1)
 
-    if last_idx == -1
-      " The previous line is a comment line.
-      let first_idx = stridx(prev_line, "#")
-      let floating_idx = -1
-      let start_idx = first_idx
-    else
-      let first_idx = match(prev_line, '\S')
-      let floating_idx = s:find_floating_index(prev_lnum, first_idx, last_idx)
-      let start_idx = floating_idx != -1 ? floating_idx : first_idx
+    if first_char ==# ")"
+      return indent(searchpair('(', '', ')', "bW", s:skip_bracket))
+    elseif first_char ==# "]"
+      return indent(searchpair('\[', '', ']', "bW", s:skip_bracket))
+    elseif first_char ==# "}"
+      return indent(searchpair('{', '', '}', "bW", s:skip_bracket))
+    elseif line->match('\C^\%(\\\={%\s*\)\=\%(end\|else\|elsif\|when\|in\|rescue\|ensure\)[[:alnum:]_?!:]\@!', first_idx) != -1
+      let syngroup = synID(v:lnum, first_col, 0)->synIDattr("name")
 
-      " Check the last character of the previous line.
-      if last_char ==# '\' || s:is_operator(last_char, last_idx + 1, prev_line, prev_lnum)
-        " If the previous line ends with a hanging operator or
-        " backslash...
+      if syngroup ==# "crystalKeyword"
+        let [l, c] = searchpairpos(s:block_start_re, s:block_middle_re, '\C\<end\>', "bW", s:skip_keyword)
 
-        " Find the next previous line.
-        let prev_prev_lnum = prevnonblank(prev_lnum - 1)
-
-        if prev_prev_lnum
-          let prev_prev_line = getline(prev_prev_lnum)
-          let [prev_last_char, prev_last_idx] = s:get_last_char(prev_prev_lnum, prev_prev_line)
-
-          " If the next previous line also ends with a hanging operator or
-          " backslash...
-          if prev_last_char ==# '\' || s:is_operator(prev_last_char, prev_last_idx + 1, prev_prev_line, prev_prev_lnum)
-            " Align with the starting column.
-            return start_idx
-          endif
+        if expand("<cword>") ==# "do"
+          return indent(l)
+        else
+          return c - 1
         endif
-
-        " If the first character in the previous line is part of
-        " a keyword, align with the first non-operator character after
-        " that word.
-        let [_, _, offset] = matchstrpos(prev_line, '\v^%(case|elsif|if|in|unless|until|when|while):@!>', start_idx)
-
-        if offset != -1
-          return match(prev_line, '\S', offset + 1)
-        endif
-
-        " Otherwise, align with the first character after the first
-        " assignment operator in the line, if one can be found.
-        "
-        " NOTE: Make sure to skip bracketed groups.
-        call cursor(prev_lnum, start_idx + 1)
-
-        let pairs = 0
-        let [_, col, p] = searchpos('\([([{]\)\|\([)\]}]\)\|\([=!]\@1<!=[=>~]\@!\)', "cpz", prev_lnum)
+      elseif syngroup ==# "crystalMacroDelimiter"
+        return indent(searchpair(s:block_start_re, s:block_middle_re, '\C\<end\>', "bW", s:skip_keyword))
+      elseif syngroup ==# "crystalDefine"
+        let [l, c, p] = searchpos('\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union|else|ensure|rescue)|(end))>', "bpW")
 
         while p
+          let syngroup = synID(l, c, 0)->synIDattr("name")
+
           if p == 2
-            if synID(prev_lnum, col, 1) == g:crystal#highlighting#delimiter
-              let pairs += 1
+            if syngroup ==# "crystalDefine"
+              return indent(l)
             endif
           elseif p == 3
-            if pairs > 0 && synID(prev_lnum, col, 1) == g:crystal#highlighting#delimiter
-              let pairs -= 1
-            endif
-          elseif p == 4
-            if pairs == 0
-              let synid = synID(prev_lnum, col, 1)
-
-              if synid == g:crystal#highlighting#operator || synid == g:crystal#highlighting#assignment_operator || synid == g:crystal#highlighting#method_assignment_operator || synid == g:crystal#highlighting#type_alias_operator
-                let idx = match(prev_line, '\S', col)
-
-                if idx != -1
-                  return idx
-                endif
-              endif
+            if syngroup ==# "crystalDefine" || syngroup ==# "crystalMacroKeyword"
+              return indent(l) - shiftwidth()
             endif
           endif
 
-          let [_, col, p] = searchpos('\([([{]\)\|\([)\]}]\)\|\([=!]\@1<!=[=>~]\@!\)', "pz", prev_lnum)
+          let [l, c, p] = searchpos('\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union|else|ensure|rescue)|(end))>', "bpW")
+        endwhile
+      endif
+    endif
+
+    " Check the previous line:
+    let start_lnum = prev_lnum
+
+    while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
+      let start_lnum = prevnonblank(start_lnum - 1)
+    endwhile
+
+    let [l, c, p] = searchpos('\C\([(\[{]\)\|\([)\]}]\)\|\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
+
+    while p
+      let syngroup = synID(l, c, 0)->synIDattr("name")
+
+      if p == 2
+        if syngroup ==# "crystalDelimiter"
+          let line = getline(l)
+          let [char, idx, _] = line->matchstrpos('\S', c)
+
+          if char ==# "|" || char ==# "#"
+            return indent(l) + shiftwidth()
+          else
+            return idx
+          endif
+        elseif syngroup ==# "crystalStringArrayDelimiter" || syngroup ==# "crystalSymbolArrayDelimiter"
+          if search('\S', "z", l)
+            return col(".") - 1
+          else
+            return indent(l) + shiftwidth()
+          endif
+        endif
+      elseif p == 3
+        if syngroup ==# "crystalDelimiter" || syngroup ==# "crystalStringArrayDelimiter" || syngroup ==# "crystalSymbolArrayDelimiter"
+          let start_lnum = searchpair('[(\[{]', '', '[)\]}]', "bW", s:skip_bracket)
+
+          while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
+            let start_lnum = prevnonblank(start_lnum - 1)
+          endwhile
+        endif
+      elseif p == 4
+        if syngroup ==# "crystalDefine"
+          return indent(l) + shiftwidth()
+        endif
+      elseif p == 5
+        if syngroup ==# "crystalKeyword"
+          if expand("<cword>") ==# "do"
+            return indent(l) + shiftwidth()
+          else
+            return c - 1 + shiftwidth()
+          endif
+        elseif syngroup ==# "crystalMacroKeyword"
+          return indent(l) + shiftwidth()
+        endif
+      elseif p == 6
+        if syngroup ==# "crystalKeyword" || syngroup ==# "crystalDefine"
+          return c - 1 + shiftwidth()
+        elseif syngroup ==# "crystalMacroKeyword"
+          return indent(l) + shiftwidth()
+        endif
+      elseif p == 7
+        if syngroup ==# "crystalKeyword" || syngroup ==# "crystalMacroKeyword"
+          let start_lnum = searchpair(s:block_start_re, '', '\C\<end\>', "bW", s:skip_keyword)
+
+          while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
+            let start_lnum = prevnonblank(start_lnum - 1)
+          endwhile
+        elseif syngroup ==# "crystalDefine"
+          let start_lnum = searchpair(s:define_block_start_re, '', '\C\<end\>', "bW", s:skip_define)
+
+          while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
+            let start_lnum = prevnonblank(start_lnum - 1)
+          endwhile
+        endif
+      endif
+
+      let [l, c, p] = searchpos('\C\([(\[{]\)\|\([)\]}]\)\|\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
+    endwhile
+
+    " Check for line continuations:
+    " 0 = no continuation
+    " 1 = hanging operator or backslash
+    " 2 = hanging postfix keyword
+    " 3 = comma
+    " 4 = opening bracket
+    " 5 = hash key delimiter
+    " 6 = leading dot
+    let continuation = 0
+
+    if first_char ==# "."
+      if line[first_col] !=# "."
+        let continuation = 6
+      endif
+    endif
+
+    if !continuation
+      let continuation = s:ends_with_line_continuator(prev_lnum)
+    endif
+
+    let prev_continuation = 0
+
+    let start_line = getline(start_lnum)
+    let [start_first_char, start_first_idx, start_first_col] = start_line->matchstrpos('\S')
+
+    if start_first_char ==# "."
+      if start_line[start_first_col] !=# "."
+        let prev_continuation = 6
+      endif
+    endif
+
+    if !prev_continuation
+      let prev_prev_lnum = prevnonblank(start_lnum - 1)
+
+      if prev_prev_lnum > 0
+        let prev_continuation = s:ends_with_line_continuator(prev_prev_lnum)
+      endif
+    endif
+
+    if continuation == 0
+      if prev_continuation == 1 || prev_continuation == 3 || prev_continuation == 6
+        return s:get_msl_indent(start_lnum)
+      elseif prev_continuation == 2
+        return start_first_idx - shiftwidth()
+      endif
+    elseif continuation == 1
+      if prev_continuation == 1 || prev_continuation == 5
+        return start_first_idx
+      else
+        " Align with the first character after the first operator in the
+        " starting line, if any:
+        let upper = strlen(start_line) - 1
+
+        for i in range(start_first_idx + 1, upper)
+          let char = start_line[i]
+
+          if char ==# " " || char ==# "\t"
+            continue
+          endif
+
+          if s:is_operator(char, i, start_lnum)
+            for j in range(i + 1, upper)
+              let char = start_line[j]
+
+              if char ==# " " || char ==# "\t"
+                continue
+              endif
+
+              if !s:is_operator(char, j, start_lnum)
+                return j
+              endif
+            endfor
+
+            break
+          endif
+        endfor
+
+        return start_first_idx + shiftwidth()
+      endif
+    elseif continuation == 2
+      if prev_continuation == 1 || prev_continuation == 2 || prev_continuation == 5
+        return start_first_idx
+      else
+        return start_first_idx + shiftwidth()
+      endif
+    elseif continuation == 3
+      if prev_continuation == 1
+        return s:get_msl_indent(start_lnum)
+      elseif prev_continuation == 2 || prev_continuation == 5
+        return start_first_idx - shiftwidth()
+      elseif prev_continuation == 3 || prev_continuation == 4
+        return start_first_idx
+      else
+        return start_first_idx + shiftwidth()
+      endif
+    elseif continuation == 5
+      return start_first_idx + shiftwidth()
+    elseif continuation == 6
+      if prev_continuation == 6
+        return start_first_idx
+      else
+        " Align with the first dot in the starting line, if any:
+        let idx = stridx(start_line, ".", start_first_idx + 1)
+
+        while idx != -1
+          if synID(start_lnum, idx + 1, 0)->synIDattr("name") ==# "crystalMethodOperator"
+            return idx
+          endif
+
+          let idx = stridx(start_line, ".", idx + 2)
         endwhile
 
-        " Otherwise, simply align with the starting position and add
-        " a shift.
-        return start_idx + shiftwidth()
-      elseif last_char ==# ","
-        " If the previous line ends with a comma...
-
-        " First, find the MSL of the previous line.
-        call cursor(prev_lnum, 1)
-        let [msl, ind, _] = s:find_msl(1, v:null)
-
-        " Find the line prior to the MSL.
-        let prev_prev_lnum = prevnonblank(msl - 1)
-
-        if prev_prev_lnum
-          let prev_prev_line = getline(prev_prev_lnum)
-          let [prev_last_char, prev_last_idx] = s:get_last_char(prev_prev_lnum, prev_prev_line)
-
-          if prev_last_char =~# '[,([{]'
-            " If the next previous line also ended with a comma or an
-            " opening bracket, align with the MSL, unless the current line
-            " begins with a closing bracket.
-            if getline(v:lnum) =~# '^\s*[)\]}]'
-              return ind - shiftwidth()
-            endif
-
-            return ind
-          elseif prev_last_char ==# '\' || s:is_operator(prev_last_char, prev_last_idx + 1, prev_prev_line, prev_prev_lnum)
-            " If the next previous line ended with a backslash or hanging
-            " operator, align with the MSL.
-            return ind
-          endif
-        endif
-
-        " Else, align with the previous line and add a shift.
-        if floating_idx != -1
-          return floating_idx
-        else
-          return first_idx + shiftwidth()
-        endif
-      elseif last_char =~# '[([{]' || last_char ==# "|" && synID(prev_lnum, last_idx + 1, 1) == g:crystal#highlighting#delimiter
-        " If the previous line ends with an opening bracket, align with
-        " the starting column and add a shift unless the current line
-        " begins with a closing bracket or `end`.
-        if getline(v:lnum) =~# '^\s*\%([)\]}]\|end:\@!\>\)'
-          return start_idx
-        else
-          return start_idx + shiftwidth()
-        endif
+        return start_first_idx + shiftwidth()
       endif
     endif
 
-    " Next, examine the first character of the current line.
-    let line = getline(v:lnum)
-    let [char, idx, _] = matchstrpos(line, '\S')
-
-    if char ==# "."
-      " If the current line starts with a leading dot:
-      "
-      " Align with the first leading dot in the previous line, if any.
-      "
-      " Else, add a shift.
-      if line[idx + 1] !=# "."
-        let idx = match(prev_line, '\.\.\@!', first_idx)
-
-        if idx != -1
-          return idx
-        else
-          return start_idx + shiftwidth()
-        endif
-      endif
-    elseif char =~# '[)\]}]'
-      " If the current line begins with a closing bracket, subtract
-      " a shift.
-      if floating_idx != -1
-        return floating_idx
-      else
-        call cursor(prev_lnum, 1)
-        let [_, ind, _] = s:find_msl(1, v:null)
-        return ind - shiftwidth()
-      endif
-    elseif match(line, '\C^\%(end\|else\|elsif\|when\|in\|rescue\|ensure\):\@!\>\|^\\\={%\s*\%(end\|else\|elsif\)\>', idx) != -1
-      if floating_idx != -1
-        return floating_idx
-      else
-        call cursor(prev_lnum, 1)
-        let [_, ind, shift] = s:find_msl(0, v:null)
-        return ind + (shift - 1) * shiftwidth()
-      endif
-    endif
-
-    if floating_idx != -1
-      return floating_idx + shiftwidth()
-    else
-      call cursor(prev_lnum, 1)
-      let [_, ind, shift] = s:find_msl(0, v:null)
-
-      if shift
-        let ind += shiftwidth()
-      endif
-
-      return ind
-    endif
+    " Default:
+    return start_first_idx
   endfunction
   " }}}
 endif

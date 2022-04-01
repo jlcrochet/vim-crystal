@@ -3,4 +3,4 @@
 " Author: Jeffrey Crochet <jlcrochet@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-autocmd BufRead,BufNewFile *.ecr setlocal filetype=ecrystal
+autocmd BufRead,BufNewFile *.ecr setfiletype ecrystal
