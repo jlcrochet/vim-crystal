@@ -12,11 +12,11 @@ let b:did_indent = 1
 setlocal indentkeys=0),0],0},0.,0=..,o,O,!^F
 let &indentkeys ..= "," .. g:crystal#indent#dedent_words
 
-" if has("nvim-0.5")
-"   lua require "get_crystal_indent"
-"   setlocal indentexpr=v:lua.get_crystal_indent()
-"   finish
-" endif
+if has("nvim-0.5")
+  lua require "get_crystal_indent"
+  setlocal indentexpr=v:lua.get_crystal_indent()
+  finish
+endif
 
 setlocal indentexpr=GetCrystalIndent()
 
@@ -153,11 +153,11 @@ function s:ends_with_line_continuator(lnum)
   endif
 endfunction
 
-function s:get_msl_indent(lnum)
+function s:get_msl(lnum)
   let prev_lnum = prevnonblank(a:lnum - 1)
 
   if prev_lnum == 0
-    return indent(a:lnum)
+    return a:lnum
   endif
 
   let start_lnum = prev_lnum
@@ -180,14 +180,14 @@ function s:get_msl_indent(lnum)
   let prev_lnum = prevnonblank(start_lnum - 1)
 
   if prev_lnum == 0
-    return start_first_idx
+    return start_lnum
   endif
 
   if !continuation
     let continuation = s:ends_with_line_continuator(prev_lnum)
 
     if continuation == 4
-      return start_first_idx
+      return start_lnum
     endif
   endif
 
@@ -212,19 +212,19 @@ function s:get_msl_indent(lnum)
     let prev_lnum = prevnonblank(start_lnum - 1)
 
     if prev_lnum == 0
-      return start_first_idx
+      return start_lnum
     endif
 
     if !continuation
       let continuation = s:ends_with_line_continuator(prev_lnum)
 
       if continuation == 4
-        return start_first_idx
+        return start_lnum
       endif
     endif
   endwhile
 
-  return start_first_idx
+  return start_lnum
 endfunction
 " }}}
 
@@ -382,25 +382,23 @@ else
           return c - 1
         endif
       elseif syngroup ==# "crystalMacroDelimiter"
-        return indent(searchpair(s:block_start_re, s:block_middle_re, '\C\<end\>', "bW", s:skip_keyword))
+        let shift = -1
+        let msl = s:get_msl(v:lnum)
+
+        if searchpair(s:block_start_re, s:block_middle_re, '\C\<end\>', "b", s:skip_keyword, msl)
+          let shift += 1
+        endif
+
+        return indent(msl) + shift * shiftwidth()
       elseif syngroup ==# "crystalDefine"
-        let [l, c, p] = searchpos('\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union|else|ensure|rescue)|(end))>', "bpW")
+        let shift = -1
+        let msl = s:get_msl(v:lnum)
 
-        while p
-          let syngroup = synID(l, c, 0)->synIDattr("name")
+        if searchpair(s:define_block_start_re, s:define_block_middle_re, '\C\<end\>', "b", s:skip_define, msl)
+          let shift += 1
+        endif
 
-          if p == 2
-            if syngroup ==# "crystalDefine"
-              return indent(l)
-            endif
-          elseif p == 3
-            if syngroup ==# "crystalDefine" || syngroup ==# "crystalMacroKeyword"
-              return indent(l) - shiftwidth()
-            endif
-          endif
-
-          let [l, c, p] = searchpos('\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union|else|ensure|rescue)|(end))>', "bpW")
-        endwhile
+        return indent(msl) + shift * shiftwidth()
       endif
     endif
 
@@ -521,7 +519,8 @@ else
 
     if continuation == 0
       if prev_continuation == 1 || prev_continuation == 3 || prev_continuation == 6
-        return s:get_msl_indent(start_lnum)
+        " return s:get_msl_indent(start_lnum)
+        return indent(s:get_msl(start_lnum))
       elseif prev_continuation == 2
         return start_first_idx - shiftwidth()
       endif
@@ -567,7 +566,7 @@ else
       endif
     elseif continuation == 3
       if prev_continuation == 1
-        return s:get_msl_indent(start_lnum)
+        return indent(s:get_msl(start_lnum))
       elseif prev_continuation == 2 || prev_continuation == 5
         return start_first_idx - shiftwidth()
       elseif prev_continuation == 3 || prev_continuation == 4
