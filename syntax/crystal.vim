@@ -271,7 +271,7 @@ if get(g:, "crystal_simple_indent") || get(b:, "is_ecrystal")
   syn keyword crystalKeyword abstract nextgroup=crystalKeywordNoBlock skipwhite
   syn keyword crystalKeyword private protected nextgroup=crystalConstant skipwhite
 
-  syn keyword crystalKeyword type alias nextgroup=crystalTypeAlias skipwhite
+  syn keyword crystalKeyword alias nextgroup=crystalTypeAlias skipwhite
 
   syn keyword crystalKeywordNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalKeywordNoBlock fun nextgroup=crystalLibMethodDefinition skipwhite
