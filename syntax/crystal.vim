@@ -322,8 +322,8 @@ syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
 syn match crystalLibMethodDefinition /\%#=1[[:lower:]_]\w*[?!]\=/ contained nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator,crystalMethodAssignmentOperator skipwhite
 syn match crystalLibMethodDefinition /\%#=1\u\w*/ contained nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator,crystalMethodAssignmentOperator skipwhite
 syn match crystalMethodAssignmentOperator /\%#=1=/ contained nextgroup=crystalCFunctionName,crystalCFunctionStringName skipwhite
-syn match crystalCFunctionName /\%#=1\h\w*/ contained nextgroup=crystalMethodParameters skipwhite
-syn region crystalCFunctionStringName matchgroup=crystalStringStart start=/\%#=1"/ end=/\%#=1"/ contained oneline nextgroup=crystalMethodParameters skipwhite
+syn match crystalCFunctionName /\%#=1\h\w*/ contained nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator skipwhite
+syn region crystalCFunctionStringName matchgroup=crystalStringStart start=/\%#=1"/ end=/\%#=1"/ contained oneline nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator skipwhite
 
 " Miscellaneous {{{2
 syn keyword crystalKeyword forall with
