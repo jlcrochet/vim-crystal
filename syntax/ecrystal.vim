@@ -8,7 +8,7 @@ if exists("b:current_syntax")
 endif
 
 if exists("b:ecrystal_subtype")
-  execute "runtime! syntax/".b:ecrystal_subtype.".vim"
+  execute printf("runtime! syntax/%s.vim syntax/%s/*.vim", b:ecrystal_subtype, b:ecrystal_subtype)
   unlet b:current_syntax
 endif
 
