@@ -95,17 +95,16 @@ local function get_line_with_last_byte(lnum)
 end
 
 local function is_operator(byte, col, lnum)
-  if byte == 37 or  -- %
-    byte == 38 or  -- &
-    byte == 42 or  -- *
-    byte == 43 or  -- +
-    byte == 45 or  -- -
-    byte == 47 or  -- /
-    byte == 60 or  -- <
-    byte == 62 or  -- >
-    byte == 63 or  -- ?
-    byte == 94 or  -- ^
-    byte == 126 then  -- ~
+  if byte == 37 or
+    byte == 38 or
+    byte == 42 or
+    byte == 43 or
+    byte == 45 or
+    byte == 47 or
+    byte == 60 or
+    byte == 63 or
+    byte == 94 or
+    byte == 126 then  -- [%&*+-/<?^~]
     return syngroup_at(lnum, col) == "crystalOperator"
   elseif byte == 58 then  -- :
     local syngroup = syngroup_at(lnum, col)
@@ -113,6 +112,9 @@ local function is_operator(byte, col, lnum)
   elseif byte == 61 then  -- =
     local syngroup = syngroup_at(lnum, col)
     return syngroup == "crystalOperator" or syngroup == "crystalAssignmentOperator" or syngroup == "crystalMethodAssignmentOperator" or syngroup == "crystalTypeAliasOperator"
+  elseif byte == 62 then  -- >
+    local syngroup = syngroup_at(lnum, col)
+    return syngroup == "crystalOperator" or syngroup == "crystalTypeHashOperator"
   elseif byte == 124 then  -- |
     local syngroup = syngroup_at(lnum, col)
     return syngroup == "crystalOperator" or syngroup == "crystalTypeUnionOperator"

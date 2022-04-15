@@ -69,12 +69,14 @@ let s:skip_define = 'synID(line("."), col("."), 0)->synIDattr("name") !=# "cryst
 let s:skip_all = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(Keyword\|MacroKeyword\|Define\)$'''
 
 function s:is_operator(char, idx, lnum)
-  if a:char =~# '[%&*+\-/<>?^~]'
+  if a:char =~# '[%&*+\-/<?^~]'
     return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") ==# "crystalOperator"
   elseif a:char ==# ":"
     return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") =~# '^crystal\%(TypeRestriction\)\=Operator$'
   elseif a:char ==# "="
     return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") =~# '^crystal\%(Assignment\|MethodAssignment\|TypeAlias\)\=Operator$'
+  elseif a:char ==# ">"
+    return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") =~# '^crystal\%(TypeHash\)\=Operator$'
   elseif a:char ==# "|"
     return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") =~# '^crystal\%(TypeUnion\)\=Operator$'
   endif
