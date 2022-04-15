@@ -65,7 +65,7 @@ syn match crystalNamespaceOperator /\%#=1::/ nextgroup=crystalConstant,crystalVa
 
 " Type grammar {{{2
 syn cluster crystalTypes contains=crystalType,crystalTypeNamespaceOperator,crystalTypeTuple,crystalTypeProcOperator,crystalTypeGroup,crystalTypeSelf,crystalTypeNil,crystalTypeTypeof
-syn cluster crystalTypesPostfix contains=crystalTypeModifier,crystalTypeComma,crystalTypeUnionOperator,crystalTypeProcOperator,crystalTypeArray,crystalAssignmentOperator
+syn cluster crystalTypesPostfix contains=crystalTypeModifier,crystalTypeComma,crystalTypeUnionOperator,crystalTypeProcOperator,crystalTypeHashOperator,crystalTypeArray,crystalAssignmentOperator
 
 syn match crystalType /\%#=1\u\w*/ contained nextgroup=@crystalTypesPostfix,crystalTypeNamespaceOperator,crystalTypeGeneric skipwhite
 syn match crystalType /\%#=1_\>/ contained nextgroup=@crystalTypesPostfix,crystalTypeNamespaceOperator,crystalTypeGeneric skipwhite
@@ -81,8 +81,11 @@ syn match crystalTypeModifier /\%#=1\./ contained nextgroup=crystalTypeModifierC
 syn keyword crystalTypeModifierClass class contained nextgroup=@crystalTypesPostfix skipwhite
 syn region crystalTypeArray matchgroup=crystalDelimiter start=/\%#=1\[/ end=/\%#=1\]/ contained contains=crystalNumber,crystalConstant nextgroup=@crystalTypesPostfix skipwhite
 
+syn match crystalAssignmentOperator /\%#=1=/ contained
+
 syn match crystalTypeUnionOperator /\%#=1|/ contained nextgroup=@crystalTypes skipwhite skipempty
 syn match crystalTypeProcOperator /\%#=1->/ contained nextgroup=@crystalTypes skipwhite skipempty
+syn match crystalTypeHashOperator /\%#=1=>/ contained nextgroup=@crystalTypes skipwhite skipempty
 
 syn match crystalTypeComma /\%#=1,/ contained nextgroup=@crystalTypes skipwhite skipempty
 
@@ -93,8 +96,6 @@ syn keyword crystalTypeNil nil contained nextgroup=@crystalTypesPostfix skipwhit
 
 syn keyword crystalTypeTypeof typeof contained nextgroup=crystalTypeTypeofInvocation skipwhite skipempty
 syn region crystalTypeTypeofInvocation matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=TOP nextgroup=@crystalTypesPostfix skipwhite
-
-syn match crystalAssignmentOperator /\%#=1=/ contained
 
 " Delimiters {{{2
 syn match crystalDelimiter /\%#=1(/ nextgroup=crystalNamedTupleKey skipwhite skipempty
@@ -438,13 +439,14 @@ hi def link crystalAssignmentOperator crystalOperator
 hi def link crystalMethodAssignmentOperator crystalAssignmentOperator
 hi def link crystalCFunctionStringName crystalString
 hi def link crystalTypeRestrictionOperator crystalOperator
-hi def link crystalType Type
+hi def link crystalType crystalConstant
 hi def link crystalTypeOperator crystalOperator
 hi def link crystalTypeNamespaceOperator crystalTypeOperator
 hi def link crystalTypeModifier crystalTypeOperator
 hi def link crystalTypeModifierClass crystalVariableOrMethod
 hi def link crystalTypeUnionOperator crystalTypeOperator
 hi def link crystalTypeProcOperator crystalTypeOperator
+hi def link crystalTypeHashOperator crystalTypeOperator
 hi def link crystalTypeSelf crystalSelf
 hi def link crystalTypeNil crystalNil
 hi def link crystalTypeTypeof crystalVariableOrMethod
