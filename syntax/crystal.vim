@@ -105,7 +105,7 @@ syn match crystalDelimiter /\%#=1]?\=/ nextgroup=@crystalPostfix,crystalOf skipw
 syn keyword crystalOf of contained nextgroup=@crystalTypes skipwhite skipempty
 
 syn match crystalDelimiter /\%#=1{/ nextgroup=crystalNamedTupleKey,crystalBlockParameters skipwhite skipempty
-syn match crystalDelimiter /\%#=1}/ nextgroup=@crystalPostfix skipwhite
+syn match crystalDelimiter /\%#=1}/ nextgroup=@crystalPostfix,crystalOf skipwhite
 
 syn match crystalComma /\%#=1,/ contained nextgroup=crystalNamedTupleKey,crystalOut skipwhite skipempty
 
