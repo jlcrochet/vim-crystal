@@ -432,7 +432,7 @@ local function get_start_line_info(lnum, line, first_byte, first_col, last_byte,
 end
 -- }}}
 
-if g.crystal_simple_indent == 1 then
+if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
   -- Simple {{{
   function get_crystal_indent()
     local lnum = v.lnum
