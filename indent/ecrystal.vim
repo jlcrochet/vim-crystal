@@ -1,6 +1,6 @@
 " Vim indent file
 " Language: Embedded Crystal <crystal-lang.org/api/latest/ECR.html>
-" Author: Jeffrey Crochet <jlcrochet@pm.me>
+" Author: Jeffrey Crochet <jlcrochet@hey.com>
 " URL: https://github.com/jlcrochet/vim-crystal
 
 if get(b:, "did_indent")

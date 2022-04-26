@@ -1,6 +1,6 @@
 " Vim autoload file
 " Language: Crystal <crystal-lang.org>
-" Author: Jeffrey Crochet <jlcrochet@pm.me>
+" Author: Jeffrey Crochet <jlcrochet@hey.com>
 " URL: https://github.com/jlcrochet/vim-crystal
 
 let s:match_words = [
