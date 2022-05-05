@@ -27,7 +27,7 @@ else
   syn match crystalComment /\%#=1#.*/ contains=crystalTodo
 endif
 
-syn match crystalTodo /\%#=1\<\%(BUG\|DEPRECATED\|WARNING\|EXPERIMENTAL\|FIXME\|NOTE\|OPTIMIZE\|TODO\)\u*/ contained
+syn match crystalTodo /\%#=1\<\%(BUG\|DEPRECATED\|WARNING\|EXPERIMENTAL\|FIXME\|NOTE\|OPTIMIZE\|TODO\)\w*/ contained
 
 syn match crystalShebang /\%#=1\%^#!.*/
 syn match crystalPragmaError /\%#=1#<loc:.*/
