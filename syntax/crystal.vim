@@ -18,7 +18,7 @@ else
 endif
 
 syn cluster crystalPostfix contains=crystalOperator,crystalMethodOperator,crystalTernaryOperator,crystalTypeRestrictionOperator,crystalRangeOperator,crystalNamespaceOperator,crystalPostfixKeyword,crystalComma
-syn cluster crystalArguments contains=crystalFreshVariable,crystalNumber,crystalString,crystalStringArray,crystalSymbol,crystalSymbolArray,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey
+syn cluster crystalArguments contains=crystalFreshVariable,crystalNumber,crystalString,crystalStringArray,crystalCharacter,crystalCharacterError,crystalSymbol,crystalSymbolArray,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey
 
 " Comments {{{2
 if get(b:, "is_ecrystal")
@@ -187,11 +187,11 @@ syn match crystalStringPipeEscape /\%#=1\\[|[:space:]]/ contained
 
 " Here Documents {{{3
 syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-\z(\w\+\)/ matchgroup=crystalHeredocEnd end=/\%#=1^\s*\z1$/ contains=crystalHeredocStartLine,crystalHeredocLine
-syn match crystalHeredocStartLine /\%#=1.*/ contained contains=@crystalPostfix,@crystalArguments nextgroup=crystalHeredocLine skipempty
+syn match crystalHeredocStartLine /\%#=1.*/ contained contains=TOP nextgroup=crystalHeredocLine skipempty
 syn match crystalHeredocLine /\%#=1^.*/ contained contains=crystalStringInterpolation,crystalStringEscape,crystalStringEscapeError nextgroup=crystalHeredocLine skipempty
 
 syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%#=1<<-'\z(\w\+\)'/ matchgroup=crystalHeredocEnd end=/\%#=1^\s*\z1$/ contains=crystalHeredocStartLineRaw,crystalHeredocLineRaw
-syn match crystalHeredocStartLineRaw /\%#=1.*/ contained contains=@crystalPostfix,@crystalArguments nextgroup=crystalHeredocLineRaw skipempty
+syn match crystalHeredocStartLineRaw /\%#=1.*/ contained contains=TOP nextgroup=crystalHeredocLineRaw skipempty
 syn match crystalHeredocLineRaw /\%#=1^.*/ contained nextgroup=crystalHeredocLineRaw skipempty
 
 syn region crystalHeredocSkip matchgroup=crystalHeredocStart start=/\%#=1<<-\('\=\)\w\+\1/ end=/\%#=1\ze<<-'\=\w/ contains=@crystalPostfix,@crystalArguments oneline nextgroup=crystalHeredoc,crystalHeredocSkip
