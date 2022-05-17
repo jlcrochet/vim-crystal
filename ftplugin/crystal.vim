@@ -9,10 +9,11 @@ endif
 
 let b:did_ftplugin = 1
 
-setlocal shiftwidth=2
-setlocal comments=:#
-setlocal commentstring=#\ %s
-setlocal suffixesadd=.cr
+setlocal
+      \ shiftwidth=2
+      \ comments=:#
+      \ commentstring=#\ %s
+      \ suffixesadd=.cr
 
 if get(g:, "crystal_fold")
   setlocal foldmethod=syntax
@@ -20,5 +21,7 @@ if get(g:, "crystal_fold")
 endif
 
 " matchit.vim
-let b:match_words = g:crystal#ftplugin#match_words
+let b:match_words = '\<\%(def\|macro\|class\|struct\|module\|enum\|annotation\|lib\|union\|if\|unless\|case\|while\|until\|for\|begin\|do\)\:\@!\>:\<\%(else\|elsif\|when\|in\|rescue\|ensure\|break\|next\|yield\|return\|raise\)\:\@!\>:\<end\:\@!\>'
 let b:match_skip = 's:^crystal\%(String\|Symbol\|Regex\|Comment\|PostfixKeyword\|MethodDefinition\|VariableOrMethod\)$'
+
+let b:undo_ftplugin = "setlocal shiftwidth< comments< commentstring< suffixesadd<"
