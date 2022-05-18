@@ -428,7 +428,7 @@ hi def link crystalKeywordNoBlock crystalKeyword
 hi def link crystalPostfixKeyword crystalKeyword
 hi def link crystalDefine Define
 hi def link crystalDefineNoBlock crystalDefine
-hi def link crystalMethodDefinition Typedef
+hi def link crystalMethodDefinition Function
 hi def link crystalLibMethodDefinition crystalMethodDefinition
 hi def link crystalMethodReceiver crystalConstant
 hi def link crystalMethodSelf crystalSelf
