@@ -445,7 +445,7 @@ hi def link crystalAssignmentOperator crystalOperator
 hi def link crystalMethodAssignmentOperator crystalAssignmentOperator
 hi def link crystalCFunctionStringName crystalString
 hi def link crystalTypeRestrictionOperator crystalOperator
-hi def link crystalType crystalConstant
+hi def link crystalType Type
 hi def link crystalTypeOperator crystalOperator
 hi def link crystalTypeNamespaceOperator crystalTypeOperator
 hi def link crystalTypeModifier crystalTypeOperator
