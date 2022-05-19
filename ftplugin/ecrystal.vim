@@ -40,9 +40,10 @@ if exists("b:ecrystal_subtype")
 else
   let b:ecrystal_subtype_indentexpr = "-1"
 
-  setlocal shiftwidth=2
-  setlocal commentstring=<%#\ %s\ %>
-  setlocal indentkeys==end,=else,=elsif
+  setlocal
+        \ shiftwidth=2
+        \ commentstring=<%#\ %s\ %>
+        \ indentkeys==end,=else,=elsif
 endif
 
 let b:did_ftplugin = 1
