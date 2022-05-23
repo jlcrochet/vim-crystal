@@ -7,8 +7,6 @@ if exists("b:current_syntax")
   finish
 endif
 
-syn include @crystalMarkdown syntax/markdown.vim
-
 let b:current_syntax = "crystal"
 
 " Syntax {{{1
