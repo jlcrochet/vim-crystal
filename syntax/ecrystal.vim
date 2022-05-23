@@ -9,7 +9,7 @@ endif
 
 if exists("b:ecrystal_subtype")
   execute printf("runtime! syntax/%s.vim syntax/%s/*.vim", b:ecrystal_subtype, b:ecrystal_subtype)
-  unlet b:current_syntax
+  unlet! b:current_syntax
 endif
 
 let b:is_ecrystal = 1
