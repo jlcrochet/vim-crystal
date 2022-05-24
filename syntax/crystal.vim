@@ -24,114 +24,125 @@ syn cluster crystalArguments contains=crystalFreshVariable,crystalNumber,crystal
 
 " Comments {{{2
 if get(b:, "is_ecrystal")
-  syn match crystalComment /\%#=1#.\{-}\ze\%(-\=%>\)\=/ contains=crystalTodo
-elseif get(g:, "crystal_markdown_comments", 1)
-  syn match crystalCommentStart /\%#=1#/ nextgroup=crystalCommentSpace
-
-  syn match crystalCommentSpace /\%#=1\s*/ contained nextgroup=crystalComment,crystalCommentSpecial,@crystalMarkdownLine
-  syn match crystalCommentSpace /\%#=1 \{4}/ contained nextgroup=crystalMarkdownCodeBlock
-  syn match crystalCommentSpace /\%#=1\t/ contained nextgroup=crystalMarkdownCodeBlock
-
-  syn match crystalComment /\%#=1.*/ contained contains=crystalTodo,@crystalMarkdownInline
-
-  syn keyword crystalCommentSpecial :nodoc: :inherit: contained
-
-  " Markdown {{{3
-  " Inline syntax
-  syn cluster crystalMarkdownInline contains=
-        \ crystalMarkdownBold,crystalMarkdownItalic,crystalMarkdownBoldItalic,crystalMarkdownCode,crystalMarkdownEscape,
-        \ crystalMarkdownLink,crystalMarkdownImage,crystalMarkdownRawLink
-
-  syn region crystalMarkdownItalic matchgroup=crystalMarkdownItalicDelimiter start=/\%#=1\*/ end=/\%#=1\*/ contained contains=@crystalMarkdownInline oneline
-  syn region crystalMarkdownBold matchgroup=crystalMarkdownBoldDelimiter start=/\%#=1\*\*/ end=/\%#=1\*\*/ contained contains=@crystalMarkdownInline oneline
-  syn region crystalMarkdownBoldItalic matchgroup=crystalMarkdownBoldItalicDelimiter start=/\%#=1\*\*\*/ end=/\%#=1\*\*\*/ contained contains=@crystalMarkdownInline oneline
-
-  syn region crystalMarkdownItalic matchgroup=crystalMarkdownItalicDelimiter start=/\%#=1\<_/ end=/\%#=1_\>/ contained contains=@crystalMarkdownInline oneline
-  syn region crystalMarkdownBold matchgroup=crystalMarkdownBoldDelimiter start=/\%#=1\<__/ end=/\%#=1__\>/ contained contains=@crystalMarkdownInline oneline
-  syn region crystalMarkdownBoldItalic matchgroup=crystalMarkdownBoldItalicDelimiter start=/\%#=1\<___/ end=/\%#=1___\>/ contained contains=@crystalMarkdownInline oneline
-
-  syn region crystalMarkdownCode matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1`/ end=/\%#=1`/ contained contains=crystalMarkdownCodeLineStart
-  syn region crystalMarkdownCode matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1``/ end=/\%#=1``/ contained contains=crystalMarkdownCodeLineStart
-  syn region crystalMarkdownCode matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1```/ end=/\%#=1```/ contained contains=crystalMarkdownCodeLineStart
-
-  syn match crystalMarkdownCodeLineStart /\%#=1^\s*\zs#/ contained
-
-  syn match crystalMarkdownEscape /\%#=1\\[\\`*_#+\-.!()[\]{}]/ contained
-
-  syn region crystalMarkdownLink matchgroup=crystalMarkdownDelimiter start=/\%#=1\[/ end=/\%#=1]/ contained oneline contains=@crystalMarkdownInline nextgroup=crystalMarkdownURL,crystalMarkdownReference
-  syn region crystalMarkdownURL matchgroup=crystalMarkdownDelimiter start=/\%#=1(/ end=/\%#=1)/ contained oneline
-  syn region crystalMarkdownReference matchgroup=crystalMarkdownDelimiter start=/\%#=1\[/ end=/\%#=1]/ contained oneline
-
-  syn match crystalMarkdownImage /\%#=1!/ contained nextgroup=crystalMarkdownLink
-
-  syn region crystalMarkdownRawLink matchgroup=crystalMarkdownDelimiter start=/\%#=1<\ze\S.\{-}\%(:\/\/\|@\)/ end=/\%#=1>/ contained oneline
-
-  " Line-based syntax
-  syn cluster crystalMarkdownLine contains=
-        \ crystalMarkdownHeading,crystalMarkdownOrderedListItem,crystalMarkdownUnorderedListItem,
-        \ crystalMarkdownHorizontalRule,crystalMarkdownBlockQuote,crystalMarkdownReferenceDefinition
-
-  syn match crystalMarkdownHeading /\%#=1#\{1,6}\%(\s.*\)\=/ contained  contains=@crystalMarkdownInline
-
-  syn match crystalMarkdownOrderedListItem /\%#=1\d\+\.\s\@=/ contained
-  syn match crystalMarkdownUnorderedListItem /\%#=1[*+-]\s\@=/ contained
-
-  syn match crystalMarkdownHorizontalRule /\%#=1\*\%(\s*\*\)\{2,}$/ contained
-  syn match crystalMarkdownHorizontalRule /\%#=1-\%(\s*-\)\{2,}$/ contained
-  syn match crystalMarkdownHorizontalRule /\%#=1_\{3,}$/ contained
-
-  syn match crystalMarkdownBlockQuote /\%#=1>/ contained nextgroup=@crystalMarkdownLine skipwhite
-
-  syn region crystalMarkdownReferenceDefinition matchgroup=crystalMarkdownDelimiter start=/\%#=1\[/ end=/\%#=1]/ contained oneline nextgroup=crystalMarkdownReferenceColon
-  syn match crystalMarkdownReferenceColon /\%#=1:/ contained nextgroup=crystalMarkdownReferenceURL skipwhite
-  syn match crystalMarkdownReferenceURL /\%#=1\S\+/ contained nextgroup=crystalMarkdownReferenceTitle skipwhite
-  syn match crystalMarkdownReferenceURL /\%#=1<\S\+>/ contained nextgroup=crystalMarkdownReferenceTitle skipwhite
-  syn region crystalMarkdownReferenceTitle matchgroup=crystalMarkdownReferenceTitleDelimiter start=/\%#=1"/ end=/\%#=1"/ contained oneline
-  syn region crystalMarkdownReferenceTitle matchgroup=crystalMarkdownReferenceTitleDelimiter start=/\%#=1'/ end=/\%#=1'/ contained oneline
-  syn region crystalMarkdownReferenceTitle matchgroup=crystalMarkdownReferenceTitleDelimiter start=/\%#=1(/ end=/\%#=1)/ contained oneline
-
-  syn match crystalMarkdownCodeBlock /\%#=1.*/ contained
-
-  " Highlighting
-  hi def link crystalCommentStart crystalComment
-  hi def link crystalCommentSpace crystalComment
-  hi def link crystalCommentSpecial SpecialComment
-  hi def link crystalMarkdownDelimiter Delimiter
-  hi crystalMarkdownItalic cterm=italic gui=italic
-  hi crystalMarkdownBold cterm=bold gui=bold
-  hi crystalMarkdownBoldItalic cterm=bold,italic gui=bold,italic
-  hi def link crystalMarkdownItalicDelimiter crystalMarkdownItalic
-  hi def link crystalMarkdownBoldDelimiter crystalMarkdownBold
-  hi def link crystalMarkdownBoldItalicDelimiter crystalMarkdownBoldItalic
-  hi def link crystalMarkdownCode String
-  hi def link crystalMarkdownCodeDelimiter crystalMarkdownCode
-  hi def link crystalMarkdownCodeLineStart crystalComment
-  hi def link crystalMarkdownEscape PreProc
-  hi crystalMarkdownLink cterm=underline gui=underline
-  hi def link crystalMarkdownURL String
-  hi def link crystalMarkdownReference Special
-  hi def link crystalMarkdownRawLink crystalMarkdownLink
-  hi def link crystalMarkdownReferenceDefinition crystalMarkdownReference
-  hi def link crystalMarkdownReferenceURL crystalMarkdownURL
-  hi def link crystalMarkdownReferenceTitle String
-  hi def link crystalMarkdownReferenceTitleDelimiter crystalMarkdownReferenceTitle
-  hi def link crystalMarkdownImage Special
-  hi def link crystalMarkdownHeading Title
-  hi def link crystalMarkdownOrderedListItem Special
-  hi def link crystalMarkdownUnorderedListItem Special
-  hi def link crystalMarkdownHorizontalRule Special
-  hi def link crystalMarkdownBlockQuote Special
-  hi def link crystalMarkdownCodeBlock crystalMarkdownCode
-  " }}}
+  syn match crystalComment /\%#=1#.\{-}\ze\%(-\=%>\)\=/
 else
-  syn match crystalComment /\%#=1#.*/ contains=crystalTodo
+  let crystal_markdown_comments = get(g:, "crystal_markdown_comments", 1)
+
+  if crystal_markdown_comments
+    syn match crystalCommentStart /\%#=1#/ nextgroup=crystalInlineComment
+    syn match crystalInlineComment /\%#=1.*/ contained
+
+    syn match crystalCommentStart /\%#=1^\s*\zs#/ nextgroup=crystalCommentSpace
+
+    syn match crystalCommentSpace /\%#=1\s*/ contained nextgroup=crystalComment,crystalSpecialComment,@crystalMarkdownLine
+    syn match crystalCommentSpace /\%#=1 \{4}/ contained nextgroup=crystalMarkdownCodeLine
+    syn match crystalCommentSpace /\%#=1\t/ contained nextgroup=crystalMarkdownCodeLine
+
+    syn match crystalComment /\%#=1.*/ contained contains=crystalTodo,@crystalMarkdownInline
+
+    syn keyword crystalSpecialComment :nodoc: :inherit: contained
+
+    hi def link crystalCommentStart crystalComment
+    hi def link crystalInlineComment crystalComment
+    hi def link crystalCommentSpace crystalComment
+    hi def link crystalSpecialComment SpecialComment
+
+    " Markdown {{{3
+    " Inline syntax
+    syn cluster crystalMarkdownInline contains=
+          \ crystalMarkdownBold,crystalMarkdownItalic,crystalMarkdownBoldItalic,crystalMarkdownCode,crystalMarkdownEscape,
+          \ crystalMarkdownLink,crystalMarkdownImage,crystalMarkdownRawLink
+
+    syn region crystalMarkdownItalic matchgroup=crystalMarkdownItalicDelimiter start=/\%#=1\*/ end=/\%#=1\*/ contained contains=@crystalMarkdownInline oneline
+    syn region crystalMarkdownBold matchgroup=crystalMarkdownBoldDelimiter start=/\%#=1\*\*/ end=/\%#=1\*\*/ contained contains=@crystalMarkdownInline oneline
+    syn region crystalMarkdownBoldItalic matchgroup=crystalMarkdownBoldItalicDelimiter start=/\%#=1\*\*\*/ end=/\%#=1\*\*\*/ contained contains=@crystalMarkdownInline oneline
+
+    syn region crystalMarkdownItalic matchgroup=crystalMarkdownItalicDelimiter start=/\%#=1\<_/ end=/\%#=1_\>/ contained contains=@crystalMarkdownInline oneline
+    syn region crystalMarkdownBold matchgroup=crystalMarkdownBoldDelimiter start=/\%#=1\<__/ end=/\%#=1__\>/ contained contains=@crystalMarkdownInline oneline
+    syn region crystalMarkdownBoldItalic matchgroup=crystalMarkdownBoldItalicDelimiter start=/\%#=1\<___/ end=/\%#=1___\>/ contained contains=@crystalMarkdownInline oneline
+
+    syn region crystalMarkdownCode matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1`/ end=/\%#=1`/ skip=/\%#=1 `\{2,} / contained contains=crystalMarkdownCodeLineStart nextgroup=crystalComment
+    syn region crystalMarkdownCode matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1``/ end=/\%#=1``/ skip=/\%#=1 `\{3,} / contained contains=crystalMarkdownCodeLineStart nextgroup=crystalComment
+
+    syn match crystalMarkdownCodeLineStart /\%#=1^\s*\zs#/ contained
+
+    if crystal_markdown_comments == 2
+      syn region crystalMarkdownCode matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1```/ end=/\%#=1```/ skip=/\%#=1 `\{4,} / contained contains=crystalMarkdownCrystalCodeLineStart keepend
+      syn match crystalMarkdownCrystalCodeLineStart /\%#=1^\s*\zs#/ contained nextgroup=crystalMarkdownCodeLine
+      syn match crystalMarkdownCodeLine /\%#=1.*/ contained contains=TOP
+
+      hi def link crystalMarkdownCrystalCodeLineStart crystalMarkdownCodeLineStart
+    else
+      syn region crystalMarkdownCode matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1```/ end=/\%#=1```/ skip=/\%#=1 `\{4,} / contained contains=crystalMarkdownCodeLineStart
+      syn match crystalMarkdownCodeLine /\%#=1.*/ contained
+
+      hi def link crystalMarkdownCodeLine crystalMarkdownCode
+    endif
+
+    syn match crystalMarkdownEscape /\%#=1\\[\\`*_#+\-.!()[\]{}]/ contained
+
+    syn region crystalMarkdownLink matchgroup=crystalMarkdownDelimiter start=/\%#=1\[/ end=/\%#=1]/ contained oneline contains=@crystalMarkdownInline nextgroup=crystalMarkdownURL,crystalMarkdownReference
+    syn region crystalMarkdownURL matchgroup=crystalMarkdownDelimiter start=/\%#=1(/ end=/\%#=1)/ contained oneline
+    syn region crystalMarkdownReference matchgroup=crystalMarkdownDelimiter start=/\%#=1\[/ end=/\%#=1]/ contained oneline
+
+    syn match crystalMarkdownImage /\%#=1!/ contained nextgroup=crystalMarkdownLink
+
+    syn region crystalMarkdownRawLink matchgroup=crystalMarkdownDelimiter start=/\%#=1<\ze\S.\{-}\%(:\/\/\|@\)/ end=/\%#=1>/ contained oneline
+
+    " Line-based syntax
+    syn cluster crystalMarkdownLine contains=
+          \ crystalMarkdownHeading,crystalMarkdownOrderedListItem,crystalMarkdownUnorderedListItem,
+          \ crystalMarkdownHorizontalRule,crystalMarkdownBlockQuote
+
+    syn match crystalMarkdownHeading /\%#=1#\{1,6}\%(\s.*\)\=/ contained contains=@crystalMarkdownInline
+
+    syn match crystalMarkdownOrderedListItem /\%#=1\d\+\.\%(\s.*\)\=/ contained nextgroup=crystalComment
+    syn match crystalMarkdownUnorderedListItem /\%#=1[*+-]\s\@=/ contained nextgroup=crystalComment
+
+    syn match crystalMarkdownHorizontalRule /\%#=1\*\%(\s*\*\)\{2,}$/ contained
+    syn match crystalMarkdownHorizontalRule /\%#=1-\%(\s*-\)\{2,}$/ contained
+    syn match crystalMarkdownHorizontalRule /\%#=1_\{3,}$/ contained
+
+    syn match crystalMarkdownBlockQuote /\%#=1>/ contained nextgroup=@crystalMarkdownLine,crystalComment skipwhite
+
+    " Highlighting
+    hi def link crystalMarkdownDelimiter Delimiter
+    hi crystalMarkdownItalic cterm=italic gui=italic
+    hi crystalMarkdownBold cterm=bold gui=bold
+    hi crystalMarkdownBoldItalic cterm=bold,italic gui=bold,italic
+    hi def link crystalMarkdownItalicDelimiter crystalMarkdownItalic
+    hi def link crystalMarkdownBoldDelimiter crystalMarkdownBold
+    hi def link crystalMarkdownBoldItalicDelimiter crystalMarkdownBoldItalic
+    hi def link crystalMarkdownCode String
+    hi def link crystalMarkdownCodeDelimiter crystalMarkdownCode
+    hi def link crystalMarkdownCodeLineStart crystalComment
+    hi def link crystalMarkdownEscape PreProc
+    hi crystalMarkdownLink cterm=underline gui=underline
+    hi def link crystalMarkdownURL String
+    hi def link crystalMarkdownReference Special
+    hi def link crystalMarkdownRawLink crystalMarkdownLink
+    hi def link crystalMarkdownImage Special
+    hi def link crystalMarkdownHeading Title
+    hi def link crystalMarkdownOrderedListItem Special
+    hi def link crystalMarkdownUnorderedListItem Special
+    hi def link crystalMarkdownHorizontalRule Special
+    hi def link crystalMarkdownBlockQuote Special
+    " }}}
+  else
+    syn match crystalComment /\%#=1#.*/ contains=crystalTodo
+  endif
+
+  syn match crystalTodo /\%#=1\<\%(BUG\|DEPRECATED\|WARNING\|EXPERIMENTAL\|FIXME\|NOTE\|OPTIMIZE\|TODO\)\w*/ contained
+
+  syn match crystalShebang /\%#=1\%^#!.*/
+  syn match crystalPragmaError /\%#=1#<loc:.*/
+  syn match crystalPragma /\%#=1#<loc:\%(push\|pop\|".\{-}"\)>/
+
+  hi def link crystalTodo crystalSpecialComment
+  hi def link crystalShebang PreProc
+  hi def link crystalPragmaError Error
+  hi def link crystalPragma PreProc
 endif
-
-syn match crystalTodo /\%#=1\<\%(BUG\|DEPRECATED\|WARNING\|EXPERIMENTAL\|FIXME\|NOTE\|OPTIMIZE\|TODO\)\w*/ contained
-
-syn match crystalShebang /\%#=1\%^#!.*/
-syn match crystalPragmaError /\%#=1#<loc:.*/
-syn match crystalPragma /\%#=1#<loc:\%(push\|pop\|".\{-}"\)>/
 
 " Operators {{{2
 syn match crystalUnaryOperator /\%#=1[+*!~&]/
@@ -381,6 +392,8 @@ if get(g:, "crystal_simple_indent") || get(b:, "is_ecrystal")
 
   syn keyword crystalKeywordNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalKeywordNoBlock fun nextgroup=crystalLibMethodDefinition skipwhite
+
+  hi def link crystalKeywordNoBlock crystalKeyword
 else
   " NOTE: When definition blocks are highlighted, the following keywords
   " have to be matched with :syn-match instead of :syn-keyword to
@@ -411,6 +424,10 @@ else
   syn keyword crystalDefineNoBlock fun nextgroup=crystalLibMethodDefinition skipwhite
 
   syn keyword crystalMacroKeyword if unless else elsif begin for in do end contained containedin=crystalMacro
+
+  hi def link crystalDefine Define
+  hi def link crystalDefineNoBlock crystalDefine
+  hi def link crystalMacroKeyword crystalKeyword
 endif
 
 syn match crystalTypeDefinition /\%#=1\u\w*/ contained nextgroup=crystalTypeNamespace,crystalInheritanceOperator skipwhite
@@ -462,10 +479,6 @@ syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end
 
 " Highlighting {{{1
 hi def link crystalComment Comment
-hi def link crystalTodo Todo
-hi def link crystalShebang PreProc
-hi def link crystalPragma PreProc
-hi def link crystalPragmaError Error
 hi def link crystalOperator Operator
 hi def link crystalUnaryOperator crystalOperator
 hi def link crystalMethodOperator crystalOperator
@@ -523,11 +536,7 @@ hi def link crystalCommandStart crystalCommand
 hi def link crystalCommandEnd crystalCommandStart
 hi def link crystalKeyword Keyword
 hi def link crystalKeywordError Error
-hi def link crystalMacroKeyword crystalKeyword
-hi def link crystalKeywordNoBlock crystalKeyword
 hi def link crystalPostfixKeyword crystalKeyword
-hi def link crystalDefine Define
-hi def link crystalDefineNoBlock crystalDefine
 hi def link crystalMethodDefinition Function
 hi def link crystalLibMethodDefinition crystalMethodDefinition
 hi def link crystalMethodReceiver crystalConstant

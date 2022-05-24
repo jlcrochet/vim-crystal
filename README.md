@@ -107,13 +107,13 @@ NOTE: Setting this will disable `g:crystal_simple_indent`, since floating blocks
 
 #### `g:crystal_markdown_comments`
 
-This plugin offers rudimentary highlighting for Markdown inside of comments. To disable this feature:
+This variable controls whether or not Markdown should be highlighted in comments; it can have three possible values:
 
-```vim
-let g:crystal_markdown_comments = 0
-```
+* `0`: Disabled
+* `1`: Enabled (default)
+* `2`: Enabled; additionally, code lines &mdash; that is, lines that begin with at least four spaces or one tab or are inside of a code block delimited with ` ``` ` &mdash; will be highlighted as Crystal code (good for writing documentation)
 
-Disabling this feature will slightly improve highlighting performance.
+Setting to `0` may cause highlighting to become faster in files with lots of comments, while setting to `2` may do the opposite.
 
 #### `g:ecrystal_extensions`
 
