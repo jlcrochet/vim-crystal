@@ -138,7 +138,7 @@ else
   syn match crystalPragmaError /\%#=1#<loc:.*/
   syn match crystalPragma /\%#=1#<loc:\%(push\|pop\|".\{-}"\)>/
 
-  hi def link crystalTodo crystalSpecialComment
+  hi def link crystalTodo Todo
   hi def link crystalShebang PreProc
   hi def link crystalPragmaError Error
   hi def link crystalPragma PreProc
