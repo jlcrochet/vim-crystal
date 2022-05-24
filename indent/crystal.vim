@@ -96,7 +96,7 @@ function s:ends_with_line_continuator(lnum)
 
   while idx != -1
     if char ==# "#"
-      if synID(a:lnum, next_idx, 0)->synIDattr("name") ==# "crystalLineComment"
+      if synID(a:lnum, next_idx, 0)->synIDattr("name") =~# '^crystal\%(Comment\%(Start\)\=\|MarkdownCodeLineStart\)$'
         break
       endif
     else
@@ -115,13 +115,17 @@ function s:ends_with_line_continuator(lnum)
   let last_char = line[last_idx]
 
   if last_char ==# '\'
-    return 1
+    if synID(a:lnum, last_idx + 1, 0)->synIDattr("name") ==# "crystalBackslash"
+      return 1
+    endif
   elseif last_char ==# ","
-    return 3
+    if synID(a:lnum, last_idx + 1, 0)->synIDattr("name") =~# '^crystal\%(Type\)\=Comma$'
+      return 3
+    endif
   elseif last_char ==# ":"
     let syngroup = synID(a:lnum, last_idx + 1, 0)->synIDattr("name")
 
-    if syngroup ==# "crystalOperator" || syngroup ==# "crystalTypeRestrictionOperator"
+    if syngroup =~# '^crystal\%(TypeRestriction\)\=Operator$'
       return 1
     elseif syngroup ==# "crystalSymbolStart"
       return 5
@@ -133,7 +137,7 @@ function s:ends_with_line_continuator(lnum)
   elseif last_char ==# "|"
     let syngroup = synID(a:lnum, last_idx + 1, 0)->synIDattr("name")
 
-    if syngroup ==# "crystalOperator" || syngroup ==# "crystalTypeUnionOperator"
+    if syngroup =~# '^crystal\%(TypeUnion\)\=Operator$'
       return 1
     elseif syngroup ==# "crystalDelimiter"
       return 4
@@ -426,7 +430,7 @@ else
           else
             return idx
           endif
-        elseif syngroup ==# "crystalStringArrayDelimiter" || syngroup ==# "crystalSymbolArrayDelimiter"
+        elseif syngroup =~# '^crystal\%(StringArray\|SymbolArray\)Delimiter$'
           if search('\S', "z", l)
             return col(".") - 1
           else
@@ -434,7 +438,7 @@ else
           endif
         endif
       elseif p == 3
-        if syngroup ==# "crystalDelimiter" || syngroup ==# "crystalStringArrayDelimiter" || syngroup ==# "crystalSymbolArrayDelimiter"
+        if syngroup =~# '^crystal\%(StringArray\|SymbolArray\)Delimiter$'
           let start_lnum = searchpair('[(\[{]', '', '[)\]}]', "bW", s:skip_bracket)
 
           while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
@@ -456,13 +460,13 @@ else
           return indent(l) + shiftwidth()
         endif
       elseif p == 6
-        if syngroup ==# "crystalKeyword" || syngroup ==# "crystalDefine"
+        if syngroup =~# '^crystal\%(Keyword\|Define\)$'
           return c - 1 + shiftwidth()
         elseif syngroup ==# "crystalMacroKeyword"
           return indent(l) + shiftwidth()
         endif
       elseif p == 7
-        if syngroup ==# "crystalKeyword" || syngroup ==# "crystalMacroKeyword"
+        if syngroup =~# '^crystal\%(Macro\)\=Keyword$'
           let start_lnum = searchpair(s:block_start_re, '', '\C\<end\>', "bW", s:skip_keyword)
 
           while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
@@ -521,7 +525,6 @@ else
 
     if continuation == 0
       if prev_continuation == 1 || prev_continuation == 3 || prev_continuation == 6
-        " return s:get_msl_indent(start_lnum)
         return indent(s:get_msl(start_lnum))
       elseif prev_continuation == 2
         return start_first_idx - shiftwidth()

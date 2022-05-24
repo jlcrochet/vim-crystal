@@ -67,6 +67,8 @@ local function get_line_with_last_byte(lnum)
   local line = getline(lnum)
   local found = 0
 
+  local syngroup
+
   repeat
     found = line:find("#", found + 1)
 
@@ -79,7 +81,9 @@ local function get_line_with_last_byte(lnum)
         end
       end
     end
-  until syngroup_at(lnum, found) == "crystalComment"
+
+    syngroup = syngroup_at(lnum, found)
+  until syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart"
 
   if found == 1 then
     return line
@@ -139,9 +143,15 @@ end
 -- 4 = named tuple key
 local function is_line_continuator(byte, col, line, lnum)
   if byte == 92 then  -- \
-    return 1
+    if syngroup_at(lnum, col) == "crystalBackslash" then
+      return 1
+    end
   elseif byte == 44 then  -- ,
-    return 3
+    local syngroup = syngroup_at(lnum, col)
+
+    if syngroup == "crystalComma" or syngroup == "crystalTypeComma" then
+      return 3
+    end
   elseif byte == 58 then  -- :
     local syngroup = syngroup_at(lnum, col)
 
@@ -193,7 +203,9 @@ local function get_line_info(lnum)
     if b <= 32 then  -- %s
       goto skip
     elseif b == 35 then  -- #
-      if syngroup_at(lnum, i) == "crystalComment" then
+      local syngroup = syngroup_at(lnum, i)
+
+      if syngroup == "crystalComment" or syngroup =="crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" then
         break
       end
     elseif b == 40 or b == 91 or b == 123 then  -- ( [ {
@@ -330,7 +342,9 @@ local function get_line_info_simple(lnum)
     if b <= 32 then  -- %s
       goto skip
     elseif b == 35 then  -- #
-      if syngroup_at(lnum, i) == "crystalComment" then
+      local syngroup = syngroup_at(lnum, i)
+
+      if syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" then
         break
       end
     elseif b >= 97 and b <= 122 then  -- %l

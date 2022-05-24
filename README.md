@@ -105,6 +105,16 @@ If `1`, definition blocks for methods, classes, etc. will be folded.
 
 NOTE: Setting this will disable `g:crystal_simple_indent`, since floating blocks have to be matched in order for folding to work properly.
 
+#### `g:crystal_markdown_comments`
+
+This plugin offers rudimentary highlighting for Markdown inside of comments. To disable this feature:
+
+```vim
+let g:crystal_markdown_comments = 0
+```
+
+Disabling this feature will slightly improve highlighting performance.
+
 #### `g:ecrystal_extensions`
 
 This plugin uses a dictionary of filetype extensions to determine which filetype to use when loading ECR files. For example, opening a file named `foo.html.ecr` will load HTML as the filetype with ECR syntax added on top.

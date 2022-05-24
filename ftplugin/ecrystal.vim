@@ -36,7 +36,7 @@ if exists("b:ecrystal_subtype")
   let b:ecrystal_subtype_indentexpr = &indentexpr
   let &indentkeys .= ",=end,=else,=elsif"
 
-  unlet b:did_indent
+  unlet! b:did_indent
 else
   let b:ecrystal_subtype_indentexpr = "-1"
 
