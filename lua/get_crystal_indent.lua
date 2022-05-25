@@ -7,6 +7,7 @@ local shiftwidth = fn.shiftwidth
 local synID = fn.synID
 local synIDattr = fn.synIDattr
 local getline = fn.getline
+local indent = fn.indent
 
 local api = vim.api
 local nvim_get_current_line = api.nvim_get_current_line
@@ -83,7 +84,7 @@ local function get_line_with_last_byte(lnum)
     end
 
     syngroup = syngroup_at(lnum, found)
-  until syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart"
+  until syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart"
 
   if found == 1 then
     return line
@@ -205,7 +206,7 @@ local function get_line_info(lnum)
     elseif b == 35 then  -- #
       local syngroup = syngroup_at(lnum, i)
 
-      if syngroup == "crystalComment" or syngroup =="crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" then
+      if syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart" then
         break
       end
     elseif b == 40 or b == 91 or b == 123 then  -- ( [ {
@@ -344,7 +345,7 @@ local function get_line_info_simple(lnum)
     elseif b == 35 then  -- #
       local syngroup = syngroup_at(lnum, i)
 
-      if syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" then
+      if syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart" then
         break
       end
     elseif b >= 97 and b <= 122 then  -- %l
@@ -451,8 +452,16 @@ if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
   function get_crystal_indent()
     local lnum = v.lnum
 
-    if multiline_regions[syngroup_at(lnum, 1)] then
-      return -1
+    do
+      local syngroup = syngroup_at(lnum, 1)
+
+      if multiline_regions[syngroup] then
+        return -1
+      elseif syngroup == "crystalMarkdownCodeBlock" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart" then
+        -- If this line is part of a fenced code block, simply align
+        -- with the previous line.
+        return indent(prevnonblank(lnum - 1))
+      end
     end
 
     local prev_lnum = prevnonblank(lnum - 1)
@@ -639,8 +648,16 @@ else
   function get_crystal_indent()
     local lnum = v.lnum
 
-    if multiline_regions[syngroup_at(lnum, 1)] then
-      return -1
+    do
+      local syngroup = syngroup_at(lnum, 1)
+
+      if multiline_regions[syngroup] then
+        return -1
+      elseif syngroup == "crystalMarkdownCodeBlock" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart" then
+        -- If this line is part of a fenced code block, simply align
+        -- with the previous line.
+        return indent(prevnonblank(lnum - 1))
+      end
     end
 
     local prev_lnum = prevnonblank(lnum - 1)

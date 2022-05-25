@@ -238,8 +238,14 @@ endfunction
 if get(g:, "crystal_simple_indent")
   " Simple {{{
   function GetCrystalIndent() abort
-    if s:multiline_regions->get(synID(v:lnum, 1, 0)->synIDattr("name"))
+    let syngroup = synID(v:lnum, 1, 0)->synIDattr("name")
+
+    if s:multiline_regions->get(syngroup)
       return -1
+    elseif syngroup[:14] ==# "crystalMarkdown"
+      " If this line is part of a fenced code block, simply align with
+      " the previous line.
+      return indent(prevnonblank(v:lnum - 1))
     endif
 
     let prev_lnum = prevnonblank(v:lnum - 1)
@@ -354,8 +360,14 @@ if get(g:, "crystal_simple_indent")
 else
   " Default {{{
   function GetCrystalIndent() abort
-    if s:multiline_regions->get(synID(v:lnum, 1, 0)->synIDattr("name"))
+    let syngroup = synID(v:lnum, 1, 0)->synIDattr("name")
+
+    if s:multiline_regions->get(syngroup)
       return -1
+    elseif syngroup[:14] ==# "crystalMarkdown"
+      " If this line is part of a fenced code block, simply align with
+      " the previous line.
+      return indent(prevnonblank(v:lnum - 1))
     endif
 
     let prev_lnum = prevnonblank(v:lnum - 1)

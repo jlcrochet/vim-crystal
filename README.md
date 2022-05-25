@@ -14,7 +14,7 @@ This is a standard Vim plugin which can be installed using your plugin manager o
 
 The default indentation style used by this plugin is the one most commonly found in the Crystal community, which allows for "hanging" or "floating" indentation. Some examples:
 
-```crystal
+~~~crystal
 x = if y
       5
     else
@@ -46,11 +46,11 @@ x = 5 + 10 +
 x = y.foo
      .bar
      .baz
-```
+~~~
 
 For those who prefer a more traditional indentation style or who desire slightly faster highlighting and indentation, set `g:crystal_simple_indent` to `1`. The above examples will now be indented thus:
 
-```crystal
+~~~crystal
 x = if y
   5
 else
@@ -97,7 +97,7 @@ x = y
   .foo
   .bar
   .baz
-```
+~~~
 
 #### `g:crystal_fold`
 
@@ -139,7 +139,7 @@ This plugin uses a dictionary of filetype extensions to determine which filetype
 
 The default recognized filetype extensions are as follows:
 
-```
+~~~
 .html => html
 .js => javascript
 .json => json
@@ -147,15 +147,15 @@ The default recognized filetype extensions are as follows:
 .yml => yaml
 .txt => text
 .md => markdown
-```
+~~~
 
 Each extension maps to the name of the filetype that you want to load for that extension.
 
 To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize `*.js` files as JSX instead of JavaScript:
 
-```vim
+~~~vim
 let g:ecrystal_extensions = #{ js: "javascriptreact" }
-```
+~~~
 
 If no subtype is specified in the file name itself (e.g., `foo.ecr`), the value of `g:ecrystal_default_subtype` is used as the subtype.
 

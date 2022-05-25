@@ -151,7 +151,8 @@ else
 endif
 
 " Operators {{{2
-syn match crystalUnaryOperator /\%#=1[+*!~&]/
+syn match crystalUnaryOperator /\%#=1[+*!~]/
+syn match crystalUnaryOperator /\%#=1&/ nextgroup=crystalTypeRestrictionOperator skipwhite
 syn match crystalUnaryOperator /\%#=1->\=/
 
 syn match crystalOperator /\%#=1=\%(==\=\|[>~]\)\=/ contained
