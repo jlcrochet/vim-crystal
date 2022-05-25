@@ -14,7 +14,7 @@ This is a standard Vim plugin which can be installed using your plugin manager o
 
 The default indentation style used by this plugin is the one most commonly found in the Crystal community, which allows for "hanging" or "floating" indentation. Some examples:
 
-``` crystal
+```crystal
 x = if y
       5
     else
@@ -50,7 +50,7 @@ x = y.foo
 
 For those who prefer a more traditional indentation style or who desire slightly faster highlighting and indentation, set `g:crystal_simple_indent` to `1`. The above examples will now be indented thus:
 
-``` crystal
+```crystal
 x = if y
   5
 else
@@ -111,9 +111,27 @@ This variable controls whether or not Markdown should be highlighted in comments
 
 * `0`: Disabled
 * `1`: Enabled (default)
-* `2`: Enabled; additionally, code lines &mdash; that is, lines that begin with at least four spaces or one tab or are inside of a code block delimited with ` ``` ` &mdash; will be highlighted as Crystal code (good for writing documentation)
+* `2`: Enabled; additionally, code lines &mdash; that is, lines that begin with at least four spaces or one tab or are inside of a fenced code block (delimited with ` ``` ` or `~~~`) &mdash; will be highlighted as Crystal code unless the language for the block is set to anything other than `crystal` (good for writing documentation)
 
 Setting to `0` may cause highlighting to become faster in files with lots of comments, while setting to `2` may do the opposite.
+
+NOTE: I haven't yet been able to find an exhaustive summary of which Markdown features are supported by Crystal, so for now, only the basic features are supported in addition to fenced code blocks (delimited with ` ``` ` or `~~~`).
+
+Additionally, the only decorations that are currently allowed to span multiple lines are fenced code blocks. For example, the following will not be highlighted properly:
+
+~~~crystal
+# `1 + 2 +
+# 3`
+~~~
+
+But this will:
+
+~~~crystal
+# ```
+# 1 + 2 +
+# 3
+# ```
+~~~
 
 #### `g:ecrystal_extensions`
 
@@ -135,7 +153,7 @@ Each extension maps to the name of the filetype that you want to load for that e
 
 To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize `*.js` files as JSX instead of JavaScript:
 
-``` vim
+```vim
 let g:ecrystal_extensions = #{ js: "javascriptreact" }
 ```
 
