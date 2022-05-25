@@ -78,7 +78,7 @@ else
     " Line-based syntax
     syn cluster crystalMarkdownLine contains=
           \ crystalMarkdownCodeBlock,crystalMarkdownHeading,crystalMarkdownOrderedListItem,crystalMarkdownUnorderedListItem,
-          \ crystalMarkdownHorizontalRule,crystalMarkdownBlockQuote
+          \ crystalMarkdownHorizontalRule,crystalMarkdownBlockQuote,crystalMarkdownReferenceDefinition
 
     syn region crystalMarkdownCodeBlock matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1```.*/ end=/\%#=1^\s*#\s*\zs```$/ contained contains=crystalMarkdownCodeLineStart keepend
     syn region crystalMarkdownCodeBlock matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1\~\~\~.*/ end=/\%#=1^\s*#\s*\zs\~\~\~$/ contained contains=crystalMarkdownCodeLineStart keepend
@@ -109,6 +109,13 @@ else
 
     syn match crystalMarkdownBlockQuote /\%#=1>/ contained nextgroup=@crystalMarkdownLine,crystalComment skipwhite
 
+    syn region crystalMarkdownReferenceDefinition matchgroup=crystalMarkdownDelimiter start=/\%#=1\[/ end=/\%#=1]:/ contained oneline nextgroup=crystalMarkdownReferenceURL skipwhite
+    syn match crystalMarkdownReferenceURL /\%#=1\S\+/ contained nextgroup=crystalMarkdownReferenceTitle skipwhite
+    syn match crystalMarkdownReferenceURL /\%#=1<\S\+>/ contained nextgroup=crystalMarkdownReferenceTitle skipwhite
+    syn region crystalMarkdownReferenceTitle matchgroup=crystalMarkdownReferenceTitleDelimiter start=/\%#=1"/ end=/\%#=1"/ contained oneline
+    syn region crystalMarkdownReferenceTitle matchgroup=crystalMarkdownReferenceTitleDelimiter start=/\%#=1'/ end=/\%#=1'/ contained oneline
+    syn region crystalMarkdownReferenceTitle matchgroup=crystalMarkdownReferenceTitleDelimiter start=/\%#=1(/ end=/\%#=1)/ contained oneline
+
     " Highlighting
     hi def link crystalMarkdownDelimiter Delimiter
     hi crystalMarkdownItalic cterm=italic gui=italic
@@ -133,6 +140,10 @@ else
     hi def link crystalMarkdownUnorderedListItem Special
     hi def link crystalMarkdownHorizontalRule Special
     hi def link crystalMarkdownBlockQuote Special
+    hi def link crystalMarkdownReferenceDefinition Special
+    hi def link crystalMarkdownReferenceURL crystalMarkdownURL
+    hi def link crystalMarkdownReferenceTitle String
+    hi def link crystalMarkdownReferenceTitleDelimiter crystalMarkdownReferenceTitle
     " }}}
   else
     syn match crystalComment /\%#=1#.*/ contains=crystalTodo
