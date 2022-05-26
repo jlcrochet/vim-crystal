@@ -1,0 +1,229 @@
+*vim-crystal.txt*	Filetype support for Crystal and eCrystal files
+*vim-crystal*
+
+==============================================================================
+Contents					*vim-crystal-help*
+
+	Introduction			|vim-crystal-introduction|
+	Configuration			|vim-crystal-configuration|
+	  g:crystal_simple_indent	  |g:crystal_simple_indent|
+	  g:crystal_fold		  |g:crystal_fold|
+	  g:crystal_markdown_comments	  |g:crystal_markdown_comments|
+	  g:ecrystal_extensions		  |g:ecrystal_extensions|
+	  g:ecrystal_default_subtype	  |g:ecrystal_default_subtype|
+
+==============================================================================
+Introduction					*vim-crystal-introduction*
+
+This plugin provides syntax highlighting, indentation, and general
+filetype-specific settings for Crystal (`*.cr`) and eCrystal (`*.ecr`) files.
+
+==============================================================================
+Configuration					*vim-crystal-configuration*
+
+------------------------------------------------------------------------------
+g:crystal_simple_indent				*g:crystal_simple_indent*
+
+Values:
+	`0` - Floating indentation
+	`1` - Simple indentation
+
+Default: `0`
+
+The default indentation style used by this plugin is the one most commonly
+found in the Crystal community, which allows for "hanging" or "floating"
+indentation. Some examples:
+
+>
+	x = if y
+	      5
+	    else
+	      10
+	    end
+
+	x = begin
+	      h["foo"]
+	    rescue KeyError
+	      "Not found"
+	    end
+
+	x = case y
+	    when :foo
+	      5
+	    when :bar
+	      10
+	    else
+	      1
+	    end
+
+	x = [:foo, :bar,
+	     :baz, :qux]
+
+	x = 5 + 10 +
+	    15 + 20 -
+	    5 * 3
+
+	x = y.foo
+	     .bar
+	     .baz
+<
+
+For those who prefer a more traditional indentation style or who desire
+slightly faster highlighting and indentation, set |g:crystal_simple_indent| to
+`1`. The above examples will now be indented thus:
+
+>
+	x = if y
+	  5
+	else
+	  10
+	end
+
+	x = begin
+	  h["foo"]
+	rescue KeyError
+	  "Not Found"
+	end
+
+	x = case y
+	when :foo
+	  5
+	when :bar
+	  10
+	else
+	  1
+	end
+
+	x = [:foo, :bar,
+	  :baz, :qux]
+	# OR
+	x = [
+	  :foo, :bar,
+	  :baz, :qux
+	]
+
+	x = 5 + 10 +
+	  15 + 20 -
+	  5 * 3
+	# OR
+	x =
+	  5 + 10 +
+	  15 + 20 -
+	  5 * 3
+
+	x = y.foo
+	  .bar
+	  .baz
+	# OR
+	x = y
+	  .foo
+	  .bar
+	  .baz
+<
+
+------------------------------------------------------------------------------
+g:crystal_fold					*g:crystal_fold*
+
+Values:
+	`0` - No folding
+	`1` - Folding
+
+Default: `0`
+
+If `1`, definition blocks for methods, classes, etc. will be folded.
+
+NOTE: Setting this will disable |g:crystal_simple_indent|, since floating
+blocks have to be matched in order for folding to work properly.
+
+------------------------------------------------------------------------------
+g:crystal_markdown_comments			*g:crystal_markdown_comments*
+
+Values:
+	`0`: Disabled
+	`1`: Enabled
+	`2`: Enabled; additionally, code lines - that is, lines that begin
+	with at least four spaces or one tab or are inside of a fenced code
+	block - will be highlighted as Crystal code unless the language for
+	the block is set to anything other than `crystal` (good for writing
+	documentation)
+
+Default: `1`
+
+This variable controls whether or not Markdown should be highlighted in
+comments.
+
+Setting to `0` may cause highlighting to become faster in files with lots of
+comments, while setting to `2` may do the opposite.
+
+NOTE: I haven't yet been able to find an exhaustive summary of which Markdown
+features are supported by Crystal, so for now, only the basic features are
+supported in addition to fenced code blocks.
+
+Additionally, the only decorations that are currently allowed to span multiple
+lines are fenced code blocks. For example, the following will not be
+highlighted properly:
+
+>
+	# `1 + 2 +
+	# 3`
+<
+
+But this will:
+
+>
+	# ```
+	# 1 + 2 +
+	# 3
+	# ```
+<
+
+------------------------------------------------------------------------------
+g:ecrystal_extensions				*g:ecrystal_extensions*
+
+Default: `{}`
+
+This plugin uses a dictionary of filetype extensions to determine which
+filetype to use when loading eCrystal files. For example, opening a file named
+`foo.html.ecr` will load HTML as the filetype with eCrystal syntax added on
+top.
+
+The default recognized filetype extensions are as follows:
+
+>
+	.html => html
+	.js => javascript
+	.json => json
+	.xml => xml
+	.yml => yaml
+	.txt => text
+	.md => markdown
+<
+
+Each extension maps to the name of the filetype that you want to load for that
+extension.
+
+To add or overwrite entries in the dictionary, set this variable to a
+dictionary with the entries you want to inject. For example, the following
+would allow the plugin to recognize `*.js` files as JSX instead of JavaScript:
+
+>
+	let g:ecrystal_extensions = #{ js: "javascriptreact" }
+<
+
+If no subtype is specified in the file name itself (e.g., `foo.ecr`), the
+value of |g:ecrystal_default_subtype| is used as the subtype.
+
+------------------------------------------------------------------------------
+g:ecrystal_default_subtype			*g:ecrystal_default_subtype*
+
+Default: `html`
+
+Determines the default subtype to use for ECR files when no subtype is
+specified in the file name itself (e.g., `foo.ecr`).
+
+The default value is `html`. Setting this to nothing (`let
+g:ecrystal_default_subtype = ""`) will cause no subtype to be used so that
+only eCrystal markup will be highlighted.
+
+==============================================================================
+vim:filetype=help
