@@ -3,9 +3,12 @@
 " Author: Jeffrey Crochet <jlcrochet@hey.com>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-let b:did_indent = 1
-
-let b:eruby_subtype_indentexpr = &indentexpr
+if get(b:, "did_indent")
+  let b:eruby_subtype_indentexpr = &indentexpr
+else
+  let b:eruby_subtype_indentexpr = "-1"
+  let b:did_indent = 1
+endif
 
 setlocal
       \ indentexpr=GetEcrystalIndent()
