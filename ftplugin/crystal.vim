@@ -15,13 +15,18 @@ setlocal
       \ commentstring=#\ %s
       \ suffixesadd=.cr
 
+let b:undo_ftplugin = "setlocal shiftwidth< comments< commentstring< suffixesadd<"
+
 if get(g:, "crystal_fold")
-  setlocal foldmethod=syntax
   let g:crystal_simple_indent = 0
+  setlocal foldmethod=syntax
+  let b:undo_ftplugin ..= " foldmethod<"
 endif
 
 " matchit.vim
-let b:match_words = '\<\%(def\|macro\|class\|struct\|module\|enum\|annotation\|lib\|union\|if\|unless\|case\|while\|until\|for\|begin\|do\)\:\@!\>:\<\%(else\|elsif\|when\|in\|rescue\|ensure\|break\|next\|yield\|return\|raise\)\:\@!\>:\<end\:\@!\>'
-let b:match_skip = 's:^crystal\%(String\|Symbol\|Regex\|Comment\|PostfixKeyword\|MethodDefinition\|VariableOrMethod\)$'
+if get(g:, "loaded_matchit")
+  let b:match_words = '\<\%(def\|macro\|class\|struct\|module\|enum\|annotation\|lib\|union\|if\|unless\|case\|while\|until\|for\|begin\|do\)\:\@!\>:\<\%(else\|elsif\|when\|in\|rescue\|ensure\|break\|next\|yield\|return\|raise\)\:\@!\>:\<end\:\@!\>'
+  let b:match_skip = 's:^crystal\%(String\|Symbol\|Regex\|Comment\|PostfixKeyword\|MethodDefinition\|VariableOrMethod\)$'
 
-let b:undo_ftplugin = "setlocal shiftwidth< comments< commentstring< suffixesadd<"
+  let b:undo_ftplugin ..= " | unlet b:match_words b:match_skip"
+endif

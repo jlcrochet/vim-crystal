@@ -9,6 +9,8 @@ endif
 
 setlocal suffixesadd=.ecr
 
+let b:undo_ftplugin = "setlocal suffixesadd<"
+
 " Determine the sub-filetype based on the file extension of the file
 " being opened.
 let s:parts = split(expand("<afile>"), '\.')
@@ -44,6 +46,8 @@ else
         \ shiftwidth=2
         \ commentstring=<%#\ %s\ %>
         \ indentkeys==end,=else,=elsif
+
+  let b:undo_ftplugin ..= " shiftwidth< commentstring< indentkeys<"
 endif
 
 let b:did_ftplugin = 1
