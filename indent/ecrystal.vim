@@ -3,13 +3,13 @@
 " Author: Jeffrey Crochet <jlcrochet@hey.com>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-if get(b:, "did_indent")
-  finish
-endif
-
 let b:did_indent = 1
 
-setlocal indentexpr=GetEcrystalIndent()
+let b:eruby_subtype_indentexpr = &indentexpr
+
+setlocal
+      \ indentexpr=GetEcrystalIndent()
+      \ indentkeys+==end,=else,=elsif
 
 if exists("*GetEcrystalIndent")
   finish
