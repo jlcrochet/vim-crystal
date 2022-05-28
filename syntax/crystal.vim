@@ -65,7 +65,7 @@ else
     syn region crystalMarkdownCode matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1``/ end=/\%#=1``/ skip=/\%#=1\s`\{3,}\s/ contained oneline
     syn region crystalMarkdownCode matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1```/ end=/\%#=1```/ skip=/\%#=1\s`\{4,}\s/ contained oneline
 
-    syn match crystalMarkdownEscape /\%#=1\\[\\`*_#+\-.!()[\]{}]/ contained
+    syn match crystalMarkdownEscape /\%#=1\\[[:punct:]]/ contained
 
     syn region crystalMarkdownLink matchgroup=crystalMarkdownDelimiter start=/\%#=1\[/ end=/\%#=1]/ contained oneline contains=@crystalMarkdownInline nextgroup=crystalMarkdownURL,crystalMarkdownReference
     syn region crystalMarkdownURL matchgroup=crystalMarkdownDelimiter start=/\%#=1(/ end=/\%#=1)/ contained oneline
