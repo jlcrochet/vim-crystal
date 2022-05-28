@@ -436,7 +436,7 @@ else
   syn keyword crystalDefine abstract nextgroup=crystalDefineNoBlock skipwhite
   syn keyword crystalDefine private protected nextgroup=crystalDefineBlock,crystalConstant skipwhite
 
-  syn keyword crystalDefine type alias nextgroup=crystalTypeAlias skipwhite
+  syn keyword crystalDefine alias nextgroup=crystalTypeAlias skipwhite
 
   syn keyword crystalDefineNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalDefineNoBlock fun nextgroup=crystalLibMethodDefinition skipwhite
