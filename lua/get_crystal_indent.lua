@@ -246,7 +246,7 @@ local function get_line_info(lnum)
         elseif syngroup == "crystalMacroKeyword" then
           pairs = pairs + 1
         end
-      elseif word == "case" or word == "while" or word == "until" then
+      elseif word == "case" or word == "select" or word == "while" or word == "until" then
         if syngroup_at(lnum, i) == "crystalKeyword" then
           floats = floats + 1
           float_cols[floats] = i
@@ -351,7 +351,7 @@ local function get_line_info_simple(lnum)
     elseif b >= 97 and b <= 122 then  -- %l
       local word = line:match("^%l+", i)
 
-      if word == "def" or word == "class" or word == "module" or word == "macro" or word == "struct" or word == "enum" or word == "annotation" or word == "lib" or word == "union" or word == "if" or word == "unless" or word == "case" or word == "while" or word == "until" or word == "begin" or word == "do" then
+      if word == "def" or word == "class" or word == "module" or word == "macro" or word == "struct" or word == "enum" or word == "annotation" or word == "lib" or word == "union" or word == "if" or word == "unless" or word == "case" or word == "select" or word == "while" or word == "until" or word == "begin" or word == "do" then
         if syngroup_at(lnum, i) == "crystalKeyword" then
           pairs = pairs + 1
         end

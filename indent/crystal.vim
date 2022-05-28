@@ -55,13 +55,13 @@ let s:multiline_regions = #{
       \ crystalHeredocEnd: 1
       \ }
 
-let s:block_start_re = '\C\v<%(if|unless|case|begin|for|while|until|do)>'
+let s:block_start_re = '\C\v<%(if|unless|case|select|begin|for|while|until|do)>'
 let s:block_middle_re = '\C\v<%(else|elsif|when|in|ensure|rescue)>'
 
 let s:define_block_start_re = '\C\v<%(def|macro|class|struct|lib|annotation|enum|module|union)>'
 let s:define_block_middle_re = '\C\v<%(else|ensure|rescue)>'
 
-let s:all_start_re = '\C\v<%(if|unless|case|begin|for|while|until|do|def|macro|class|struct|lib|annotation|enum|module|union)>'
+let s:all_start_re = '\C\v<%(if|unless|case|select|begin|for|while|until|do|def|macro|class|struct|lib|annotation|enum|module|union)>'
 
 let s:skip_bracket = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(StringArray\|SymbolArray\)\=Delimiter$'''
 let s:skip_keyword = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(Macro\)\=Keyword$'''
@@ -427,7 +427,7 @@ else
       let start_lnum = prevnonblank(start_lnum - 1)
     endwhile
 
-    let [l, c, p] = searchpos('\C\([(\[{]\)\|\([)\]}]\)\|\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
+    let [l, c, p] = searchpos('\C\([(\[{]\)\|\([)\]}]\)\|\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|select|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
 
     while p
       let syngroup = synID(l, c, 0)->synIDattr("name")
@@ -493,7 +493,7 @@ else
         endif
       endif
 
-      let [l, c, p] = searchpos('\C\([(\[{]\)\|\([)\]}]\)\|\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
+      let [l, c, p] = searchpos('\C\([(\[{]\)\|\([)\]}]\)\|\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|select|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
     endwhile
 
     " Check for line continuations:
