@@ -427,16 +427,19 @@ else
   syn keyword crystalKeyword rescue contained containedin=crystalBlock nextgroup=crystalConstant skipwhite
 
   syn match crystalDefine /\%#=1\<\%(def\|macro\)\>/ nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite contained containedin=crystalDefineBlock
-  syn match crystalDefine /\%#=1\<\%(class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ nextgroup=crystalTypeDefinition skipwhite contained containedin=crystalDefineBlock
+  syn match crystalDefine /\%#=1\<\%(class\|struct\|annotation\|enum\|module\|union\)\>/ nextgroup=crystalTypeDefinition skipwhite contained containedin=crystalDefineBlock
+  syn match crystalDefine /\%#=1\<lib\>/ nextgroup=crystalTypeDefinition skipwhite contained containedin=crystalLibDefineBlock
 
-  syn region crystalDefineBlock start=/\%#=1\<\%(def\|macro\|class\|struct\|lib\|annotation\|enum\|module\|union\)\>/ matchgroup=crystalDefine end=/\%#=1\<\.\@1<!end\>/ contains=TOP fold
+  syn region crystalDefineBlock start=/\%#=1\<\%(def\|macro\|class\|struct\|annotation\|enum\|module\|union\)\>/ matchgroup=crystalDefine end=/\%#=1\<\.\@1<!end\>/ contains=TOP fold
+  syn region crystalLibDefineBlock start=/\%#=1\<lib\>/ matchgroup=crystalDefine end=/\%#=1\<\.\@1<!end\>/ contains=TOP fold
   syn keyword crystalDefine else ensure contained containedin=crystalDefineBlock
   syn keyword crystalDefine rescue contained containedin=crystalDefineBlock nextgroup=crystalConstant skipwhite
 
   syn keyword crystalDefine abstract nextgroup=crystalDefineNoBlock skipwhite
-  syn keyword crystalDefine private protected nextgroup=crystalDefineBlock,crystalConstant skipwhite
+  syn keyword crystalDefine private protected nextgroup=crystalDefineBlock,crystalLibDefineBlock,crystalConstant skipwhite
 
   syn keyword crystalDefine alias nextgroup=crystalTypeAlias skipwhite
+  syn keyword crystalDefine type contained containedin=crystalLibDefineBlock nextgroup=crystalTypeAlias skipwhite
 
   syn keyword crystalDefineNoBlock def contained nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
   syn keyword crystalDefineNoBlock fun nextgroup=crystalLibMethodDefinition skipwhite
