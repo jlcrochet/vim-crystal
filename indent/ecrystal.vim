@@ -4,9 +4,9 @@
 " URL: https://github.com/jlcrochet/vim-crystal
 
 if get(b:, "did_indent")
-  let b:eruby_subtype_indentexpr = &indentexpr
+  let b:ecrystal_subtype_indentexpr = &indentexpr
 else
-  let b:eruby_subtype_indentexpr = "-1"
+  let b:ecrystal_subtype_indentexpr = "-1"
   let b:did_indent = 1
 endif
 
