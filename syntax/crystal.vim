@@ -19,7 +19,7 @@ else
   syn cluster crystalTop contains=TOP
 endif
 
-syn cluster crystalPostfix contains=crystalOperator,crystalMethodOperator,crystalTernaryOperator,crystalTypeRestrictionOperator,crystalRangeOperator,crystalNamespaceOperator,crystalPostfixKeyword,crystalComma
+syn cluster crystalPostfix contains=crystalOperator,crystalMethodOperator,crystalTernaryOperator,crystalTypeRestrictionOperator,crystalRangeOperator,crystalModuleOperator,crystalPostfixKeyword,crystalComma
 syn cluster crystalArguments contains=crystalFreshVariable,crystalNumber,crystalString,crystalStringArray,crystalCharacter,crystalCharacterError,crystalSymbol,crystalSymbolArray,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey
 
 " Comments {{{2
@@ -191,18 +191,18 @@ syn match crystalRangeOperator /\%#=1\.\.\.\=/ nextgroup=crystalOperator,crystal
 
 syn match crystalTypeRestrictionOperator /\%#=1:/ contained nextgroup=@crystalTypes skipwhite skipempty
 
-syn match crystalNamespaceOperator /\%#=1::/ nextgroup=crystalConstant,crystalVariableOrMethod
+syn match crystalModuleOperator /\%#=1::/ nextgroup=crystalConstant,crystalVariableOrMethod
 
 " Type grammar {{{2
-syn cluster crystalTypes contains=crystalType,crystalTypeNamespaceOperator,crystalTypeTuple,crystalTypeProcOperator,crystalTypeGroup,crystalTypeSelf,crystalTypeNil,crystalTypeTypeof
+syn cluster crystalTypes contains=crystalType,crystalTypeModuleOperator,crystalTypeTuple,crystalTypeProcOperator,crystalTypeGroup,crystalTypeSelf,crystalTypeNil,crystalTypeTypeof
 syn cluster crystalTypesPostfix contains=crystalTypeModifier,crystalTypeComma,crystalTypeUnionOperator,crystalTypeProcOperator,crystalTypeHashOperator,crystalTypeArray,crystalAssignmentOperator
 
-syn match crystalType /\%#=1\u\w*/ contained nextgroup=@crystalTypesPostfix,crystalTypeNamespaceOperator,crystalTypeGeneric skipwhite
-syn match crystalType /\%#=1_\>/ contained nextgroup=@crystalTypesPostfix,crystalTypeNamespaceOperator,crystalTypeGeneric skipwhite
+syn match crystalType /\%#=1\u\w*/ contained nextgroup=@crystalTypesPostfix,crystalTypeModuleOperator,crystalTypeGeneric skipwhite
+syn match crystalType /\%#=1_\>/ contained nextgroup=@crystalTypesPostfix,crystalTypeModuleOperator,crystalTypeGeneric skipwhite
 
-syn match crystalTypeNamespaceOperator /\%#=1::/ contained nextgroup=crystalType skipwhite skipempty
+syn match crystalTypeModuleOperator /\%#=1::/ contained nextgroup=crystalType skipwhite skipempty
 
-syn region crystalTypeTuple matchgroup=crystalDelimiter start=/\%#=1{/ end=/\%#=1}/ contained contains=@crystalTypes,crystalNamedTupleKey nextgroup=@crystalTypesPostfix,crystalTypeNamespaceOperator skipwhite
+syn region crystalTypeTuple matchgroup=crystalDelimiter start=/\%#=1{/ end=/\%#=1}/ contained contains=@crystalTypes,crystalNamedTupleKey nextgroup=@crystalTypesPostfix,crystalTypeModuleOperator skipwhite
 
 syn region crystalTypeGeneric matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=@crystalTypes,crystalNumber,crystalNamedTupleKey nextgroup=@crystalTypesPostfix skipwhite
 
@@ -451,8 +451,8 @@ else
   hi def link crystalMacroKeyword crystalKeyword
 endif
 
-syn match crystalTypeDefinition /\%#=1\u\w*/ contained nextgroup=crystalTypeNamespace,crystalInheritanceOperator skipwhite
-syn match crystalTypeNamespace /\%#=1::/ contained nextgroup=crystalTypeDefinition
+syn match crystalTypeDefinition /\%#=1\u\w*/ contained nextgroup=crystalTypeModule,crystalInheritanceOperator skipwhite
+syn match crystalTypeModule /\%#=1::/ contained nextgroup=crystalTypeDefinition
 syn match crystalInheritanceOperator /\%#=1</ contained nextgroup=crystalConstant skipwhite
 
 syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ contained nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator skipwhite
@@ -460,7 +460,8 @@ syn match crystalMethodDefinition /\%#=1[[:lower:]_]\w*[=?!]\=/ contained nextgr
 syn match crystalMethodDefinition /\%#=1\%([+\-|^~%]\|\*\*\=\|\/\/\=\|=\%(==\=\|\~\)\|![=~]\=\|<\%(=>\=\|<\)\=\|>[>=]\=\|&\%([+-]\|\*\*\=\)\=\|\[][=?]\=\)/ contained nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator skipwhite
 syn region crystalMethodParameters matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=TOP,crystalKeyword,crystalDefine,crystalBlock,crystalDefineBlock,crystalKeywordError nextgroup=crystalTypeRestrictionOperator skipwhite
 syn keyword crystalOut out contained containedin=crystalMethodParameters
-syn match crystalMethodReceiver /\%#=1\u\w*/ contained nextgroup=crystalMethodDot
+syn match crystalMethodReceiver /\%#=1\u\w*/ contained nextgroup=crystalMethodDot,crystalMethodModuleOperator
+syn match crystalMethodModuleOperator /\%#=1::/ contained nextgroup=crystalMethodReceiver
 syn keyword crystalMethodSelf self contained nextgroup=crystalMethodDot
 syn match crystalMethodDot /\%#=1\./ contained nextgroup=crystalMethodDefinition
 
@@ -504,7 +505,7 @@ hi def link crystalOperator Operator
 hi def link crystalUnaryOperator crystalOperator
 hi def link crystalMethodOperator crystalOperator
 hi def link crystalRangeOperator crystalOperator
-hi def link crystalNamespaceOperator crystalOperator
+hi def link crystalModuleOperator crystalOperator
 hi def link crystalDelimiter Delimiter
 hi def link crystalInstanceVariable Identifier
 hi def link crystalClassVariable Identifier
@@ -561,11 +562,12 @@ hi def link crystalPostfixKeyword crystalKeyword
 hi def link crystalMethodDefinition Function
 hi def link crystalLibMethodDefinition crystalMethodDefinition
 hi def link crystalMethodReceiver crystalConstant
+hi def link crystalMethodModuleOperator crystalModuleOperator
 hi def link crystalMethodSelf crystalSelf
 hi def link crystalMethodDot crystalOperator
 hi def link crystalTypeDefinition Typedef
 hi def link crystalTypeAlias crystalTypeDefinition
-hi def link crystalTypeNamespace crystalNamespaceOperator
+hi def link crystalTypeModule crystalModuleOperator
 hi def link crystalInheritanceOperator crystalOperator
 hi def link crystalMacroDelimiter PreProc
 hi def link crystalFreshVariable Identifier
@@ -577,7 +579,7 @@ hi def link crystalCFunctionStringName crystalString
 hi def link crystalTypeRestrictionOperator crystalOperator
 hi def link crystalType Type
 hi def link crystalTypeOperator crystalOperator
-hi def link crystalTypeNamespaceOperator crystalTypeOperator
+hi def link crystalTypeModuleOperator crystalTypeOperator
 hi def link crystalTypeModifier crystalTypeOperator
 hi def link crystalTypeModifierClass crystalVariableOrMethod
 hi def link crystalTypeUnionOperator crystalTypeOperator
