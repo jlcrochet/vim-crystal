@@ -499,7 +499,8 @@ syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end=/\%#=1}}/ oneline contains=@crystalTop,crystalNestedBraces
       \ contained containedin=
       \ crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalStringArray,crystalSymbolArray,crystalHeredocLine,crystalHeredocLineRaw,
-      \ crystalMethodDefinition,crystalTypeDefinition,crystalLibMethodDefinition,crystalCFunctionName,crystalCFunctionStringName
+      \ crystalMethodDefinition,crystalTypeDefinition,crystalLibMethodDefinition,crystalCFunctionName,crystalCFunctionStringName,
+      \ crystalTypeAlias
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ oneline contains=TOP
 " >>>2
 
