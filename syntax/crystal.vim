@@ -243,8 +243,8 @@ syn match crystalComma /\%#=1,/ contained nextgroup=crystalNamedTupleKey,crystal
 syn match crystalBackslash /\%#=1\\/
 
 " Identifiers <<<2
-syn match crystalInstanceVariable /\%#=1@\h\w*/ nextgroup=@crystalPostfix skipwhite
-syn match crystalClassVariable /\%#=1@@\h\w*/ nextgroup=@crystalPostfix skipwhite
+syn match crystalInstanceVariable /\%#=1@\%(\h\|\\\={{.\{-}}}\)\%(\w\+\|\\\={{.\{-}}}\)*/ nextgroup=@crystalPostfix skipwhite
+syn match crystalClassVariable /\%#=1@@\%(\h\|\\\={{.\{-}}}\)\%(\w\+\|\\\={{.\{-}}}\)*/ nextgroup=@crystalPostfix skipwhite
 syn match crystalFreshVariable /\%#=1%\h\w*/ nextgroup=@crystalPostfix skipwhite
 syn match crystalExternalVariable /\%#=1\$\%([~?]\|\d\+?\=\|[[:lower:]_]\w*\)/ nextgroup=@crystalPostfix skipwhite
 
@@ -500,7 +500,7 @@ syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end
       \ contained containedin=
       \ crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalStringArray,crystalSymbolArray,crystalHeredocLine,crystalHeredocLineRaw,
       \ crystalMethodDefinition,crystalTypeDefinition,crystalLibMethodDefinition,crystalCFunctionName,crystalCFunctionStringName,
-      \ crystalTypeAlias
+      \ crystalTypeAlias,crystalInstanceVariable,crystalClassVariable
 syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ oneline contains=TOP
 " >>>2
 
