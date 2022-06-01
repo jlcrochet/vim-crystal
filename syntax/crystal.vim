@@ -34,18 +34,18 @@ else
 
     syn match crystalCommentStart /\%#=1^\s*\zs#/ nextgroup=crystalCommentSpace
 
-    syn match crystalCommentSpace /\%#=1\s*/ contained nextgroup=crystalComment,crystalSpecialComment,@crystalMarkdownLine
+    syn match crystalCommentSpace /\%#=1\s*/ contained nextgroup=crystalComment,crystalMarkdownDirective,@crystalMarkdownLine
     syn match crystalCommentSpace /\%#=1 \{4}/ contained nextgroup=crystalMarkdownCodeLine
     syn match crystalCommentSpace /\%#=1\t/ contained nextgroup=crystalMarkdownCodeLine
 
-    syn match crystalComment /\%#=1.*/ contained contains=crystalTodo,@crystalMarkdownInline
+    syn match crystalComment /\%#=1.*/ contained contains=@crystalMarkdownInline
 
-    syn keyword crystalSpecialComment :nodoc: :inherit: :ditto: contained
+    syn keyword crystalMarkdownDirective :nodoc: :inherit: :ditto: contained
 
     hi def link crystalCommentStart crystalComment
     hi def link crystalInlineComment crystalComment
     hi def link crystalCommentSpace crystalComment
-    hi def link crystalSpecialComment SpecialComment
+    hi def link crystalMarkdownDirective SpecialComment
 
     " Markdown <<<3
     " Inline syntax
@@ -77,8 +77,11 @@ else
 
     " Line-based syntax
     syn cluster crystalMarkdownLine contains=
-          \ crystalMarkdownCodeBlock,crystalMarkdownHeading,crystalMarkdownOrderedListItem,crystalMarkdownUnorderedListItem,
-          \ crystalMarkdownHorizontalRule,crystalMarkdownBlockQuote,crystalMarkdownReferenceDefinition
+          \ crystalMarkdownAdmonition,crystalMarkdownCodeBlock,crystalMarkdownHeading,crystalMarkdownOrderedListItem,
+          \ crystalMarkdownUnorderedListItem,crystalMarkdownHorizontalRule,crystalMarkdownBlockQuote,
+          \ crystalMarkdownReferenceDefinition
+
+    syn match crystalMarkdownAdmonition /\%#=1\%(BUG\|DEPRECATED\|WARNING\|EXPERIMENTAL\|FIXME\|NOTE\|OPTIMIZE\|TODO\):\=/ contained nextgroup=crystalComment
 
     syn region crystalMarkdownCodeBlock matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1```.*/ end=/\%#=1^\s*#\s*\zs```$/ contained contains=crystalMarkdownCodeLineStart keepend
     syn region crystalMarkdownCodeBlock matchgroup=crystalMarkdownCodeDelimiter start=/\%#=1\~\~\~.*/ end=/\%#=1^\s*#\s*\zs\~\~\~$/ contained contains=crystalMarkdownCodeLineStart keepend
@@ -100,7 +103,7 @@ else
 
     syn match crystalMarkdownHeading /\%#=1#\{1,6}\%(\s.*\)\=/ contained contains=@crystalMarkdownInline
 
-    syn match crystalMarkdownOrderedListItem /\%#=1\d\+\.\%(\s.*\)\=/ contained nextgroup=crystalComment
+    syn match crystalMarkdownOrderedListItem /\%#=1\d\+\.\s\@=/ contained nextgroup=crystalComment
     syn match crystalMarkdownUnorderedListItem /\%#=1[*+-]\s\@=/ contained nextgroup=crystalComment
 
     syn match crystalMarkdownHorizontalRule /\%#=1\*\%(\s*\*\)\{2,}$/ contained
@@ -135,6 +138,7 @@ else
     hi def link crystalMarkdownReference Special
     hi def link crystalMarkdownRawLink crystalMarkdownLink
     hi def link crystalMarkdownImage Special
+    hi def link crystalMarkdownAdmonition Todo
     hi def link crystalMarkdownHeading Title
     hi def link crystalMarkdownOrderedListItem Special
     hi def link crystalMarkdownUnorderedListItem Special
@@ -146,16 +150,13 @@ else
     hi def link crystalMarkdownReferenceTitleDelimiter crystalMarkdownReferenceTitle
     " >>>
   else
-    syn match crystalComment /\%#=1#.*/ contains=crystalTodo
+    syn match crystalComment /\%#=1#.*/
   endif
-
-  syn match crystalTodo /\%#=1\<\%(BUG\|DEPRECATED\|WARNING\|EXPERIMENTAL\|FIXME\|NOTE\|OPTIMIZE\|TODO\)\w*/ contained
 
   syn match crystalShebang /\%#=1\%^#!.*/
   syn match crystalPragmaError /\%#=1#<loc:.*/
   syn match crystalPragma /\%#=1#<loc:\%(push\|pop\|".\{-}"\)>/
 
-  hi def link crystalTodo Todo
   hi def link crystalShebang PreProc
   hi def link crystalPragmaError Error
   hi def link crystalPragma PreProc
