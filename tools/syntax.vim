@@ -29,6 +29,7 @@ let s:zero_re = "0"..s:choice(
       \ s:integer_suffix,
       \ s:float_suffix,
       \ "_"..s:choice(s:integer_suffix, s:float_suffix, s:exponent_suffix),
+      \ s:fraction,
       \ 'b[01]\+\%(_[01]\+\)*'..s:optional(s:integer_suffix),
       \ 'o\o\+\%(_\o\+\)*'..s:optional(s:integer_suffix),
       \ 'x\x\+\%(_\x\+\)*'..s:optional(s:integer_suffix)
