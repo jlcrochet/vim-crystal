@@ -15,7 +15,7 @@ let s:fraction = '\.\d\+\%(_\d\+\)*'..s:choice(
       \ s:float_suffix,
       \ s:exponent_suffix,
       \ "_"..s:choice(s:float_suffix, s:exponent_suffix)
-      \ )..'\='
+      \ )..'\=\>'
 
 let s:nonzero_re = '[1-9]\d*\%(_\d\+\)*'..s:choice(
       \ s:integer_suffix,
@@ -23,7 +23,7 @@ let s:nonzero_re = '[1-9]\d*\%(_\d\+\)*'..s:choice(
       \ s:exponent_suffix,
       \ "_"..s:choice(s:integer_suffix, s:float_suffix, s:exponent_suffix),
       \ s:fraction
-      \ )..'\='
+      \ )..'\=\>'
 
 let s:zero_re = "0"..s:choice(
       \ s:integer_suffix,
@@ -94,8 +94,8 @@ let s:pcre_group_modifier = "?"..s:choice(
       \ 'C\d*'
       \ )
 
-let g:crystal_number_nonzero = printf('syn match crystalNumber /\%%#=1%s\>/ nextgroup=@crystalPostfix skipwhite', s:nonzero_re)
-let g:crystal_number_zero = printf('syn match crystalNumber /\%%#=1%s\>/ nextgroup=@crystalPostfix skipwhite', s:zero_re)
+let g:crystal_number_nonzero = printf('syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix skipwhite', s:nonzero_re)
+let g:crystal_number_zero = printf('syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix skipwhite', s:zero_re)
 let g:crystal_operator_method = printf('syn match crystalOperatorMethod /\%%#=1%s/ contained nextgroup=@crystalPostfix,@crystalArguments skipwhite', s:overloadable_operators)
 let g:crystal_symbol = printf('syn match crystalSymbol /\%%#=1:%s/ contains=crystalSymbolStart nextgroup=@crystalPostfix skipwhite', s:overloadable_operators)
 let g:crystal_method_definition = printf('syn match crystalMethodDefinition /\%%#=1%s/ contained nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator skipwhite', s:overloadable_operators)
