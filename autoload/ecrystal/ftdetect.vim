@@ -3,14 +3,14 @@
 " Author: Jeffrey Crochet <jlcrochet@hey.com>
 " URL: https://github.com/jlcrochet/vim-crystal
 
-let s:extensions = {
-      \ "html": "html",
-      \ "js": "javascript",
-      \ "json": "json",
-      \ "xml": "xml",
-      \ "yml": "yaml",
-      \ "txt": "text",
-      \ "md": "markdown"
+let s:extensions = #{
+      \ html: "html",
+      \ js: "javascript",
+      \ json: "json",
+      \ xml: "xml",
+      \ yml: "yaml",
+      \ txt: "text",
+      \ md: "markdown"
       \ }
 
 if exists("g:ecrystal_extensions")
