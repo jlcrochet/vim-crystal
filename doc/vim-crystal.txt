@@ -7,7 +7,6 @@ Contents					*vim-crystal-help*
 	Introduction			|vim-crystal-introduction|
 	Configuration			|vim-crystal-configuration|
 	  g:crystal_simple_indent	  |g:crystal_simple_indent|
-	  g:crystal_fold		  |g:crystal_fold|
 	  g:crystal_markdown_comments	  |g:crystal_markdown_comments|
 	  g:ecrystal_extensions		  |g:ecrystal_extensions|
 	  g:ecrystal_default_subtype	  |g:ecrystal_default_subtype|
@@ -120,20 +119,6 @@ slightly faster highlighting and indentation, set |g:crystal_simple_indent| to
 	  .bar
 	  .baz
 <
-
-------------------------------------------------------------------------------
-g:crystal_fold					*g:crystal_fold*
-
-Values:
-	`0`: No folding
-	`1`: Folding
-
-Default: `0`
-
-If `1`, definition blocks for methods, classes, etc. will be folded.
-
-NOTE: Setting this will disable |g:crystal_simple_indent|, since floating
-blocks have to be matched in order for folding to work properly.
 
 ------------------------------------------------------------------------------
 g:crystal_markdown_comments			*g:crystal_markdown_comments*

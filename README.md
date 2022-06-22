@@ -99,12 +99,6 @@ x = y
   .baz
 ~~~
 
-#### `g:crystal_fold`
-
-If `1`, definition blocks for methods, classes, etc. will be folded.
-
-NOTE: Setting this will disable `g:crystal_simple_indent`, since floating blocks have to be matched in order for folding to work properly.
-
 #### `g:crystal_markdown_comments`
 
 This variable controls whether or not Markdown should be highlighted in comments; it can have three possible values:
