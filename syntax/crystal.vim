@@ -480,7 +480,7 @@ syn match crystalTypeAlias /\%#=1\%(\u\|\\\={{.\{-}}}\)\%(\w\+\|\\\={{.\{-}}}\)*
 syn match crystalTypeAliasOperator /\%#=1=/ contained nextgroup=@crystalTypes skipwhite skipempty
 
 syn keyword crystalKeyword include extend nextgroup=crystalConstant skipwhite
-syn keyword crystalKeyword return next break nextgroup=crystalPostfixKeyword skipwhite
+syn keyword crystalKeyword return yield next break nextgroup=crystalPostfixKeyword skipwhite
 syn keyword crystalKeyword require nextgroup=crystalString skipwhite
 
 syn keyword crystalPostfixKeyword if unless rescue then contained
