@@ -68,7 +68,8 @@ let s:pcre_escape = '\\'..s:choice(
       \   '<\h\w*>',
       \   '''\h\w*''',
       \   '{\h\w*}'
-      \ )
+      \ ),
+      \ "."
       \ )
 
 let s:pcre_group_modifier = "?"..s:choice(
