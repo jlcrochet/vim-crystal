@@ -348,7 +348,7 @@ syn match crystalNamedTupleKey /\%#=1[[:lower:]_]\w*[?!]\=:/ contained contains=
 syn match crystalNamedTupleKey /\%#=1\u\w*::\@!/ contained contains=crystalSymbolStart
 
 " Regular Expressions <<<3
-syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1\/\s\@!/ matchgroup=crystalRegexEnd end=/\%#=1\/[imx]*/ skip=/\%#=1\\\\\|\\\// oneline keepend contains=crystalStringInterpolation,@crystalPCRE nextgroup=@crystalPostfix skipwhite
+syn region crystalRegex matchgroup=crystalRegexStart start=/\%#=1\/\s\@!/ matchgroup=crystalRegexEnd end=/\%#=1\/[imx]*/ skip=/\%#=1\\\\\|\\\// oneline keepend contains=crystalStringInterpolation,crystalRegexSlashEscape,@crystalPCRE nextgroup=@crystalPostfix skipwhite
 
 " NOTE: These operators are defined here in order to take precedence
 " over /-style regexes
