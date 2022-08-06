@@ -196,7 +196,7 @@ syn match crystalModuleOperator /\%#=1::/ nextgroup=crystalConstant,crystalVaria
 
 " Type grammar <<<2
 syn cluster crystalTypes contains=crystalType,crystalTypeModuleOperator,crystalTypeTuple,crystalTypeProcOperator,crystalTypeGroup,crystalTypeSelf,crystalTypeNil,crystalTypeTypeof
-syn cluster crystalTypesPostfix contains=crystalTypeModifier,crystalTypeComma,crystalTypeUnionOperator,crystalTypeProcOperator,crystalTypeHashOperator,crystalTypeArray,crystalAssignmentOperator
+syn cluster crystalTypesPostfix contains=crystalTypeModifier,crystalTypeComma,crystalTypeUnionOperator,crystalTypeProcOperator,crystalTypeHashOperator,crystalTypeArray,crystalAssignmentOperator,@crystalPostfix
 
 syn match crystalType /\%#=1\u\w*/ contained nextgroup=@crystalTypesPostfix,crystalTypeModuleOperator,crystalTypeGeneric skipwhite
 syn match crystalType /\%#=1_\>/ contained nextgroup=@crystalTypesPostfix,crystalTypeModuleOperator,crystalTypeGeneric skipwhite
@@ -402,7 +402,7 @@ if get(g:, "crystal_simple_indent") || get(b:, "is_ecrystal")
   syn keyword crystalKeyword do nextgroup=crystalBlockParameters skipwhite
 
   syn keyword crystalKeyword def macro nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite
-  syn keyword crystalKeyword class struct lib annotation enum module union nextgroup=crystalTypeDefinition skipwhite
+  syn keyword crystalKeyword class struct lib annotation enum module union nextgroup=crystalTypeDefinition,crystalTypeModule skipwhite
 
   syn keyword crystalKeyword abstract nextgroup=crystalKeywordNoBlock skipwhite
   syn keyword crystalKeyword private protected nextgroup=crystalConstant skipwhite
@@ -428,8 +428,8 @@ else
   syn keyword crystalKeyword rescue contained containedin=crystalBlock nextgroup=crystalConstant skipwhite
 
   syn match crystalDefine /\%#=1\<\%(def\|macro\)\>/ nextgroup=crystalMethodDefinition,crystalMethodReceiver,crystalMethodSelf skipwhite contained containedin=crystalDefineBlock
-  syn match crystalDefine /\%#=1\<\%(class\|struct\|annotation\|enum\|module\|union\)\>/ nextgroup=crystalTypeDefinition skipwhite contained containedin=crystalDefineBlock
-  syn match crystalDefine /\%#=1\<lib\>/ nextgroup=crystalTypeDefinition skipwhite contained containedin=crystalLibDefineBlock
+  syn match crystalDefine /\%#=1\<\%(class\|struct\|annotation\|enum\|module\|union\)\>/ nextgroup=crystalTypeDefinition,crystalTypeModule skipwhite contained containedin=crystalDefineBlock
+  syn match crystalDefine /\%#=1\<lib\>/ nextgroup=crystalTypeDefinition,crystalTypeModule skipwhite contained containedin=crystalLibDefineBlock
 
   syn region crystalDefineBlock start=/\%#=1\<\%(def\|macro\|class\|struct\|annotation\|enum\|module\|union\)\>/ matchgroup=crystalDefine end=/\%#=1\<\.\@1<!end\>/ contains=TOP fold
   syn region crystalLibDefineBlock start=/\%#=1\<lib\>/ matchgroup=crystalDefine end=/\%#=1\<\.\@1<!end\>/ contains=TOP fold
@@ -501,8 +501,8 @@ syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={{/ end
       \ contained containedin=
       \ crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalStringArray,crystalSymbolArray,crystalHeredocLine,crystalHeredocLineRaw,
       \ crystalMethodDefinition,crystalTypeDefinition,crystalLibMethodDefinition,crystalCFunctionName,crystalCFunctionStringName,
-      \ crystalTypeAlias,crystalInstanceVariable,crystalClassVariable
-syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ oneline contains=TOP
+      \ crystalTypeAlias,crystalInstanceVariable,crystalClassVariable,crystalTypeGroup
+syn region crystalMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\={%/ end=/\%#=1%}/ contains=TOP
 " >>>2
 
 " Highlighting <<<1
