@@ -165,7 +165,8 @@ endif
 " Operators <<<2
 syn cluster crystalRHS contains=
       \ crystalConstant,crystalNumber,crystalString,crystalStringArray,crystalCharacter,crystalCharacterError,
-      \ crystalSymbol,crystalSymbolArray,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip
+      \ crystalSymbol,crystalSymbolArray,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,
+      \ crystalNil,crystalBoolean,crystalSelf
 
 syn match crystalUnaryOperator /\%#=1[+*!~]/ nextgroup=@crystalRHS skipwhite skipempty
 syn match crystalUnaryOperator /\%#=1&/ nextgroup=@crystalRHS,crystalTypeRestrictionOperator skipwhite
