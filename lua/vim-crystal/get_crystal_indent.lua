@@ -212,7 +212,7 @@ local function get_line_info(lnum)
     elseif b == 40 or b == 91 or b == 123 then  -- ( [ {
       local syngroup = syngroup_at(lnum, i)
 
-      if syngroup == "crystalDelimiter" or syngroup == "crystalStringArrayDelimiter" or syngroup == "crystalSymbolArrayDelimiter" then
+      if syngroup == "crystalDelimiter" or syngroup == "crystalStringArrayDelimiter" or syngroup == "crystalSymbolArrayDelimiter" or syngroup == "crystalStringInterpolationDelimiter" then
         brackets = brackets + 1
         bracket_cols[brackets] = i
       end
@@ -445,10 +445,231 @@ local function get_start_line_info(lnum, line, first_byte, first_col, last_byte,
     return lnum, line, first_byte, first_col, last_byte, last_col, pairs, has_middle, brackets, bracket_col, floats, float_col, operator_col, dot_col
   end
 end
+
+-- local function is_head_byte(b)
+--   return b >= 65 and b <= 90 or b >= 97 and b <= 122 or b == 95  -- [%a_]
+-- end
+
+-- local function is_word_byte(b)
+--   return b >= 48 and b <= 57 or b >= 65 and b <= 90 or b >= 97 and b <= 122 or b == 95  -- [%w_]
+-- end
+
+-- local function match_operator(line, start)
+--   local b = line:byte(start)
+
+--   if b == 33 then  -- !
+--     b = line:byte(start + 1)
+
+--     if b == 61 or b == 126 then  -- = ~
+--       return start + 1
+--     else
+--       return start
+--     end
+--   elseif b == 37 then  -- %
+--     return start
+--   elseif b == 38 then  -- &
+--     b = line:byte(start + 1)
+
+--     if b == 42 then  -- *
+--       b = line:byte(start + 2)
+
+--       if b == 42 then  -- *
+--         return start + 2
+--       else
+--         return start + 1
+--       end
+--     elseif b == 43 or b == 45 then  -- + -
+--       return start + 1
+--     else
+--       return start
+--     end
+--   elseif b == 42 then  -- *
+--     b = line:byte(start + 1)
+
+--     if b == 42 then  -- *
+--       return start + 1
+--     else
+--       return start
+--     end
+--   elseif b == 43 or b == 45 then  -- + -
+--     return start
+--   elseif b == 47 then  -- /
+--     b = line:byte(start + 1)
+
+--     if b == 47 then  -- /
+--       return start + 1
+--     else
+--       return start
+--     end
+--   elseif b == 60 then  -- <
+--     b = line:byte(start + 1)
+
+--     if b == 60 then  -- <
+--       return start + 1
+--     elseif b == 61 then  -- =
+--       b = line:byte(start + 2)
+
+--       if b == 62 then  -- >
+--         return start + 2
+--       else
+--         return start + 1
+--       end
+--     else
+--       return start
+--     end
+--   elseif b == 61 then  -- =
+--     b = line:byte(start + 1)
+
+--     if b == 61 then  -- =
+--       b = line:byte(start + 2)
+
+--       if b == 61 then  -- =
+--         return start + 2
+--       else
+--         return start + 1
+--       end
+--     elseif b == 126 then  -- ~
+--       return start + 1
+--     else
+--       return start
+--     end
+--   elseif b == 62 then  -- >
+--     b = line:byte(start + 1)
+
+--     if b == 61 or b == 62 then  -- = >
+--       return start + 1
+--     else
+--       return start
+--     end
+--   elseif b == 91 then  -- [
+--     b = line:byte(start + 1)
+
+--     if b == 93 then  -- ]
+--       b = line:byte(start + 2)
+
+--       if b == 61 or b == 63 then  -- = ?
+--         return start + 2
+--       else
+--         return start + 1
+--       end
+--     end
+--   elseif b == 94 or b == 124 or b == 126 then  -- ^ | ~
+--     return start
+--   end
+-- end
 -- }}}
 
 if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
   -- Simple {{{
+  -- local function get_line_info(lnum)
+  --   local line = getline(lnum)
+  --   local first_col, first_byte
+
+  --   for i = 1, #line do
+  --     first_byte = line:byte(i)
+
+  --     if first_byte > 32 then
+  --       first_col = i
+  --       break
+  --     end
+  --   end
+
+  --   local pairs = 0
+  --   local continuator = false
+
+  --   local i = first_col
+
+  --   while i <= #line do
+  --     local b = line:byte(i)
+
+  --     if b <= 32 then  -- %s
+  --       goto next
+  --     end
+
+  --     -- 0 = do nothing
+  --     -- 1 = parse raw string
+  --     -- 2 = parse string
+  --     local op = 0
+  --     local closer
+
+  --     if b == 34 then  -- "
+  --       op = 2
+  --       closer = 34
+  --     elseif b == 35 then  -- #
+  --       break
+  --     elseif b == 36 then  -- $
+  --       -- External variable: skip the next identifier
+  --       local next_byte = line:byte(i + 1)
+
+  --       if next_byte == 63 or next_byte == 126 then  -- ? ~
+  --         i = i + 1
+  --       -- elseif next_byte ==
+  --       end
+  --     elseif b == 39 then  -- '
+  --       op = 1
+  --       closer = 39
+  --     elseif b == 40 then  -- (
+  --       pairs = pairs + 1
+  --     elseif b == 41 then  -- )
+  --       pairs = pairs - 1
+  --     elseif b == 58 then  -- :
+  --       -- Possible symbol: skip the next identifier
+  --       local next_byte = line:byte(i + 1)
+
+  --       if is_head_byte(next_byte) then
+  --         repeat
+  --           i = i + 1
+  --           b = line:byte(i)
+  --         until not is_word_byte(b)
+
+  --         if b == 33 or b == 61 or b == 63 then  -- ! = ?
+  --           i = i + 1
+  --         end
+  --       else
+  --         i = match_operator(line, i + 1) or i
+  --       end
+  --     elseif b == 60 then  -- <
+  --       if line:byte(i + 1) == 60 and line:byte(i + 2) == 45 then  -- < -
+  --         i = i + 3
+  --         b = line:byte(i)
+
+  --         if b == 39 then  -- '
+  --           i = line:find("'", i + 1)
+  --         else
+  --           repeat
+  --             i = i + 1
+  --             b = line:byte(i)
+  --           until not is_word_byte(b)
+  --         end
+  --       end
+  --     elseif b == 91 then  -- [
+  --       pairs = pairs + 1
+  --     elseif b == 93 then  -- ]
+  --       pairs = pairs - 1
+  --     elseif b == 123 then  -- {
+  --       pairs = pairs + 1
+  --     elseif b == 125 then  -- }
+  --       pairs = pairs - 1
+  --     end
+
+  --     if op == 1 then
+  --       if line:byte(i + 1) == 92 then  -- \
+  --         i = line:find("'", i + 3)
+  --       else
+  --         i = i + 2
+  --       end
+  --     elseif op == 2 then
+
+  --     end
+
+  --     last_byte = b
+
+  --     ::next:: i = i + 1
+  --   end
+
+  --   return pairs, first_byte, last_byte
+  -- end
+
   function get_crystal_indent()
     local lnum = v.lnum
 
@@ -470,7 +691,21 @@ if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
       return 0
     end
 
-    local shift = 0
+  --   local start_lnum = prev_lnum
+
+  --   while multiline_regions[syngroup_at(start_lnum, 1)] do
+  --     start_lnum = prevnonblank(start_lnum - 1)
+  --   end
+
+  --   local total_pairs, first_byte, last_byte = get_line_info(start_lnum)
+
+  --   for l = start_lnum + 1, prev_lnum do
+  --     local pairs, _, byte = get_line_info(l)
+  --     total_pairs = total_pairs + pairs
+  --     last_byte = byte
+  --   end
+
+  local shift = 0
 
     -- Check the current line for a closing bracket or dedenting keyword:
     local line, first_byte, first_col = get_line_with_first_byte()
@@ -542,7 +777,7 @@ if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
     if prev_last_byte == 40 or prev_last_byte == 91 or prev_last_byte == 123 then  -- ( [ {
       local syngroup = syngroup_at(prev_lnum, prev_last_col)
 
-      if syngroup == "crystalDelimiter" or syngroup == "crystalStringArrayDelimiter" or syngroup == "crystalSymbolArrayDelimiter" then
+      if syngroup == "crystalDelimiter" or syngroup == "crystalStringArrayDelimiter" or syngroup == "crystalSymbolArrayDelimiter" or syngroup == "crystalStringInterpolationDelimiter" then
         shift = shift + 1
         return start_first_col - 1 + shift * shiftwidth()
       end
