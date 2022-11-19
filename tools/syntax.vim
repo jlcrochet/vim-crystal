@@ -6,6 +6,25 @@ function s:optional(re)
   return '\%('..a:re..'\)\='
 endfunction
 
+" alphanumeric + underscore + >0x9F:
+let s:word_character = '[^\x00-\x2F\x3A-\x40\x5B-\x5E`\x7B-\x9F]'
+" letters + underscore + >0x9F:
+let s:head_character = '[^\x00-\x40\x5B-\x5E`\x7B-\x9F]'
+" lowercase + underscore + >0x9F:
+let s:variable_head = '[^\x00-\x5E`\x7B-\x9F]'
+
+" Identifiers:
+let s:identifier = s:head_character..s:word_character..'*'
+let s:variable = s:variable_head..s:word_character..'*'
+let s:variable_or_method = s:variable..'[?!]\='
+let s:method_definition = s:variable..'[?!=]\='
+let s:constant = '\u'..s:word_character..'*'
+
+let s:identifier_with_macros = '\%('..s:head_character..'\|{{.\{-}}}\)\%('..s:word_character..'\+\|{{.\{-}}}\)*'
+let s:variable_with_macros = '\%('..s:variable_head..'\|{{.\{-}}}\)\%('..s:word_character..'\+\|{{.\{-}}}\)*'
+let s:method_definition_with_macros = '\%('..s:variable_head..'\|{{.\{-}}}\)\%('..s:word_character..'\+\|{{.\{-}}}\)*[?!=]\='
+let s:type_definition_with_macros = '\%(\u\|{{.\{-}}}\)\%('..s:word_character..'\+\|{{.\{-}}}\)*'
+
 " Number patterns:
 let s:integer_suffix = '[ui]\%(8\|16\|32\|64\|128\)'
 let s:float_suffix = 'f\%(32\|64\)'
@@ -51,7 +70,7 @@ let s:overloadable_operators = s:choice(
       \ )
 
 " The syntax for PCRE escapes and groups is pretty complicated, so we're
-" buildilng it here:
+" building it here:
 let s:pcre_escape = '\\'..s:choice(
       \ "c.",
       \ '\d\+',
@@ -91,18 +110,31 @@ let s:pcre_group_modifier = "?"..s:choice(
       \   '''\h\w*''',
       \   'R\%(\d\+\|&\h\w*\)',
       \   '\h\w*'
-      \ ) + ')',
+      \ )..')',
       \ 'C\d*'
       \ )
 
 let g:crystal_number_nonzero = printf('syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix skipwhite', s:nonzero_re)
 let g:crystal_number_zero = printf('syn match crystalNumber /\%%#=1%s/ nextgroup=@crystalPostfix skipwhite', s:zero_re)
-let g:crystal_operator_method = printf('syn match crystalOperatorMethod /\%%#=1%s/ contained nextgroup=@crystalPostfix,@crystalArguments skipwhite', s:overloadable_operators)
-let g:crystal_symbol = printf('syn match crystalSymbol /\%%#=1:%s/ contains=crystalSymbolStart nextgroup=@crystalPostfix skipwhite', s:overloadable_operators)
-let g:crystal_method_definition = printf('syn match crystalMethodDefinition /\%%#=1%s/ contained nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator skipwhite', s:overloadable_operators)
 let g:crystal_pcre_escape = printf('syn match crystalPCREEscape /\%%#=1%s/ contained', s:pcre_escape)
 let g:crystal_pcre_group = printf('syn region crystalPCREGroup matchgroup=crystalPCREMetaCharacter start=/\%%#=1(\%(%s\)\=/ end=/\%%#=1)/ contained transparent', s:pcre_group_modifier)
 
-delfunction s:choice
-delfunction s:optional
-unlet s:integer_suffix s:float_suffix s:exponent_suffix s:fraction s:nonzero_re s:zero_re s:overloadable_operators s:pcre_escape s:pcre_group_modifier
+let g:crystal_type = printf('syn match crystalType /\%%#=1%s/ contained nextgroup=@crystalTypesPostfix,crystalTypeModuleOperator,crystalTypeGeneric skipwhite', s:constant)
+let g:crystal_instance_variable = printf('syn match crystalInstanceVariable /\%%#=1@@\=%s/ nextgroup=@crystalPostfix skipwhite', s:identifier_with_macros)
+let g:crystal_fresh_variable = printf('syn match crystalFreshVariable /\%%#=1%%%s/ nextgroup=@crystalPostfix skipwhite', s:identifier)
+let g:crystal_external_variable = printf('syn match crystalExternalVariable /\%%#=1\$\%%(%s\|\d\+?\=\|[~?]\)/ nextgroup=@crystalPostfix skipwhite', s:identifier_with_macros)
+let g:crystal_constant = printf('syn match crystalConstant /\%%#=1%s/ nextgroup=@crystalPostfix skipwhite', s:constant)
+let g:crystal_variable_or_method = printf('syn match crystalVariableOrMethod /\%%#=1%s/ nextgroup=@crystalPostfix,@crystalArguments skipwhite', s:variable_or_method)
+let g:crystal_heredoc = printf('syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%%#=1<<-\z(%s\+\)/ matchgroup=crystalHeredocEnd end=/\%%#=1^\s*\z1$/ contains=crystalHeredocStartLine,crystalHeredocLine', s:word_character)
+let g:crystal_heredoc_raw = printf('syn region crystalHeredoc matchgroup=crystalHeredocStart start=/\%%#=1<<-''\z(%s.\{-}\)''/ matchgroup=crystalHeredocEnd end=/\%%#=1^\s*\z1$/ contains=crystalHeredocStartLineRaw,crystalHeredocLineRaw', s:word_character)
+let g:crystal_heredoc_skip = printf('syn region crystalHeredocSkip matchgroup=crystalHeredocStart start=/\%%#=1<<-\%%(%s\+\|''%s.\{-}''\)/ end=/\%%#=1\ze<<-/ contains=@crystalPostfix,@crystalRHS oneline nextgroup=crystalHeredoc,crystalHeredocSkip', s:word_character, s:word_character)
+let g:crystal_symbol = printf('syn match crystalSymbol /\%%#=1:\%%(%s[?!=]\=\|%s\)/ contains=crystalSymbolStart nextgroup=@crystalPostfix skipwhite', s:identifier, s:overloadable_operators)
+let g:crystal_named_tuple_key = printf('syn match crystalNamedTupleKey /\%%#=1\%%(%s\):/ contained contains=crystalSymbolStart', s:variable_or_method)
+let g:crystal_named_tuple_key_uppercase = printf('syn match crystalNamedTupleKey /\%%#=1%s::\@!/ contained contains=crystalSymbolStart', s:constant)
+let g:crystal_type_definition = printf('syn match crystalTypeDefinition /\%%#=1%s/ contained nextgroup=crystalTypeModule,crystalInheritanceOperator,crystalGeneric skipwhite', s:type_definition_with_macros)
+let g:crystal_method_definition = printf('syn match crystalMethodDefinition /\%%#=1\%%(%s\|%s\)/ contained nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator skipwhite', s:method_definition_with_macros, s:overloadable_operators)
+let g:crystal_method_receiver = printf('syn match crystalMethodReceiver /\%%#=1%s/ contained nextgroup=crystalMethodDot,crystalMethodModuleOperator', s:constant)
+let g:crystal_lib_method_definition = printf('syn match crystalLibMethodDefinition /\%%#=1%s/ contained nextgroup=crystalMethodParameters,crystalTypeRestrictionOperator,crystalMethodAssignmentOperator skipwhite', s:variable_with_macros)
+let g:crystal_c_function_name = printf('syn match crystalCFunctionName /\%%#=1%s/ contained nextgroup=crystalCFunctionParameters,crystalTypeRestrictionOperator skipwhite', s:identifier_with_macros)
+let g:crystal_type_alias = printf('syn match crystalTypeAlias /\%%#=1%s/ contained nextgroup=crystalTypeAliasOperator skipwhite', s:type_definition_with_macros)
+let g:crystal_block_parameter = printf('syn match crystalBlockParameter /\%%#=1%s/ contained containedin=crystalBlockParameters,crystalBlockParentheses', s:variable)

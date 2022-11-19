@@ -63,7 +63,7 @@ let s:define_block_middle_re = '\C\v<%(else|ensure|rescue)>'
 
 let s:all_start_re = '\C\v<%(if|unless|case|select|begin|for|while|until|do|def|macro|class|struct|lib|annotation|enum|module|union)>'
 
-let s:skip_bracket = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(StringArray\|SymbolArray\)\=Delimiter$'''
+let s:skip_bracket = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\a\{-}Delimiter$'''
 let s:skip_keyword = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(Macro\)\=Keyword$'''
 let s:skip_define = 'synID(line("."), col("."), 0)->synIDattr("name") !=# "crystalDefine"'
 let s:skip_all = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(Keyword\|MacroKeyword\|Define\)$'''
@@ -131,7 +131,7 @@ function s:ends_with_line_continuator(lnum)
       return 5
     endif
   elseif last_char ==# "(" || last_char ==# "[" || last_char ==# "{"
-    if synID(a:lnum, last_idx + 1, 0)->synIDattr("name") =~# '^crystal\%(StringArray\|SymbolArray\)\=Delimiter$'
+    if synID(a:lnum, last_idx + 1, 0)->synIDattr("name") =~# '^crystal\a\{-}Delimiter$'
       return 4
     endif
   elseif last_char ==# "|"
@@ -442,7 +442,7 @@ else
           else
             return idx
           endif
-        elseif syngroup =~# '^crystal\%(StringArray\|SymbolArray\)Delimiter$'
+        elseif syngroup =~# '^crystal\a\{-}Delimiter$'
           if search('\S', "z", l)
             return col(".") - 1
           else
@@ -450,7 +450,7 @@ else
           endif
         endif
       elseif p == 3
-        if syngroup =~# '^crystal\%(StringArray\|SymbolArray\)Delimiter$'
+        if syngroup =~# '^crystal\a\{-}Delimiter$'
           let start_lnum = searchpair('[(\[{]', '', '[)\]}]', "bW", s:skip_bracket)
 
           while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
