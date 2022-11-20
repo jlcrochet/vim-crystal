@@ -11,7 +11,7 @@ let b:current_syntax = "crystal"
 
 " Syntax <<<1
 syn sync fromstart
-syn iskeyword @,48-57,_,?,!,:
+syn iskeyword @,48-57,_,?,!,:,160-255
 
 if get(b:, "is_ecrystal")
   syn cluster crystalTop contains=@crystal
