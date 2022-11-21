@@ -66,7 +66,7 @@ let s:all_start_re = '\C\v<%(if|unless|case|select|begin|for|while|until|do|def|
 let s:skip_bracket = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\a\{-}Delimiter$'''
 let s:skip_keyword = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(Macro\)\=Keyword$'''
 let s:skip_define = 'synID(line("."), col("."), 0)->synIDattr("name") !=# "crystalDefine"'
-let s:skip_all = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(Keyword\|MacroKeyword\|Define\)$'''
+let s:skip_all = 'synID(line("."), col("."), 0)->synIDattr("name") !~# ''^crystal\%(\%(Macro\)\=Keyword\|Define\)$'''
 
 function s:is_operator(char, idx, lnum)
   if a:char =~# '[%&*+\-/<?^~]'
@@ -286,7 +286,7 @@ if get(g:, "crystal_simple_indent")
 
       if continuation == 4
         let shift += 1
-        return indent(start_lnum) + shift * shiftwidth()
+        return indent(start_lnum) + shift * &shiftwidth
       endif
     endif
 
@@ -294,7 +294,7 @@ if get(g:, "crystal_simple_indent")
 
     if searchpair(s:all_start_re, s:block_middle_re, '\C\<end\>', "b", s:skip_keyword, start_lnum)
       let shift += 1
-      return indent(start_lnum) + shift * shiftwidth()
+      return indent(start_lnum) + shift * &shiftwidth
     endif
 
     " Check for line continuations:
@@ -329,32 +329,32 @@ if get(g:, "crystal_simple_indent")
       if prev_continuation == 1 || prev_continuation == 2 || prev_continuation == 5 || prev_continuation == 6
         return start_first_idx
       else
-        return start_first_idx + shiftwidth()
+        return start_first_idx + &shiftwidth
       endif
     elseif continuation == 3
       if prev_continuation == 1 || prev_continuation == 2
         let shift -= 1
       elseif prev_continuation == 3
         if has_dedent
-          return start_first_idx - shiftwidth()
+          return start_first_idx - &shiftwidth
         else
           return start_first_idx
         endif
       elseif prev_continuation == 4
         return start_first_idx
       elseif prev_continuation == 5
-        return start_first_idx - shiftwidth()
+        return start_first_idx - &shiftwidth
       else
         if start_line->match('\C^\%([)\]}]\|end[[:alnum:]_?!:]\@!\)', start_first_idx) == -1
-          return start_first_idx + shiftwidth()
+          return start_first_idx + &shiftwidth
         endif
       endif
     elseif continuation == 5
-      return start_first_idx + shiftwidth()
+      return start_first_idx + &shiftwidth
     endif
 
     " Default:
-    return start_first_idx + shift * shiftwidth()
+    return start_first_idx + shift * &shiftwidth
   endfunction
   " }}}
 else
@@ -407,7 +407,7 @@ else
           let shift += 1
         endif
 
-        return indent(msl) + shift * shiftwidth()
+        return indent(msl) + shift * &shiftwidth
       elseif syngroup ==# "crystalDefine"
         let shift = -1
         let msl = s:get_msl(v:lnum)
@@ -416,7 +416,7 @@ else
           let shift += 1
         endif
 
-        return indent(msl) + shift * shiftwidth()
+        return indent(msl) + shift * &shiftwidth
       endif
     endif
 
@@ -427,57 +427,57 @@ else
       let start_lnum = prevnonblank(start_lnum - 1)
     endwhile
 
-    let [l, c, p] = searchpos('\C\([(\[{]\)\|\([)\]}]\)\|\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|select|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
+    let [l, c, p] = searchpos('\([(\[{]\)\|\([)\]}]\)\|\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|select|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
 
     while p
       let syngroup = synID(l, c, 0)->synIDattr("name")
 
-      if p == 2
-        if syngroup ==# "crystalDelimiter"
+      if p == 2  " ( [ {
+        if syngroup =~# '^crystal\%(StringInterpolation\)\=Delimiter$'
           let line = getline(l)
           let [char, idx, _] = line->matchstrpos('\S', c)
 
           if char ==# "|" || char ==# "#"
-            return indent(l) + shiftwidth()
+            return indent(l) + &shiftwidth
           else
             return idx
           endif
-        elseif syngroup =~# '^crystal\a\{-}Delimiter$'
+        elseif syngroup =~# '^crystal\%(String\%(Array\)\=\|SymbolArray\)Delimiter$'
           if search('\S', "z", l)
             return col(".") - 1
           else
-            return indent(l) + shiftwidth()
+            return indent(l) + &shiftwidth
           endif
         endif
-      elseif p == 3
-        if syngroup =~# '^crystal\a\{-}Delimiter$'
+      elseif p == 3  " ) ] }
+        if syngroup =~# '^crystal\%(String\%(Array\|Interpolation\)\|SymbolArray\)\=Delimiter$'
           let start_lnum = searchpair('[(\[{]', '', '[)\]}]', "bW", s:skip_bracket)
 
           while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
             let start_lnum = prevnonblank(start_lnum - 1)
           endwhile
         endif
-      elseif p == 4
+      elseif p == 4  " def class module macro struct enum annotation lib union
         if syngroup ==# "crystalDefine"
-          return indent(l) + shiftwidth()
+          return indent(l) + &shiftwidth
         endif
-      elseif p == 5
+      elseif p == 5  " if unless case select begin while until for do
         if syngroup ==# "crystalKeyword"
           if expand("<cword>") ==# "do"
-            return indent(l) + shiftwidth()
+            return indent(l) + &shiftwidth
           else
-            return c - 1 + shiftwidth()
+            return c - 1 + &shiftwidth
           endif
         elseif syngroup ==# "crystalMacroKeyword"
-          return indent(l) + shiftwidth()
+          return indent(l) + &shiftwidth
         endif
-      elseif p == 6
+      elseif p == 6  " else elsif when in ensure rescue
         if syngroup =~# '^crystal\%(Keyword\|Define\)$'
-          return c - 1 + shiftwidth()
+          return c - 1 + &shiftwidth
         elseif syngroup ==# "crystalMacroKeyword"
-          return indent(l) + shiftwidth()
+          return indent(l) + &shiftwidth
         endif
-      elseif p == 7
+      elseif p == 7  " end
         if syngroup =~# '^crystal\%(Macro\)\=Keyword$'
           let start_lnum = searchpair(s:block_start_re, '', '\C\<end\>', "bW", s:skip_keyword)
 
@@ -493,7 +493,7 @@ else
         endif
       endif
 
-      let [l, c, p] = searchpos('\C\([(\[{]\)\|\([)\]}]\)\|\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|select|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
+      let [l, c, p] = searchpos('\([(\[{]\)\|\([)\]}]\)\|\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|select|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
     endwhile
 
     " Check for line continuations:
@@ -539,7 +539,7 @@ else
       if prev_continuation == 1 || prev_continuation == 3 || prev_continuation == 6
         return indent(s:get_msl(start_lnum))
       elseif prev_continuation == 2
-        return start_first_idx - shiftwidth()
+        return start_first_idx - &shiftwidth
       endif
     elseif continuation == 1
       if prev_continuation == 1 || prev_continuation == 5
@@ -573,26 +573,26 @@ else
           endif
         endfor
 
-        return start_first_idx + shiftwidth()
+        return start_first_idx + &shiftwidth
       endif
     elseif continuation == 2
       if prev_continuation == 1 || prev_continuation == 2 || prev_continuation == 5
         return start_first_idx
       else
-        return start_first_idx + shiftwidth()
+        return start_first_idx + &shiftwidth
       endif
     elseif continuation == 3
       if prev_continuation == 1
         return indent(s:get_msl(start_lnum))
       elseif prev_continuation == 2 || prev_continuation == 5
-        return start_first_idx - shiftwidth()
+        return start_first_idx - &shiftwidth
       elseif prev_continuation == 3 || prev_continuation == 4
         return start_first_idx
       else
-        return start_first_idx + shiftwidth()
+        return start_first_idx + &shiftwidth
       endif
     elseif continuation == 5
-      return start_first_idx + shiftwidth()
+      return start_first_idx + &shiftwidth
     elseif continuation == 6
       if prev_continuation == 6
         return start_first_idx
@@ -608,7 +608,7 @@ else
           let idx = stridx(start_line, ".", idx + 2)
         endwhile
 
-        return start_first_idx + shiftwidth()
+        return start_first_idx + &shiftwidth
       endif
     endif
 
