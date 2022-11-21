@@ -433,7 +433,7 @@ else
       let syngroup = synID(l, c, 0)->synIDattr("name")
 
       if p == 2  " ( [ {
-        if syngroup =~# '^crystal\%(StringInterpolation\)\=Delimiter$'
+        if syngroup ==# 'crystalDelimiter'
           let line = getline(l)
           let [char, idx, _] = line->matchstrpos('\S', c)
 
@@ -442,7 +442,7 @@ else
           else
             return idx
           endif
-        elseif syngroup =~# '^crystal\%(String\%(Array\)\=\|SymbolArray\)Delimiter$'
+        elseif syngroup =~# '^crystal\%(Macro\)\@!\a\{-}Delimiter$'
           if search('\S', "z", l)
             return col(".") - 1
           else
@@ -450,7 +450,7 @@ else
           endif
         endif
       elseif p == 3  " ) ] }
-        if syngroup =~# '^crystal\%(String\%(Array\|Interpolation\)\|SymbolArray\)\=Delimiter$'
+        if syngroup =~# '^crystal\%(Macro\)\@!\a\{-}Delimiter'
           let start_lnum = searchpair('[(\[{]', '', '[)\]}]', "bW", s:skip_bracket)
 
           while s:multiline_regions->get(synID(start_lnum, 1, 0)->synIDattr("name"))
