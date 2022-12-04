@@ -351,18 +351,38 @@ local function get_line_info_simple(lnum)
     elseif b >= 97 and b <= 122 then  -- %l
       local word = line:match("^%l+[%w_?!:]?", i)
 
-      if word == "def" or word == "class" or word == "module" or word == "macro" or word == "struct" or word == "enum" or word == "annotation" or word == "lib" or word == "union" or word == "if" or word == "unless" or word == "case" or word == "select" or word == "while" or word == "until" or word == "begin" or word == "do" then
+      if word == "def" or word == "class" or word == "module" or word == "macro" or word == "struct" or word == "enum" or word == "annotation" or word == "lib" or word == "union" or word == "case" or word == "select" or word == "while" or word == "until" then
         if syngroup_at(lnum, i) == "crystalKeyword" then
           pairs = pairs + 1
         end
-      elseif word == "else" or word == "rescue" or word == "ensure" or word == "elsif" or word == "when" or word == "in" then
+      elseif word == 'if' or word == 'unless' or word == 'begin' or word == 'do' then
+        local syngroup = syngroup_at(lnum, i)
+
+        if syngroup == 'crystalKeyword' or syngroup == 'crystalMacroKeyword' then
+          pairs = pairs + 1
+        end
+      elseif word == 'for' then
+        if syngroup_at(lnum, i) == 'crystalMacroKeyword' then
+          pairs = pairs + 1
+        end
+      elseif word == 'else' or word == 'elsif' then
+        if not has_middle then
+          local syngroup = syngroup_at(lnum, i)
+
+          if syngroup == 'crystalKeyword' or syngroup == 'crystalMacroKeyword' then
+            has_middle = true
+          end
+        end
+      elseif word == "rescue" or word == "ensure" or word == "when" or word == "in" then
         if not has_middle then
           if syngroup_at(lnum, i) == "crystalKeyword" then
             has_middle = true
           end
         end
       elseif word == "end" then
-        if syngroup_at(lnum, i) == "crystalKeyword" then
+        local syngroup = syngroup_at(lnum, i)
+
+        if syngroup == "crystalKeyword" or syngroup == 'crystalMacroKeyword' then
           pairs = pairs - 1
           has_middle = false
         end
