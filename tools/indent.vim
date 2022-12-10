@@ -1,4 +1,4 @@
-let s:words = ["0=end", "0=else", "0=elsif", "0=when", "0=rescue", "0=ensure", "0={%\\ end", "0={%\\ else", "0={%\\ elsif"]
+let s:words = ["0=end", "0=else", "0=elsif", "0=when", "0=rescue", "0=ensure", "0={%\\ end", "0={%\\ else", "0={%\\ elsif", "0=\\\\{%\\ end", "0=\\\\{%\\ else", "0=\\\\{%\\ elsif"]
 let s:characters = "_?!:"
 
 let s:indent_words = ["o", "O", "!^F", "0)", "0]", "0}", "0=%}", "0.", "0=.."]
