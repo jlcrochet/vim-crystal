@@ -212,14 +212,14 @@ local function get_line_info(lnum)
     elseif b == 40 or b == 91 or b == 123 then  -- ( [ {
       local syngroup = syngroup_at(lnum, i)
 
-      if syngroup == "crystalDelimiter" or syngroup == "crystalStringArrayDelimiter" or syngroup == "crystalSymbolArrayDelimiter" or syngroup == "crystalStringInterpolationDelimiter" then
+      if syngroup == "crystalDelimiter" or syngroup == "crystalStringArrayDelimiter" or syngroup == "crystalSymbolArrayDelimiter" or syngroup == "crystalStringInterpolationDelimiter" or syngroup == 'crystalMacroDelimiter' then
         brackets = brackets + 1
         bracket_cols[brackets] = i
       end
     elseif b == 41 or b == 93 or b == 125 then  -- ) ] }
       local syngroup = syngroup_at(lnum, i)
 
-      if syngroup == "crystalDelimiter" or syngroup == "crystalStringArrayDelimiter" or syngroup == "crystalSymbolArrayDelimiter" or syngroup == "crystalStringInterpolationDelimiter" then
+      if syngroup == "crystalDelimiter" or syngroup == "crystalStringArrayDelimiter" or syngroup == "crystalSymbolArrayDelimiter" or syngroup == "crystalStringInterpolationDelimiter" or syngroup == 'crystalMacroDelimiter' then
         brackets = brackets - 1
       end
     elseif b == 46 then  -- .
@@ -500,6 +500,9 @@ if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
     if first_byte == 41 or first_byte == 93 or first_byte == 125 then  -- ) ] }
       shift = shift - 1
       has_dedent = true
+    elseif first_byte == 37 and line:byte(first_col + 1) == 125 then  -- % }
+      shift = shift - 1
+      has_dedent = true
     elseif first_byte == 123 and line:byte(first_col + 1) == 37 then  -- { %
       for i = first_col + 2, #line do
         local b = line:byte(i)
@@ -562,7 +565,12 @@ if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
     if prev_last_byte == 40 or prev_last_byte == 91 or prev_last_byte == 123 then  -- ( [ {
       local syngroup = syngroup_at(prev_lnum, prev_last_col)
 
-      if syngroup == "crystalDelimiter" or syngroup == "crystalStringArrayDelimiter" or syngroup == "crystalSymbolArrayDelimiter" or syngroup == "crystalStringInterpolationDelimiter" then
+      if syngroup == "crystalDelimiter" or syngroup == "crystalStringArrayDelimiter" or syngroup == "crystalSymbolArrayDelimiter" or syngroup == "crystalStringInterpolationDelimiter" or syngroup == 'crystalMacroDelimiter' then
+        shift = shift + 1
+        return start_first_col - 1 + shift * bo.shiftwidth
+      end
+    elseif prev_last_byte == 37 then  -- %
+      if prev_line:byte(prev_last_col - 1) == 123 and syngroup_at(prev_lnum, prev_last_col) == 'crystalMacroDelimiter' then
         shift = shift + 1
         return start_first_col - 1 + shift * bo.shiftwidth
       end
