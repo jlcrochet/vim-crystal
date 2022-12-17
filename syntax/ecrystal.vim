@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language: Embedded Crystal <crystal-lang.org/api/latest/ECR.html>
-" Author: Jeffrey Crochet <jlcrochet@hey.com>
+" Author: Jeffrey Crochet <jlcrochet91@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
 let b:is_ecrystal = 1

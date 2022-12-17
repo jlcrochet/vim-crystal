@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language: Crystal <crystal-lang.org>
-" Author: Jeffrey Crochet <jlcrochet@hey.com>
+" Author: Jeffrey Crochet <jlcrochet91@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
 if exists("b:current_syntax")
