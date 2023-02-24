@@ -492,7 +492,7 @@ syn keyword crystalKeyword uninitialized nextgroup=@crystalTypes skipwhite
 syn match crystalTypeAlias /\%#=1\%(\u\|{{.\{-}}}\)\%([^\x00-\x2F\x3A-\x40\x5B-\x5E`\x7B-\x9F]\+\|{{.\{-}}}\)*/ contained nextgroup=crystalTypeAliasOperator skipwhite
 syn match crystalTypeAliasOperator /\%#=1=/ contained nextgroup=@crystalTypes skipwhite skipempty
 
-syn keyword crystalKeyword include extend nextgroup=crystalConstant skipwhite
+syn keyword crystalKeyword include extend nextgroup=@crystalTypes skipwhite
 syn keyword crystalKeyword return yield next break nextgroup=crystalPostfixKeyword skipwhite
 syn keyword crystalKeyword require nextgroup=crystalString skipwhite
 
