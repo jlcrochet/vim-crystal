@@ -19,7 +19,7 @@ else
   syn cluster crystalTop contains=TOP
 endif
 
-syn cluster crystalPostfix contains=crystalOperator,crystalMethodOperator,crystalTernaryOperator,crystalTypeRestrictionOperator,crystalRangeOperator,crystalModuleOperator,crystalPostfixKeyword,crystalComma
+syn cluster crystalPostfix contains=crystalOperator,crystalMethodOperator,crystalTernaryOperator,crystalTypeRestrictionOperator,crystalRangeOperator,crystalModuleOperator,crystalPostfixKeyword,crystalComma,crystalDelimiter
 syn cluster crystalArguments contains=crystalFreshVariable,crystalNumber,crystalString,crystalStringArray,crystalCharacter,crystalCharacterError,crystalSymbol,crystalSymbolArray,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,crystalNamedTupleKey
 
 " Comments <<<2
@@ -237,14 +237,14 @@ syn region crystalTypeTypeofInvocation matchgroup=crystalDelimiter start=/\%#=1(
 syn match crystalTypeSplat /\%#=1\*/ contained nextgroup=@crystalTypes skipwhite
 
 " Delimiters <<<2
-syn match crystalDelimiter /\%#=1(/ nextgroup=crystalNamedTupleKey skipwhite skipempty
+syn match crystalDelimiter /\%#=1(/ nextgroup=crystalNamedTupleKey,@crystalArguments skipwhite skipempty
 syn match crystalDelimiter /\%#=1)/ nextgroup=@crystalPostfix skipwhite
 
-syn match crystalDelimiter /\%#=1\[/
+syn match crystalDelimiter /\%#=1\[/ nextgroup=@crystalArguments skipwhite skipempty
 syn match crystalDelimiter /\%#=1]?\=/ nextgroup=@crystalPostfix,crystalOf skipwhite
 syn keyword crystalOf of contained nextgroup=@crystalTypes skipwhite skipempty
 
-syn match crystalDelimiter /\%#=1{/ nextgroup=crystalNamedTupleKey,crystalBlockParameters skipwhite skipempty
+syn match crystalDelimiter /\%#=1{/ nextgroup=crystalNamedTupleKey,crystalBlockParameters,@crystalArguments skipwhite skipempty
 syn match crystalDelimiter /\%#=1}/ nextgroup=@crystalPostfix,crystalOf skipwhite
 
 syn match crystalComma /\%#=1,/ contained nextgroup=@crystalRHS,crystalNamedTupleKey skipwhite skipempty
