@@ -20,10 +20,10 @@ let s:variable_or_method = s:variable..'[?!]\='
 let s:method_definition = s:variable..'[?!=]\='
 let s:constant = '\u'..s:word_character..'*'
 
-let s:identifier_with_macros = '\%('..s:head_character..'\|{{.\{-}}}\)\%('..s:word_character..'\+\|{{.\{-}}}\)*'
-let s:variable_with_macros = '\%('..s:variable_head..'\|{{.\{-}}}\)\%('..s:word_character..'\+\|{{.\{-}}}\)*'
-let s:method_definition_with_macros = '\%('..s:variable_head..'\|{{.\{-}}}\)\%('..s:word_character..'\+\|{{.\{-}}}\)*[?!=]\='
-let s:type_definition_with_macros = '\%(\u\|{{.\{-}}}\)\%('..s:word_character..'\+\|{{.\{-}}}\)*'
+let s:identifier_with_macros = '\%('..s:head_character..'\|\\\={{.\{-}}}\)\%('..s:word_character..'\+\|\\\={{.\{-}}}\)*'
+let s:variable_with_macros = '\%('..s:variable_head..'\|\\\={{.\{-}}}\)\%('..s:word_character..'\+\|\\\={{.\{-}}}\)*'
+let s:method_definition_with_macros = '\%('..s:variable_head..'\|\\\={{.\{-}}}\)\%('..s:word_character..'\+\|\\\={{.\{-}}}\)*[?!=]\='
+let s:type_definition_with_macros = '\%(\u\|\\\={{.\{-}}}\)\%('..s:word_character..'\+\|\\\={{.\{-}}}\)*'
 
 " Number patterns:
 let s:integer_suffix = '[ui]\%(8\|16\|32\|64\|128\)'
