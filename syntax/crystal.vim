@@ -259,7 +259,7 @@ syn match crystalConstant /\%#=1\u[^\x00-\x2F\x3A-\x40\x5B-\x5E`\x7B-\x9F]*/ nex
 syn match crystalVariableOrMethod /\%#=1[^\x00-\x5E`\x7B-\x9F][^\x00-\x2F\x3A-\x40\x5B-\x5E`\x7B-\x9F]*[?!]\=/ nextgroup=@crystalPostfix,@crystalArguments skipwhite
 
 syn keyword crystalPseudoMethod is_a? as contained nextgroup=@crystalTypes,crystalTypeInvocation skipwhite
-syn keyword crystalPseudoMethod sizeof instance_sizeof nextgroup=@crystalTypes,crystalTypeInvocation skipwhite
+syn keyword crystalPseudoMethod sizeof instance_sizeof nextgroup=@crystalTypes,crystalTypeInvocation skipwhite containedin=crystalTypeArray
 syn region crystalTypeInvocation matchgroup=crystalDelimiter start=/\%#=1(/ end=/\%#=1)/ contained contains=@crystalTypes nextgroup=@crystalPostfix skipwhite
 
 " Literals <<<2
@@ -519,7 +519,7 @@ syn region crystalEmbeddedMacro matchgroup=crystalMacroDelimiter start=/\%#=1\\\
       \ contained containedin=
       \ crystalString,crystalSymbol,crystalRegex,crystalCommand,crystalStringArray,crystalSymbolArray,crystalHeredocLine,crystalHeredocLineRaw,crystalCFunctionStringName,
       \ crystalInstanceVariable,crystalExternalVariable,crystalTypeDefinition,crystalMethodDefinition,crystalLibMethodDefinition,crystalCFunctionName,crystalTypeAlias,
-      \ crystalTypeInvocation,crystalMethodParameters
+      \ crystalTypeInvocation,crystalMethodParameters,crystalTypeArray
 
 syn keyword crystalMacroKeyword if unless else elsif begin for in do end contained containedin=crystalMacro,crystalEmbeddedMacro
 " >>>2
