@@ -158,7 +158,7 @@ local function is_line_continuator(byte, col, line, lnum)
 
     if syngroup == "crystalOperator" or syngroup == "crystalTypeRestrictionOperator" then
       return 1
-    elseif syngroup == "crystalSymbolStart" then
+    elseif syngroup == "crystalNamedTupleKeyDelimiter" then
       return 4
     end
   elseif byte == 101 then  -- e

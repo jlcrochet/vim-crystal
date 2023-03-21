@@ -127,7 +127,7 @@ function s:ends_with_line_continuator(lnum)
 
     if syngroup =~# '^crystal\%(TypeRestriction\)\=Operator$'
       return 1
-    elseif syngroup ==# "crystalSymbolStart"
+    elseif syngroup ==# "crystalNamedTupleKeyDelimiter"
       return 5
     endif
   elseif last_char ==# "(" || last_char ==# "[" || last_char ==# "{"
