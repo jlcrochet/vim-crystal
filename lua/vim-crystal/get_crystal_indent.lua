@@ -113,7 +113,7 @@ local function is_operator(byte, col, lnum)
     return syngroup_at(lnum, col) == "crystalOperator"
   elseif byte == 58 then  -- :
     local syngroup = syngroup_at(lnum, col)
-    return syngroup == "crystalOperator" or syngroup == "crystalTypeRestrictionOperator"
+    return syngroup == "crystalOperator" or syngroup == "crystalTypeRestrictionOperator" or syngroup == "crystalNamedTupleKeyDelimiter"
   elseif byte == 61 then  -- =
     local syngroup = syngroup_at(lnum, col)
     return syngroup == "crystalOperator" or syngroup == "crystalAssignmentOperator" or syngroup == "crystalMethodAssignmentOperator" or syngroup == "crystalTypeAliasOperator"
@@ -231,7 +231,7 @@ local function get_line_info(lnum)
         operator_col = i
       end
     elseif b >= 97 and b <= 122 then  -- %l
-      local word = line:match("^%l+[%w_?!:]?", i)
+      local word = line:match("^%l+[%u%d_?!:]?", i)
 
       if word == "def" or word == "class" or word == "module" or word == "macro" or word == "struct" or word == "enum" or word == "annotation" or word == "lib" or word == "union" then
         if syngroup_at(lnum, i) == "crystalDefine" then
@@ -349,7 +349,7 @@ local function get_line_info_simple(lnum)
         break
       end
     elseif b >= 97 and b <= 122 then  -- %l
-      local word = line:match("^%l+[%w_?!:]?", i)
+      local word = line:match("^%l+[%u%d_?!:]?", i)
 
       if word == "def" or word == "class" or word == "module" or word == "macro" or word == "struct" or word == "enum" or word == "annotation" or word == "lib" or word == "union" or word == "case" or word == "select" or word == "while" or word == "until" then
         if syngroup_at(lnum, i) == "crystalKeyword" then
@@ -500,15 +500,17 @@ if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
     if first_byte == 41 or first_byte == 93 or first_byte == 125 then  -- ) ] }
       shift = shift - 1
       has_dedent = true
-    elseif first_byte == 37 and line:byte(first_col + 1) == 125 then  -- % }
-      shift = shift - 1
-      has_dedent = true
+    elseif first_byte == 37 then  -- %
+      if line:byte(first_col + 1) == 125 then  -- }
+        shift = shift - 1
+        has_dedent = true
+      end
     elseif first_byte == 123 and line:byte(first_col + 1) == 37 then  -- { %
       for i = first_col + 2, #line do
         local b = line:byte(i)
 
         if b > 32 then
-          local word = line:match("^%l+[%w_?!:]?", i)
+          local word = line:match("^%l+[%u%d_?!:]?", i)
 
           if word == "end" or word == "else" or word == "elsif" then
             shift = shift - 1
@@ -523,7 +525,7 @@ if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
         local b = line:byte(i)
 
         if b > 32 then
-          local word = line:match("^%l+[%w_?!:]?", i)
+          local word = line:match("^%l+[%u%d_?!:]?", i)
 
           if word == "end" or word == "else" or word == "elsif" then
             shift = shift - 1
@@ -534,7 +536,7 @@ if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
         end
       end
     else
-      local word = line:match("^%l+[%w_?!:]?", first_col)
+      local word = line:match("^%l+[%u%d_?!:]?", first_col)
 
       if word == "end" or word == "else" or word == "elsif" or word == "when" or word == "in" or word == "rescue" or word == "ensure" then
         shift = shift - 1
@@ -709,7 +711,7 @@ else
         local b = line:byte(i)
 
         if b > 32 then
-          local word = line:match("^%l+[%w_?!:]?", i)
+          local word = line:match("^%l+[%u%d_?!:]?", i)
 
           if word == "end" or word == "else" or word == "elsif" then
             shift = shift - 1
@@ -724,7 +726,7 @@ else
         local b = line:byte(i)
 
         if b > 32 then
-          local word = line:match("^%l+[%w_?!:]?", i)
+          local word = line:match("^%l+[%u%d_?!:]?", i)
 
           if word == "end" or word == "else" or word == "elsif" then
             shift = shift - 1
@@ -735,7 +737,7 @@ else
         end
       end
     else
-      local word = line:match("^%l+[%w_?!:]?", first_col)
+      local word = line:match("^%l+[%u%d_?!:]?", first_col)
 
       if word == "end" or word == "else" or word == "elsif" or word == "when" or word == "in" or word == "rescue" or word == "ensure" then
         shift = shift - 1

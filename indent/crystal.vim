@@ -72,7 +72,7 @@ function s:is_operator(char, idx, lnum)
   if a:char =~# '[%&*+\-/<?^~]'
     return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") ==# "crystalOperator"
   elseif a:char ==# ":"
-    return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") =~# '^crystal\%(TypeRestriction\)\=Operator$'
+    return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") =~# '^crystal\%(\%(TypeRestriction\)\=Operator\|NamedTupleKeyDelimiter\)$'
   elseif a:char ==# "="
     return synID(a:lnum, a:idx + 1, 0)->synIDattr("name") =~# '^crystal\%(Assignment\|MethodAssignment\|TypeAlias\)\=Operator$'
   elseif a:char ==# ">"
@@ -132,6 +132,10 @@ function s:ends_with_line_continuator(lnum)
     endif
   elseif last_char ==# "(" || last_char ==# "[" || last_char ==# "{"
     if synID(a:lnum, last_idx + 1, 0)->synIDattr("name") =~# '^crystal\a\{-}Delimiter$'
+      return 4
+    endif
+  elseif last_char ==# "%" && line[last_idx - 1] ==# "{"
+    if synID(a:lnum, last_idx + 1, 0)->synIDattr("name") ==# "crystalMacroDelimiter"
       return 4
     endif
   elseif last_char ==# "|"
@@ -265,6 +269,11 @@ if get(g:, "crystal_simple_indent")
     if first_char ==# ")" || first_char ==# "]" || first_char ==# "}"
       let shift -= 1
       let has_dedent = 1
+    elseif first_char ==# "%"
+      if line[first_col] ==# "}"
+        let shift -= 1
+        let has_dedent = 1
+      endif
     elseif first_char ==# "."
       if line[first_col] !=# "."
         let continuation = 6
