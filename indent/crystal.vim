@@ -436,7 +436,7 @@ else
       let start_lnum = prevnonblank(start_lnum - 1)
     endwhile
 
-    let [l, c, p] = searchpos('\([(\[{]\)\|\([)\]}]\)\|\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|select|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
+    let [l, c, p] = searchpos('\([(\[{]\)\|\([)\]}]\)\|\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|select|begin|while|until)|(else|elsif|when|ensure|rescue)|(for|in|do)|(end))>', "bp", start_lnum)
 
     while p
       let syngroup = synID(l, c, 0)->synIDattr("name")
@@ -470,23 +470,23 @@ else
         if syngroup ==# "crystalDefine"
           return indent(l) + &shiftwidth
         endif
-      elseif p == 5  " if unless case select begin while until for do
+      elseif p == 5  " if unless case select begin while until
         if syngroup ==# "crystalKeyword"
-          if expand("<cword>") ==# "do"
-            return indent(l) + &shiftwidth
-          else
-            return c - 1 + &shiftwidth
-          endif
+          return c - 1 + &shiftwidth
         elseif syngroup ==# "crystalMacroKeyword"
           return indent(l) + &shiftwidth
         endif
-      elseif p == 6  " else elsif when in ensure rescue
+      elseif p == 6  " else elsif when ensure rescue
         if syngroup =~# '^crystal\%(Keyword\|Define\)$'
           return c - 1 + &shiftwidth
         elseif syngroup ==# "crystalMacroKeyword"
           return indent(l) + &shiftwidth
         endif
-      elseif p == 7  " end
+      elseif p == 7  " for in do
+        if syngroup =~# '^crystal\%(Macro\)\=Keyword$'
+          return indent(l) + &shiftwidth
+        endif
+      elseif p == 8  " end
         if syngroup =~# '^crystal\%(Macro\)\=Keyword$'
           let start_lnum = searchpair(s:block_start_re, '', '\C\<end\>', "bW", s:skip_keyword)
 
@@ -502,7 +502,7 @@ else
         endif
       endif
 
-      let [l, c, p] = searchpos('\([(\[{]\)\|\([)\]}]\)\|\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|select|begin|while|until|for|do)|(else|elsif|when|in|ensure|rescue)|(end))>', "bp", start_lnum)
+      let [l, c, p] = searchpos('\([(\[{]\)\|\([)\]}]\)\|\C\v<%((def|class|module|macro|struct|enum|annotation|lib|union)|(if|unless|case|select|begin|while|until)|(else|elsif|when|ensure|rescue)|(for|in|do)|(end))>', "bp", start_lnum)
     endwhile
 
     " Check for line continuations:
