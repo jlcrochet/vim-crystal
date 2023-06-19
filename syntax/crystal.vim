@@ -648,7 +648,7 @@ hi def link crystalTypeDefinition Typedef
 hi def link crystalTypeAlias crystalTypeDefinition
 hi def link crystalTypeModule crystalModuleOperator
 hi def link crystalInheritanceOperator crystalOperator
-hi def link crystalMacroDelimiter crystalDelimiter
+hi def link crystalMacroDelimiter PreProc
 hi def link crystalFreshVariable Identifier
 hi def link crystalAnnotationDelimiter crystalDelimiter
 hi def link crystalBlockParameter crystalVariableOrMethod
