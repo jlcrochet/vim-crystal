@@ -96,7 +96,7 @@ function s:ends_with_line_continuator(lnum)
 
   while idx != -1
     if char ==# "#"
-      if synID(a:lnum, next_idx, 0)->synIDattr("name") =~# '^crystal\%(Comment\%(Start\)\=\|MarkdownCodeLineStart\)$'
+      if synID(a:lnum, next_idx, 0)->synIDattr("name") =~# '^crystal\%(Comment\%(Start\)\=\|Markdown\%(\%(Crystal\)\=CodeLineStart\|CrystalBlockContinuator\)\)$'
         break
       endif
     else
