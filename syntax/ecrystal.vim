@@ -1,5 +1,5 @@
 " Vim syntax file
-" Language: Embedded Crystal <crystal-lang.org/api/latest/ECR.html>
+" Language: Embedded Crystal <https://crystal-lang.org/api/latest/ECR.html>
 " Author: Jeffrey Crochet <jlcrochet91@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
@@ -17,7 +17,7 @@ syn region ecrystalTag matchgroup=ecrystalDelimiter start=/\%#=1<%-\==\=/ end=/\
 syn region ecrystalComment matchgroup=ecrystalCommentStart start=/\%#=1<%#/ matchgroup=ecrystalCommentEnd end=/\%#=1%>/ containedin=ALLBUT,@crystal,@ecrystal
 syn match ecrystalTagEscape /\%#=1<%%/ containedin=ALLBUT,@crystal,@ecrystal
 
-hi def link ecrystalDelimiter PreProc
+hi def link ecrystalDelimiter Delimiter
 hi def link ecrystalComment Comment
 hi def link ecrystalCommentStart ecrystalComment
 hi def link ecrystalCommentEnd ecrystalCommentStart

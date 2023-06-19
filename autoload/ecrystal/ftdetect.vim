@@ -1,16 +1,11 @@
 " Vim autoload file
-" Language: Embedded Crystal <crystal-lang.org/api/latest/ECR.html>
+" Language: Embedded Crystal <https://crystal-lang.org/api/latest/ECR.html>
 " Author: Jeffrey Crochet <jlcrochet91@pm.me>
 " URL: https://github.com/jlcrochet/vim-crystal
 
 let s:extensions = #{
       \ html: "html",
-      \ js: "javascript",
-      \ json: "json",
-      \ xml: "xml",
-      \ yml: "yaml",
-      \ txt: "text",
-      \ md: "markdown"
+      \ js: "javascript"
       \ }
 
 if exists("g:ecrystal_extensions")

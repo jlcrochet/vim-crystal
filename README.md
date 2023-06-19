@@ -136,19 +136,14 @@ The default recognized filetype extensions are as follows:
 ~~~
 .html => html
 .js => javascript
-.json => json
-.xml => xml
-.yml => yaml
-.txt => text
-.md => markdown
 ~~~
 
 Each extension maps to the name of the filetype that you want to load for that extension.
 
-To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize `*.js` files as JSX instead of JavaScript:
+To add or overwrite entries in the dictionary, set `g:ecrystal_extensions` to a dictionary with the entries you want to inject. For example, the following would allow the plugin to recognize `*.md` files as Markdown:
 
 ~~~vim
-let g:ecrystal_extensions = #{ js: "javascriptreact" }
+let g:ecrystal_extensions = #{ md: "markdown" }
 ~~~
 
 If no subtype is specified in the file name itself (e.g., `foo.ecr`), the value of `g:ecrystal_default_subtype` is used as the subtype.

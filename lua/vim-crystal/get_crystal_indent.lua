@@ -1,16 +1,10 @@
 local v = vim.v
 local g = vim.g
 local bo = vim.bo
-
 local fn = vim.fn
-local prevnonblank = fn.prevnonblank
-local synID = fn.synID
-local synIDattr = fn.synIDattr
-local getline = fn.getline
-local indent = fn.indent
 
 local api = vim.api
-local nvim_get_current_line = api.nvim_get_current_line
+local get_current_line = api.nvim_get_current_line
 
 -- Helpers {{{
 local multiline_regions = {
@@ -44,11 +38,11 @@ local multiline_regions = {
 }
 
 local function syngroup_at(lnum, col)
-  return synIDattr(synID(lnum, col, false), "name")
+  return fn.synIDattr(fn.synID(lnum, col, false), "name")
 end
 
 local function get_line_with_first_byte(lnum)
-  local line = lnum and getline(lnum) or nvim_get_current_line()
+  local line = lnum and fn.getline(lnum) or get_current_line()
 
   local b, col
 
@@ -65,7 +59,7 @@ local function get_line_with_first_byte(lnum)
 end
 
 local function get_line_with_last_byte(lnum)
-  local line = getline(lnum)
+  local line = fn.getline(lnum)
   local found = 0
 
   local syngroup
@@ -84,7 +78,7 @@ local function get_line_with_last_byte(lnum)
     end
 
     syngroup = syngroup_at(lnum, found)
-  until syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart"
+  until syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart" or syngroup == "crystalMarkdownCrystalBlockContinuator"
 
   if found == 1 then
     return line
@@ -206,7 +200,7 @@ local function get_line_info(lnum)
     elseif b == 35 then  -- #
       local syngroup = syngroup_at(lnum, i)
 
-      if syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart" then
+      if syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart" or syngroup == "crystalMarkdownCrystalBlockContinuator" then
         break
       end
     elseif b == 40 or b == 91 or b == 123 then  -- ( [ {
@@ -345,7 +339,7 @@ local function get_line_info_simple(lnum)
     elseif b == 35 then  -- #
       local syngroup = syngroup_at(lnum, i)
 
-      if syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart" then
+      if syngroup == "crystalComment" or syngroup == "crystalCommentStart" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart" or syngroup == "crystalMarkdownCrystalBlockContinuator" then
         break
       end
     elseif b >= 97 and b <= 122 then  -- %l
@@ -405,7 +399,7 @@ end
 
 local function prev_non_multiline(lnum)
   repeat
-    local prev_lnum = prevnonblank(lnum - 1)
+    local prev_lnum = fn.prevnonblank(lnum - 1)
 
     if prev_lnum == 0 then
       return lnum
@@ -432,7 +426,7 @@ local function get_start_line_info(lnum, line, first_byte, first_col, last_byte,
 
     -- There are unresolved floating pairs:
     if brackets < 0 or floats < 0 then
-      local prev_lnum = prevnonblank(lnum - 1)
+      local prev_lnum = fn.prevnonblank(lnum - 1)
 
       if prev_lnum == 0 then
         goto exit
@@ -480,11 +474,11 @@ if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
       elseif syngroup == "crystalMarkdownCodeBlock" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart" then
         -- If this line is part of a fenced code block, simply align
         -- with the previous line.
-        return indent(prevnonblank(lnum - 1))
+        return fn.indent(fn.prevnonblank(lnum - 1))
       end
     end
 
-    local prev_lnum = prevnonblank(lnum - 1)
+    local prev_lnum = fn.prevnonblank(lnum - 1)
 
     if prev_lnum == 0 then
       return 0
@@ -615,7 +609,7 @@ if g.crystal_simple_indent and g.crystal_simple_indent ~= 0 then
     if start_first_byte == 46 and start_line:byte(start_first_col + 1) ~= 46 then  -- .
       prev_continuation = 5
     else
-      local prev_prev_lnum = prevnonblank(start_lnum - 1)
+      local prev_prev_lnum = fn.prevnonblank(start_lnum - 1)
 
       if prev_prev_lnum > 0 then
         local prev_prev_line, prev_prev_last_byte, prev_prev_last_col = get_line_with_last_byte(prev_prev_lnum)
@@ -686,11 +680,11 @@ else
       elseif syngroup == "crystalMarkdownCodeBlock" or syngroup == "crystalMarkdownCodeLineStart" or syngroup == "crystalMarkdownCrystalCodeLineStart" then
         -- If this line is part of a fenced code block, simply align
         -- with the previous line.
-        return indent(prevnonblank(lnum - 1))
+        return fn.indent(fn.prevnonblank(lnum - 1))
       end
     end
 
-    local prev_lnum = prevnonblank(lnum - 1)
+    local prev_lnum = fn.prevnonblank(lnum - 1)
 
     if prev_lnum == 0 then
       return 0
@@ -841,7 +835,7 @@ else
     if start_first_byte == 46 and start_line:byte(start_first_col + 1) ~= 46 then  -- .
       prev_continuation = 5
     else
-      local prev_prev_lnum = prevnonblank(start_lnum - 1)
+      local prev_prev_lnum = fn.prevnonblank(start_lnum - 1)
 
       if prev_prev_lnum > 0 then
         local prev_prev_line, prev_prev_last_byte, prev_prev_last_col = get_line_with_last_byte(prev_prev_lnum)
@@ -928,7 +922,7 @@ else
     -- a line continuation:
     local prev_prev_lnum, prev_prev_line, prev_prev_first_byte, prev_prev_first_col, prev_prev_last_byte, prev_prev_last_col, prev_prev_pairs, prev_prev_has_middle, prev_prev_brackets, prev_prev_bracket_col, prev_prev_floats, prev_prev_float_col, prev_prev_operator_col, prev_prev_dot_col
 
-    prev_prev_lnum = prevnonblank(start_lnum - 1)
+    prev_prev_lnum = fn.prevnonblank(start_lnum - 1)
 
     if prev_prev_lnum == 0 then
       goto exit
@@ -947,7 +941,7 @@ else
         continuation = 5
       end
 
-      prev_prev_lnum = prevnonblank(start_lnum - 1)
+      prev_prev_lnum = fn.prevnonblank(start_lnum - 1)
 
       if prev_prev_lnum == 0 then
         goto exit
