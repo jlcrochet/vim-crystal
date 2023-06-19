@@ -192,7 +192,7 @@ endif
 
 " Operators <<<2
 syn cluster crystalRHS contains=
-      \ crystalNumber,crystalString,crystalStringArray,crystalCharacter,crystalCharacterError,
+      \ crystalNumber,crystalString,crystalStringArray,crystalCharacter,
       \ crystalSymbol,crystalSymbolArray,crystalRegex,crystalCommand,crystalHeredoc,crystalHeredocSkip,
       \ crystalNil,crystalBoolean,crystalSelf,crystalKeyword,crystalBlock,
       \ crystalVariableOrMethod,crystalConstant,crystalFreshVariable,crystalInstanceVariable,crystalExternalVariable
@@ -307,8 +307,7 @@ syn match crystalNumber /\%#=1[1-9]\d*\%(_\d\+\)*\%([ui]\%(8\|16\|32\|64\|128\)\
 syn match crystalNumber /\%#=10\%([ui]\%(8\|16\|32\|64\|128\)\|f\%(32\|64\)\|_\%([ui]\%(8\|16\|32\|64\|128\)\|f\%(32\|64\)\|[eE][+-]\=\d\+\%(_\d\+\)*\%(_\=f\%(32\|64\)\)\=\)\|\.\d\+\%(_\d\+\)*\%(f\%(32\|64\)\|[eE][+-]\=\d\+\%(_\d\+\)*\%(_\=f\%(32\|64\)\)\=\|_\%(f\%(32\|64\)\|[eE][+-]\=\d\+\%(_\d\+\)*\%(_\=f\%(32\|64\)\)\=\)\)\=\>\|b[01]\+\%(_[01]\+\)*\%(_\=[ui]\%(8\|16\|32\|64\|128\)\)\=\|o\o\+\%(_\o\+\)*\%(_\=[ui]\%(8\|16\|32\|64\|128\)\)\=\|x\x\+\%(_\x\+\)*\%(_\=[ui]\%(8\|16\|32\|64\|128\)\)\=\)\=/ nextgroup=@crystalPostfix skipwhite
 
 " Characters <<<3
-syn match crystalCharacterError /\%#=1'.\{-}'/ nextgroup=@crystalPostfix skipwhite
-syn match crystalCharacter /\%#=1'\%(\\\%(u\%(\x\{4}\|{\x\{1,6}}\)\|.\)\|.\)'/ contains=crystalCharacterEscape,crystalCharacterEscapeError nextgroup=@crystalPostfix skipwhite
+syn region crystalCharacter matchgroup=crystalCharacterDelimiter start=/\%#=1'/ end=/\%#=1'/ contains=crystalCharacterEscape,crystalCharacterEscapeError nextgroup=@crystalPostfix skipwhite
 
 syn match crystalCharacterEscapeError /\%#=1\\./ contained
 syn match crystalCharacterEscape /\%#=1\\\%(u\%(\x\{4}\|{\x\{1,6}}\)\|['\\abefnrtv0]\)/ contained
@@ -596,9 +595,9 @@ hi def link crystalSelf Constant
 hi def link crystalSuper Constant
 hi def link crystalNumber Number
 hi def link crystalCharacter Character
-hi def link crystalCharacterError Error
+hi def link crystalCharacterDelimiter crystalDelimiter
 hi def link crystalCharacterEscape SpecialChar
-hi def link crystalCharacterEscapeError crystalCharacterError
+hi def link crystalCharacterEscapeError Error
 hi def link crystalString String
 hi def link crystalStringStart crystalDelimiter
 hi def link crystalStringEnd crystalStringStart
