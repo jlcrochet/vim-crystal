@@ -124,7 +124,7 @@ slightly faster highlighting and indentation, set |g:crystal_simple_indent| to
 g:crystal_markdown_comments			*g:crystal_markdown_comments*
 
 Values:
-	`0`: Disabled
+	`0`: Disabled (default)
 	`1`: Enabled
 	`2`: Enabled; additionally, code lines - that is, lines that begin
 	with at least four spaces or one tab or are inside of a fenced code
@@ -137,8 +137,8 @@ Default: `1`
 This variable controls whether or not Markdown should be highlighted in
 comments.
 
-Setting to `0` may cause highlighting to become faster in files with lots of
-comments, while setting to `2` may do the opposite.
+Setting to `1` or `2` may cause highlighting to become slower in files with
+lots of comments.
 
 NOTE: I haven't yet been able to find an exhaustive summary of which Markdown
 features are supported by Crystal, so for now, only the basic features are

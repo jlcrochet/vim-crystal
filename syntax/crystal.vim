@@ -34,7 +34,7 @@ syn match crystalNamedTupleKeyDelimiter /\%#=1:/ contained nextgroup=@crystalRHS
 if get(b:, "is_ecrystal")
   syn match crystalComment /\%#=1#.\{-}\ze\%(-\=%>\)\=/
 else
-  let s:crystal_markdown_comments = get(g:, "crystal_markdown_comments", 1)
+  let s:crystal_markdown_comments = get(g:, "crystal_markdown_comments")
 
   if s:crystal_markdown_comments
     syn match crystalCommentStart /\%#=1#/ nextgroup=crystalInlineComment

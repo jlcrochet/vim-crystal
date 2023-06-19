@@ -103,11 +103,11 @@ x = y
 
 This variable controls whether or not Markdown should be highlighted in comments; it can have three possible values:
 
-* `0`: Disabled
-* `1`: Enabled (default)
+* `0`: Disabled (default)
+* `1`: Enabled
 * `2`: Enabled; additionally, code lines &mdash; that is, lines that begin with at least four spaces or one tab or are inside of a fenced code block (delimited with ` ``` ` or `~~~`) &mdash; will be highlighted as Crystal code unless the language for the block is set to anything other than `crystal` (good for writing documentation)
 
-Setting to `0` may cause highlighting to become faster in files with lots of comments, while setting to `2` may do the opposite.
+Setting to `1` or `2` may cause highlighting to become slower in files with lots of comments.
 
 NOTE: I haven't yet been able to find an exhaustive summary of which Markdown features are supported by Crystal, so for now, only the basic features are supported in addition to fenced code blocks (delimited with ` ``` ` or `~~~`).
 
