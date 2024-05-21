@@ -12,7 +12,7 @@ let b:did_ftplugin = 1
 setlocal
       \ shiftwidth=2
       \ comments=:#
-      \ commentstring=#\ %s
+      \ commentstring=#%s
       \ suffixesadd=.cr
 
 let b:undo_ftplugin = "setlocal shiftwidth< comments< commentstring< suffixesadd<"
